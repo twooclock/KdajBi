@@ -1,0 +1,26 @@
+﻿@using KdajBi.Core.Models;
+@model IEnumerable<Location>
+<li class="nav-item has-treeview">
+    <a href="@Url.Content("~/locations")" class="nav-link">
+        <i class="nav-icon fas fa-th"></i>
+        <p>
+            Saloni
+        </p>
+        <i class="fas fa-chevron-down right"></i>
+    </a>
+    <ul class="nav nav-treeview" style="display: none;">
+        @foreach (var item in Model)
+        {
+            <li class="nav-item">
+                <a href="@Url.Content("~/location/"+item.Id)" class="nav-link">
+                    <i class="far nav-icon"></i>
+                    <p>@Html.Raw(item.Name)</p>
+                </a>
+            </li>
+        }
+
+
+
+    </ul>
+</li>
+

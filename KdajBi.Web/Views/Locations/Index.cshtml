@@ -1,0 +1,328 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+@model vmLocations
+@{
+    ViewData["Title"] = "Locations";
+}
+
+@section styles{
+    <!-- datatables.net -->
+    <link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.css" rel="stylesheet" />"
+    <link href="~/plugins/datatables-buttons/css/buttons.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
+}
+
+
+<!-- page content -->
+<div class="right_col col-md-12" role="main">
+
+
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="dashboard_graph">
+
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <h3>Locations <small>&nbsp;</small></h3>
+                    </div>
+
+                </div>
+
+                <div class="col-12">
+                    @foreach (var item in Model.Locations)
+                    {
+                        <h3>@Html.Raw(item.Name)</h3>
+                        <div id="tab_@Html.Raw(item.Id)" class="nav-tabs">
+                            <ul class="nav nav-tabs">
+                                <li class="nav-item"><a class="nav-link active" href="#general" data-toggle="tab" aria-expanded="false">Splošno</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#timetable" data-toggle="tab" aria-expanded="false">Urnik</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#workposts" data-toggle="tab" aria-expanded="true">Delovna mesta</a></li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="general">
+                                    <form class="form-horizontal">
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Ime</label>
+
+                                            <div class="col-sm-10">
+                                                <input type="email" class="form-control" id="inputName" placeholder="Ime" value="@Html.Raw(item.Name)">
+                                            </div>
+                                        </div>
+                                        
+
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-2 col-sm-10">
+                                                <button type="submit" class="btn btn-danger">Shrani</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <!-- /.tab-pane -->
+                                <div class="tab-pane" id="timetable">
+
+                                </div>
+                                <!-- /.tab-pane -->
+
+                                <div class="tab-pane" id="workposts">
+                                    <form class="form-horizontal">
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Name</label>
+
+                                            <div class="col-sm-10">
+                                                <input type="email" class="form-control" id="inputName" placeholder="Name">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputEmail" class="col-sm-2 control-label">Email</label>
+
+                                            <div class="col-sm-10">
+                                                <input type="email" class="form-control" id="inputEmail" placeholder="Email">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Name</label>
+
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" id="inputName" placeholder="Name">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputExperience" class="col-sm-2 control-label">Experience</label>
+
+                                            <div class="col-sm-10">
+                                                <textarea class="form-control" id="inputExperience" placeholder="Experience"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputSkills" class="col-sm-2 control-label">Skills</label>
+
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" id="inputSkills" placeholder="Skills">
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-2 col-sm-10">
+                                                <button type="submit" class="btn btn-danger">Submit</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <!-- /.tab-pane -->
+                            </div>
+                            <!-- /.tab-content -->
+                        </div>
+                    }
+
+                </div>
+                <button type="button" id="cmdAdd" onclick="cmdAdd_Click();" class="btn btn-primary btn-lg">
+                    Add new
+                </button>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+
+    </div>
+    <br />
+
+
+</div>
+<!-- /page content -->
+<!-- modal content-->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Locations</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"></button>
+            </div>
+            <div class="modal-body">
+                <form id="dataform" class="dataform" name="dataform">
+                    <div class="form-group">
+                        <label for="txtEmail">
+                            name:
+                        </label>
+                        <input type="text" id="txtName" name="txtName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="cbActive" value="true" checked="">
+                            <span class="custom-control-label">Active</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="cmdDelete">
+                    Delete
+                </button>
+                <button type="button" class="btn btn-primary" id="cmdSave">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+
+@section scripts{
+    <!-- datables.net -->
+    <script src="~/plugins/datatables/jquery.dataTables.js"></script>
+    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+
+    <script type="text/javascript">
+
+        var myTable;
+        @await Html.PartialAsync("_ApiAccess")
+
+            $(document).ready(function () {
+                GetTable();
+
+                $('#dataform').validate({
+                    rules: {
+                        txtName: {
+                            minlength: 3,
+                            maxlength: 50,
+                            required: true
+                        }
+                    },
+                    messages: {
+                        txtName: "Invalid name!"
+                    },
+                    highlight: function (element) {
+                        $(element).closest('.form-group').addClass('has-error');
+                    },
+                    unhighlight: function (element) {
+                        $(element).closest('.form-group').removeClass('has-error');
+                    },
+                    errorElement: 'span',
+                    errorClass: 'help-block',
+                    errorPlacement: function (error, element) {
+                        if (element.parent('.input-group').length) {
+                            error.insertAfter(element.parent());
+                        } else { error.insertAfter(element); }
+                    }
+                });
+            });
+
+
+
+        function CancelModal() {
+            $('#dataform').validate().resetForm();
+            //remove higlight ( reset form does not do this!)
+            $("#dataform input, #dataform label").each(function (key, value) {
+                $(this).closest('.form-group').removeClass('has-error');
+            });
+        }
+
+
+
+        function cmdAdd_Click() {
+            setForm(0);
+            $('#cmdDelete').addClass('invisible')
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveRecord(0) != false) {
+                    $("#myModal").modal("hide");
+                    GetTable();
+                }
+            });
+
+
+        }
+
+        function setForm(p_ID) {
+            if (p_ID == 0) {
+                //clear form
+                $("#txtName").val('');
+                $("#cbActive").prop('checked', true);
+            }
+            else {
+                //fill form
+                $.ajax({
+                    type: "get",
+                    url: apiURL+"/api/Locations/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    async: true,
+                    success: function (result) {
+                        $("#txtName").val(result.name);
+                        $("#cbActive").prop('checked', result.active);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error:" + error);
+                    }
+                });
+            }
+
+        }
+
+        function showDetail(p_ID) {
+            setForm(p_ID);
+            $('#cmdDelete').removeClass('invisible');
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveRecord(p_ID) != false) { $("#myModal").modal("hide"); }
+            });
+            $("#cmdDelete").off('click').click(function (evt) {
+                if (DeleteRecord(p_ID) != false) { $("#myModal").modal("hide"); }
+            });
+
+        }
+
+        function DeleteRecord(p_ID) {
+            if (confirm("Delete location?") == true) {
+                $.ajax({
+                    type: "DELETE",
+                    url: apiURL+"/api/locations/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { GetTable(); return true; }
+                        else { alert(result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error deleting:" + error.toString());
+                        return false;
+                    }
+                });
+
+            } else { return false; }
+
+        }
+
+        function SaveRecord(p_ID) {
+            if ($('#dataform').valid()) {
+                var company={};
+                company.id = p_ID;
+                company.Name = $('#txtName').val();
+                company.Active = $("#cbActive").prop('checked');
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(company),
+                    url: apiURL+"/api/location/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                         if (result == "OK") { GetTable(); return true; }
+                        else { alert(result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error saving:" + error.toString());
+                        return false;
+                    }
+                });
+            } else { return false; }
+        }
+
+
+    </script>
+}
+

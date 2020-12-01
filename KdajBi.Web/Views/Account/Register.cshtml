@@ -1,0 +1,214 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_AnonymousLayout.cshtml";
+    ViewData["Title"] = "Registracija novega uporabnika";
+}
+
+
+<p class="login-box-msg">Registracija novega uporabnika</p>
+
+<form id="dataform" name="dataform" action="~/Account/Register" method="post">
+
+    <div class="form-group has-feedback">
+        <input name="p_email" type="email" class="form-control" placeholder="Email" value="@Model.Email" readonly="readonly">
+        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+    </div>
+    <div class="form-group has-feedback">
+        <input name="p_firstname" type="text" class="form-control" placeholder="Ime"  value="@Model.FirstName">
+        <span class="glyphicon glyphicon-user form-control-feedback"></span>
+    </div>
+    <div class="form-group has-feedback">
+        <input name="p_lastname" type="text" class="form-control" placeholder="Priimek"  value="@Model.LastName">
+        <span class="glyphicon glyphicon-user form-control-feedback"></span>
+    </div>
+    Podjetje:
+    <div class="form-group input-group has-feedback">
+        <input id="p_davcna" name="p_davcna" type="text" class="form-control" placeholder="Davčna številka">
+        <div class="input-group-append">
+            <button id="cmdCheckVAT" value="Preveri" type="button" class="btn btn-default" onclick="return cmdCheckVAT_click(); return false;"
+                    data-loading-text="Počakajte...">
+                Poišči
+            </button>
+            <span class="glyphicon glyphicon-user form-control-feedback"></span>
+        </div>
+    </div>
+    <div class="form-group has-feedback">
+        <input id="p_naziv" name="p_naziv" type="text" class="form-control" placeholder="Naziv" readonly="readonly">
+        <span class="glyphicon glyphicon-user form-control-feedback"></span>
+    </div>
+    <div class="form-group has-feedback">
+        <input id="p_nazivsalona" name="p_nazivsalona" type="text" class="form-control" placeholder="Naziv salona" >
+        <span class="glyphicon glyphicon-user form-control-feedback"></span>
+    </div>
+    <div class="col-xs-8">
+        <div class="checkbox icheck">
+            <label class="mojgroup has-feedback">
+                <input id="IAgree" name="IAgree" type="checkbox"> Strinjam se s <a href="#">pogoji poslovanja</a>
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <button type="submit" class="btn btn-primary btn-block btn-flat">Registriraj</button>
+    </div>
+</form>
+
+
+@section scripts{
+    <partial name="_ValidationScriptsPartial" />
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            jQuery.validator.addMethod("isSITaxID", function (value, element) {
+                return this.optional(element) || (isSITaxID(value));
+            }, "Vnesite veljavno davčno številko");
+
+            $('#dataform').validate({
+                rules: {
+                    IAgree: {
+                        required: true
+                    },
+                    p_firstname: {
+                        minlength: 3,
+                        maxlength: 20,
+                        required: true
+                    },
+                    p_lastname: {
+                        minlength: 3,
+                        maxlength: 20,
+                        required: true
+                    },
+                    p_davcna: {
+                        minlength: 8,
+                        maxlength: 8,
+                        digits: true,
+                        required: true,
+                        isSITaxID: true
+                    },
+                    p_nazivsalona: {
+                        minlength: 3,
+                        maxlength: 20,
+                        required: true
+                    },
+                },
+                messages: {
+                    IAgree: "Strinjati se morate s pogoji poslovanja",
+                    p_firstname: "Neveljavno ime",
+                    p_lastname: "Neveljaven priimek",
+                    p_davcna: "Vnesite veljavno davčno številko",
+                    p_nazivsalona: "Neveljavno ime"
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-control').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-control').removeClass('is-invalid');
+                },
+                errorElement: 'span',
+                errorClass: 'invalid-feedback',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.appendTo(element.parent('.input-group'));
+                    } else {
+                        if (element.parent('.mojgroup').length) {
+                            error.appendTo(element.parent('.mojgroup'));
+                        } else { error.insertAfter(element); }
+                    }
+                },
+                submitHandler: function (form) {
+                    form.submit();
+                }
+            });
+
+
+
+
+        });
+
+
+        function isSITaxID(p_SITAXID) {
+            /*
+            Check digit using modulo 11 (za preverit slovensko davčno)
+            Arguments:
+            - n is your given number to test the check digit
+            - x is an optional argument that is used to determine the check digit
+            used in case of the rest of the division is less than 2. Defaults to 0.
+
+            Returns an integer, the checkDigit for the given number.
+            var l = n.length, i = 0, j = (l % 8), v = 0;
+            */
+            if (p_SITAXID.length < 8) { return false; }
+            if (p_SITAXID.length == 8) {
+                var l = p_SITAXID.length, i = 0, j = 8, v = 0;
+                for (i = 0; i < l; i++) {
+                    v += parseInt(p_SITAXID[i], 10) * j;
+                    --j;
+                }
+                if (p_SITAXID.substring(7, 8) == "0") { return (((v % 11) == 0) || ((v % 11) == 1)) }
+                else { return ((v % 11) == 0); }
+            }
+            else { return true; }
+        };
+
+
+
+        function cmdCheckVAT_click() {
+            $('#cmdCheckVAT').button('loading');
+
+            var davcna = $('input[id=p_davcna]').val().trim();
+            if (davcna.substring(0, 2).toUpperCase() == "SI") { davcna = davcna.substring(2); }
+            $('input[id=p_davcna]').val(davcna);
+
+            var date = new Date();
+
+            var RequestID = new Date().toISOString().replace(/[^0-9]/gm, "").substr(0, 14);
+            var xmlPodatki = "   <ServiceData ServiceName=\"vrniPodjetje\">" + davcna + "</ServiceData>"
+            var myXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            myXML = myXML + "<ServiceRequest Sender=\"KDAJBI\" RequestID=\" + RequestID + \">"
+            myXML = myXML + xmlPodatki
+            myXML = myXML + "</ServiceRequest>"
+            $.ajax({
+                type: "post",
+                data: myXML,
+                url: "https://colorhit.si/webColorhit/CHHandler.ashx",
+                contentType: "application/json; charset=utf-8",
+                dataType: "text",
+                async: false,
+                success: function (result) {
+                    $("#p_naziv").val(result);
+                }
+            });
+
+        };
+
+
+
+
+
+        function SaveRecord(p_ID) {
+            if ($('#dataform').valid()) {
+                var company = {};
+                company.id = p_ID;
+                company.Name = $('#txtName').val();
+                company.Active = $("#cbActive").prop('checked');
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(company),
+                    url: apiURL + "/api/company/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { GetTable(); return true; }
+                        else { alert(result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error saving:" + error.toString());
+                        return false;
+                    }
+                });
+            } else { return false; }
+        }
+
+
+    </script>
+}

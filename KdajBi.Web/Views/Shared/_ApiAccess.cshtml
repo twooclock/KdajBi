@@ -1,0 +1,4 @@
+﻿@using Newtonsoft.Json;
+@inject  KdajBi.Web.Services.IApiTokenProvider apiTP
+var apiURL="@Html.Raw(apiTP.Settings().BaseAddress)"
+var apiToken=JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.Token))')

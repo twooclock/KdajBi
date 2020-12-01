@@ -1,0 +1,18 @@
+﻿@page
+@model LogoutModel
+@{
+    ViewData["Title"] = "Log out";
+}
+
+<header>
+    <h1>@ViewData["Title"]</h1>
+    <p>You have successfully logged out of the application.</p>
+</header>
+
+@section Scripts {
+    <script type="text/javascript">
+    window.setTimeout(function() {
+        window.location.href = '@Url.Action("Index", "Home")';
+    }, 3000);
+</script>
+}

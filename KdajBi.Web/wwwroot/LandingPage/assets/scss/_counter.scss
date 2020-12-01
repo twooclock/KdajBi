@@ -1,0 +1,49 @@
+
+
+
+/*===========================
+      9.COUNTER css 
+===========================*/
+
+
+.counter-area{
+    background-color: $light-color-two;
+}
+
+
+.single-counter{
+        @include box-shadow(0px 0px 5px 0px rgba(0,0,0,0.16));
+        padding: 23px;
+        position: relative;
+        border-radius: 5px;
+        overflow: hidden;
+        background-color: $primary-one;
+        
+        & .counter-icon{
+            margin-bottom: 5px;
+            
+            & i{
+                font-size: 66px;
+                line-height: 60px;
+                color: $white;
+            }
+        }
+        & .counter-content{
+            padding-left: 11px;
+            & .count{
+                font-size: 36px;
+                font-weight: 600;
+                line-height: 45px;
+                color: $white;
+                margin-bottom: 4px;
+            }
+            & .text{
+                font-size: 16px;
+                color: $white;
+            }
+        }
+    }
+
+
+
+

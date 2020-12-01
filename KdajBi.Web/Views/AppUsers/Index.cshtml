@@ -1,0 +1,384 @@
+﻿
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "Users";
+}
+
+@section styles{
+    <!-- datatables.net -->
+    <link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.css" rel="stylesheet" />"
+    <link href="~/plugins/datatables-buttons/css/buttons.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
+}
+
+
+<!-- page content -->
+<div class="right_col col-md-12" role="main">
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="dashboard_graph">
+
+                <div class="row x_title">
+                    <div class="col-sm-6 col-12 text-left">
+                        <h3>Users  </h3>
+                    </div>
+
+                </div>
+
+                <div class="col-12">
+                    <div class="table-responsive">
+
+                        <table id="dataTable" class="table table-striped table-bordered" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Email
+                                    </th>
+                                    <th>
+                                        Company
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                        <button type="button" id="cmdAdd" onclick="cmdAdd_Click();" class="btn btn-primary btn-lg">
+                            Add new
+                        </button>
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+            </div>
+        </div>
+
+    </div>
+    <br />
+
+
+</div>
+<!-- /page content -->
+<!-- modal content-->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Users</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"></button>
+            </div>
+            <div class="modal-body">
+                <form id="dataform" class="dataform" name="dataform">
+                    <div class="form-group">
+                        <label for="txtEmail">
+                            Email:
+                        </label>
+                        <input type="text" id="txtName" name="txtName" class="form-control" />
+                    </div>
+                    <div class="col-xs-12 no-padding" style="border: 1px;border-style: dotted;">
+                        User has access to following companies:
+                        <div class="col-xs-12 no-padding" style="display:flex">
+                            <select id="ddlCompany" name="ddlCompany" class="selectpicker col-xs-9 no-padding" data-live-search="true"></select>
+                            <button type="button" class="btn btn-primary col-xs-2 novpad" id="cmdAddCompany" onclick="cmdAddCompany_Click();">
+                                Dodaj
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <div id="ulUserCompanies" class="col-xs-12 card custom-controls-stacked o-auto no-padding" style="height: 20rem; padding-left: 0px">
+                                <div style="display: flex; padding-top: 10px; padding-bottom: 10px;">
+                                    <div class="col-xs-9 novpad">Company</div>
+                                    <div class="col-xs-3 novpad">Sessions</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="cbActive" value="true" checked="">
+                            <span class="custom-control-label">Active</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="cmdDelete">
+                    Delete
+                </button>
+                <button type="button" class="btn btn-primary" id="cmdSave">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+
+@section scripts{
+    <!-- datables.net -->
+    <script src="~/plugins/datatables/jquery.dataTables.js"></script>
+    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+
+    <script type="text/javascript">
+        var myUser = { companies: [] };
+        var myTable;
+        @await Html.PartialAsync("_ApiAccess")
+
+            $(document).ready(function () {
+                GetTable();
+
+                $('#dataform').validate({
+                    rules: {
+                        txtName: {
+                            minlength: 3,
+                            maxlength: 50,
+                            required: true
+                        }
+                    },
+                    messages: {
+                        txtName: "Invalid name!"
+                    },
+                    highlight: function (element) {
+                        $(element).closest('.form-group').addClass('has-error');
+                    },
+                    unhighlight: function (element) {
+                        $(element).closest('.form-group').removeClass('has-error');
+                    },
+                    errorElement: 'span',
+                    errorClass: 'help-block',
+                    errorPlacement: function (error, element) {
+                        if (element.parent('.input-group').length) {
+                            error.insertAfter(element.parent());
+                        } else { error.insertAfter(element); }
+                    }
+                });
+
+                GetMyCompanies();
+            });
+
+
+
+        function CancelModal() {
+            $('#dataform').validate().resetForm();
+            //remove higlight ( reset form does not do this!)
+            $("#dataform input, #dataform label").each(function (key, value) {
+                $(this).closest('.form-group').removeClass('has-error');
+            });
+        }
+
+        var GetTable = function () {
+
+            var table = $('#dataTable').DataTable({
+                destroy: true,
+                responsive: true,
+                'order': [[0, 'desc']],
+                //                dom: '<""top"">rt<""bottom""ilp><""container"">',
+                searching: false,
+                'processing': true,
+                'serverSide': true,
+                'ajax': {
+                    'url': apiURL + "/api/appuserstable",
+                    type: 'POST', dataType: 'json',
+                    data: function (dtParms) {
+                        // I send it as a string to reduce the chance of an error before it reaches the server.
+                        return JSON.stringify(dtParms);
+                    },
+                    'contentType': 'application/json; charset=utf-8',
+                    "crossDomain": true,
+                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + apiToken.AccessToken);}
+                    
+                },
+                'columns': [
+                    { 'data': 'email' },
+                    { 'data': 'company.name'    },
+                    {
+                        data: null, 'orderable': false,
+                        render: function (data, type, row, meta) {
+                            return '<a href="#" onclick="showDetail(' + row.id + ');">Edit</a>';
+                        }
+                    }
+                ]
+            });
+
+        }
+
+        function cmdAdd_Click() {
+            setForm(0);
+            $('#cmdDelete').addClass('invisible')
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveRecord(0) != false) {
+                    $("#myModal").modal("hide");
+                    GetTable();
+                }
+            });
+
+
+        }
+
+        function setForm(p_ID) {
+            $("#ulUserCompanies").empty();
+            if (p_ID == 0) {
+                //clear form
+                $("#txtName").val('');
+                $("#cbActive").prop('checked', true);
+            }
+            else {
+                //fill form
+
+                $.ajax({
+                    type: "get",
+                    url: apiURL+"/api/appusers/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    async: true,
+                    success: function (result) {
+                        myUser.id = result.id;
+                        myUser.email = result.email;
+                       result.companies.forEach(function (uc) {
+                            AddUserCompany(uc.id, uc.name);
+                            myUser.companies.push({ id: Number(uc.id), name: uc.name });
+                        });
+
+
+
+                        $("#txtName").val(result.email);
+                        $("#cbActive").prop('checked', result.active);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error:" + error);
+                    }
+                });
+            }
+
+        }
+
+        function showDetail(p_ID) {
+            setForm(p_ID);
+            $('#cmdDelete').removeClass('invisible');
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveRecord(p_ID) != false) { $("#myModal").modal("hide"); }
+            });
+            $("#cmdDelete").off('click').click(function (evt) {
+                if (DeleteRecord(p_ID) != false) { $("#myModal").modal("hide"); }
+            });
+
+        }
+
+        function DeleteRecord(p_ID) {
+            if (confirm("Delete user?") == true) {
+                $.ajax({
+                    type: "DELETE",
+                    url: apiURL+"/api/appusers/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { GetTable(); return true; }
+                        else { alert(result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error deleting:" + error.toString());
+                        return false;
+                    }
+                });
+
+            } else { return false; }
+
+        }
+
+        function SaveRecord(p_ID) {
+            if ($('#dataform').valid()) {
+                myUser.id = p_ID;
+                myUser.Email = $('#txtName').val();
+                myUser.Active = $("#cbActive").prop('checked');
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(myUser),
+                    url: apiURL+"/api/appuser/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                         if (result == "OK") { GetTable(); return true; }
+                        else { alert(result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error saving:" + error.toString());
+                        return false;
+                    }
+                });
+            } else { return false; }
+        }
+
+
+        function GetMyCompanies() {
+            $.ajax({
+                type: 'GET', dataType: 'json',
+                url: apiURL + "/api/companies",
+                contentType: "application/json; charset=utf-8",
+                headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                async: false,
+                dataType: "json",
+                data: "",
+                success: function (msg) {
+                    $("#ddlCompany").empty();
+                    $.each(msg, function (index, item) {
+                        if (this.active == true) { $("#ddlCompany").append($("<option />").val(this.id).text(this.name)); }
+                        else { $("#ddlCompany").append($("<option />").val(this.id).text(this.name).attr('disabled', 'disabled')); }
+                    });
+                    $('#ddlCompany').selectpicker('refresh');
+                    //var cookieValue = $.cookie("idC");
+                    //if (cookieValue == null) { $('#ddlCompany').find('option:first').attr('selected', 'selected'); }
+                    //else { $('#ddlCompany').val(cookieValue) }
+
+                    //$.cookie("idC", $('#ddlCompany').val());
+
+                },
+                error: function () {
+                    alert("Error loading Companies");
+                }
+            });
+        }
+
+        function cmdAddCompany_Click() {
+            var found = false;
+
+            myUser.companies.forEach(function (uc) {
+                if (uc.id == Number($("#ddlCompany").val())) {
+                    found = true;
+                }
+            });
+
+            if (found == false) {
+                AddUserCompany($("#ddlCompany").val(), $("#ddlCompany option:selected").text());
+                myUser.companies.push({ id: Number($("#ddlCompany").val()), name: $("#ddlCompany option:selected").text() });
+            }
+
+        }
+        function cmdRemoveCompany_Click(p_CID) {
+            $('#cbCompany' + p_CID).remove();
+            myUser.companies.forEach(function (uc) {
+                if (uc.id == Number(p_CID)) {
+                    myUser.companies.splice(myUser.companies.indexOf(uc), 1);
+                }
+            });
+        }
+        function AddUserCompany(p_IDCompany, p_CompanyName) {
+            var addHTML = '';
+            addHTML = '<div id="cbCompany' + p_IDCompany + '" name="cbProduct" style="align-items:center;display: flex;"><div class="col-xs-9 novpad"><input type="hidden" value="' + p_IDCompany + '" />' + p_CompanyName + '</div>';
+            addHTML = addHTML + '<div class="col-xs-3 novpad"><button type="button" class="btn btn-primary" onclick="cmdRemoveCompany_Click(' + p_IDCompany + ');">remove</button></div>';
+            $("#ulUserCompanies").append(addHTML);
+
+        }
+
+
+    </script>
+}
+

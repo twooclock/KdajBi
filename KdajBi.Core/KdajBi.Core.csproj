@@ -1,0 +1,85 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20200528043644_addJob.cs" />
+    <Compile Remove="Migrations\20200528043644_addJob.Designer.cs" />
+    <Compile Remove="Migrations\20200528044353_addJobs.cs" />
+    <Compile Remove="Migrations\20200528044353_addJobs.Designer.cs" />
+    <Compile Remove="Migrations\20201110054848_ConsolidateDB.cs" />
+    <Compile Remove="Migrations\20201110054848_ConsolidateDB.Designer.cs" />
+    <Compile Remove="Migrations\20201110060344_InitialCreate.cs" />
+    <Compile Remove="Migrations\20201110060344_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20201118050305_AddSalon.cs" />
+    <Compile Remove="Migrations\20201118050305_AddSalon.Designer.cs" />
+    <Compile Remove="Migrations\20201118052126_AddSalon.cs" />
+    <Compile Remove="Migrations\20201118052126_AddSalon.Designer.cs" />
+    <Compile Remove="Migrations\20201118052619_AddSalon.cs" />
+    <Compile Remove="Migrations\20201118052619_AddSalon.Designer.cs" />
+    <Compile Remove="Migrations\20201118053256_AddSalon.cs" />
+    <Compile Remove="Migrations\20201118053256_AddSalon.Designer.cs" />
+    <Compile Remove="Migrations\20201118054902_AddSalon.cs" />
+    <Compile Remove="Migrations\20201118054902_AddSalon.Designer.cs" />
+    <Compile Remove="Migrations\20201118055224_AddSalon.cs" />
+    <Compile Remove="Migrations\20201118055224_AddSalon.Designer.cs" />
+    <Compile Remove="Migrations\20201118055447_AddSalon.cs" />
+    <Compile Remove="Migrations\20201118055447_AddSalon.Designer.cs" />
+    <Compile Remove="Migrations\20201130080253_addWorkplace.cs" />
+    <Compile Remove="Migrations\20201130080253_addWorkplace.Designer.cs" />
+    <Compile Remove="Models\UserCompany.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.4" />
+
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.6.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.4" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="3.1.1" />
+   
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.2" />
+
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.1.1" />
+    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="3.0.50" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+</Project>

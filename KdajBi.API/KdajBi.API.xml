@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>KdajBi.API</name>
+    </assembly>
+    <members>
+        <member name="T:KdajBi.API.Security.Hashing.PasswordHasher">
+            <summary>
+            This password hasher is the same used by ASP.NET Identity.
+            Explanation: https://stackoverflow.com/questions/20621950/asp-net-identity-default-password-hasher-how-does-it-work-and-is-it-secure
+            Full implementation: https://gist.github.com/malkafly/e873228cb9515010bdbe
+            </summary>
+        </member>
+        <member name="T:KdajBi.DataTableResultSet">
+            End- JSon class sent from Datatables
+        </member>
+        <member name="F:KdajBi.DataTableResultSet.draw">
+            <summary>value of draw parameter sent by client</summary>
+        </member>
+        <member name="F:KdajBi.DataTableResultSet.recordsTotal">
+            <summary>total record count in resultset</summary>
+        </member>
+        <member name="F:KdajBi.DataTableResultSet.recordsFiltered">
+            <summary>filtered record count</summary>
+        </member>
+        <member name="F:KdajBi.DataTableResultSet.data">
+            <summary>Array of records.</summary>
+        </member>
+    </members>
+</doc>
