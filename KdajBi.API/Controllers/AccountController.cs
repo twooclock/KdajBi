@@ -19,13 +19,11 @@ namespace KdajBi.Web.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly ILogger<AccountController> _logger;
 
-
         public AccountController(UserManager<AppUser> userMgr, SignInManager<AppUser> signinMgr, IAuthenticationService authenticationService)
         {
             userManager = userMgr;
             signInManager = signinMgr;
             _authenticationService = authenticationService;
-            
 
         }
 
@@ -36,11 +34,6 @@ namespace KdajBi.Web.Controllers
             //return RedirectToAction("Index", "Home");
             return Redirect("~/LandingPage/index.html");
         }
-
-       
-
-        
-
 
 
 

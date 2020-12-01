@@ -14,12 +14,9 @@ using System.Threading.Tasks;
 namespace KdajBi.API.Controllers
 {
     [Authorize(Roles = "Super,Admin")]
-    [Route("api/[controller]")]
     [ApiController]
     public class CompaniesController : _BaseController
     {
-        
-
         public CompaniesController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender)
             : base(context, userManager, signInManager, logger, emailSender)
         {
@@ -27,8 +24,7 @@ namespace KdajBi.API.Controllers
         }
 
 
-        [HttpPost]
-        [Route("/api/companiestable")]
+        [HttpPost("/api/companiestable")]
         public async Task<ActionResult<IQueryable<Company>>> CompaniesTable([FromBody] DataTableAjaxPostModel param)
         {
             int recordsTotal = 0;
@@ -48,10 +44,7 @@ namespace KdajBi.API.Controllers
             return Json(new { draw = param.draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
         }
 
-        // GET: api/Companies/
-        
-        [HttpGet]
-        [Route("/api/companies")]
+        [HttpGet("/api/companies")]
         public async Task<ActionResult<List<Company>>> GetCompanies()
         {
             
@@ -73,7 +66,6 @@ namespace KdajBi.API.Controllers
             return company;
         }
 
-        // GET: api/Companies/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Company>> GetCompany(long id)
         {
@@ -87,7 +79,6 @@ namespace KdajBi.API.Controllers
             return company;
         }
 
-        // PUT: api/Companies/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCompany(long id, Company company)
         {
@@ -117,9 +108,7 @@ namespace KdajBi.API.Controllers
             return NoContent();
         }
 
-        // POST: api/Companies
-        [HttpPost]
-        [Route("/api/company")]
+        [HttpPost("/api/company")]
         public async Task<ActionResult<Company>> PostCompany(Company company)
         {
             if (company.Id == 0)
@@ -165,7 +154,6 @@ namespace KdajBi.API.Controllers
             return Json("OK");
         }
 
-        // DELETE: api/Companies/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Company>> DeleteCompany(long id)
         {

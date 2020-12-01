@@ -14,12 +14,9 @@ using System.Threading.Tasks;
 namespace KdajBi.API.Controllers
 {
     [Authorize(Roles = "Super,Admin")]
-    [Route("api/[controller]")]
     [ApiController]
     public class LocationsController : _BaseController
     {
-        
-
         public LocationsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender)
             : base(context, userManager, signInManager, logger, emailSender)
         {
@@ -27,8 +24,7 @@ namespace KdajBi.API.Controllers
         }
 
 
-        [HttpPost]
-        [Route("/api/Locationstable")]
+        [HttpPost("/api/Locationstable")]
         public JsonResult LocationsTable([FromBody] DataTableAjaxPostModel param)
         {
             int recordsTotal = 0;
@@ -48,10 +44,8 @@ namespace KdajBi.API.Controllers
             return Json(new { draw = param.draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
         }
 
-        // GET: api/Locations/
         
-        [HttpGet]
-        [Route("/api/Locations")]
+        [HttpGet("/api/Locations")]
         public async Task<ActionResult<List<Location>>> GetLocations()
         {
             
@@ -73,8 +67,7 @@ namespace KdajBi.API.Controllers
             return Location;
         }
 
-        // GET: api/Locations/5
-        [HttpGet("{id}")]
+        [HttpGet("/api/Location/{id}")]
         public async Task<ActionResult<Location>> GetLocation(long id)
         {
             var Location = await _context.Locations.FindAsync(id);
@@ -87,8 +80,7 @@ namespace KdajBi.API.Controllers
             return Location;
         }
 
-        // PUT: api/Locations/5
-        [HttpPut("{id}")]
+        [HttpPut("/api/Location/{id}")]
         public async Task<IActionResult> PutLocation(long id, Location Location)
         {
             if (id != Location.Id)
@@ -117,9 +109,7 @@ namespace KdajBi.API.Controllers
             return NoContent();
         }
 
-        // POST: api/Locations
-        [HttpPost]
-        [Route("/api/Location")]
+        [HttpPost("/api/Location")]
         public async Task<ActionResult<Location>> PostLocation(Location Location)
         {
             if (Location.Id == 0)
@@ -134,7 +124,6 @@ namespace KdajBi.API.Controllers
                 }
                 catch (Exception ex)
                 {
-
                     throw;
                 }
             }
@@ -146,6 +135,7 @@ namespace KdajBi.API.Controllers
                 Locationindb.UpdatedUserID = _CurrentUserID();
                 Locationindb.UpdatedDate = DateTime.Now;
                 Locationindb.Name = Location.Name;
+                Locationindb.Tel = Location.Tel;
                 Locationindb.Active = Location.Active;
 
                 _context.Entry(Locationindb).State = EntityState.Modified;
@@ -166,8 +156,7 @@ namespace KdajBi.API.Controllers
             return Json("OK");
         }
 
-        // DELETE: api/Locations/5
-        [HttpDelete("{id}")]
+        [HttpDelete("/api/Location/{id}")]
         public async Task<ActionResult<Location>> DeleteLocation(long id)
         {
             var Location = await _context.Locations.FindAsync(id);

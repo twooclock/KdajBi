@@ -22,8 +22,6 @@ namespace KdajBi.API.Controllers
     [ApiController]
     public class AppUsersController : _BaseController
     {
-        
-
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
         public AppUsersController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender)
@@ -33,8 +31,7 @@ namespace KdajBi.API.Controllers
         }
 
 
-        [HttpPost]
-        [Route("/api/appuserstable")]
+        [HttpPost("/api/appuserstable")]
         public JsonResult AppUsersTable([FromBody] DataTableAjaxPostModel param)
         {
             int recordsTotal = 0;
@@ -120,37 +117,13 @@ namespace KdajBi.API.Controllers
                     if (result.Succeeded)
                     {
                         _logger.LogInformation("User created a new account with password.");
-
-
-                        //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        //code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        //var callbackUrl = Url.Page(
-                        //    "/Account/ConfirmEmail",
-                        //    pageHandler: null,
-                        //    values: new { area = "Identity", userId = user.Id, code = code },
-                        //    protocol: Request.Scheme);
-
-                        //await _emailSender.SendEmailAsync(appuser.Email, "Confirm your email",
-                        //    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                        //if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                        //{
-                        //    return RedirectToPage("RegisterConfirmation", new { email = appuser.Email });
-                        //}
-                        //else
-                        //{
-                        //    //await _signInManager.SignInAsync(user, isPersistent: false);
-                        //    //return LocalRedirect(returnUrl);
-                        //}
+                        
                     }
-                    //konec
-                    //appuser.CreatedUserID = _CurrentUserID;
 
 
                     try
                     {
                         await _context.SaveChangesAsync();
-
                     }
                     catch (Exception ex)
                     {
@@ -167,7 +140,6 @@ namespace KdajBi.API.Controllers
                 appuserindb.UpdatedDate = DateTime.Now;
 
                 _context.Entry(appuserindb).State = EntityState.Modified;
-
 
 
                 try
@@ -328,7 +300,6 @@ namespace KdajBi.API.Controllers
                     try
                     {
                         await _context.SaveChangesAsync();
-
                     }
                     catch (Exception ex)
                     {

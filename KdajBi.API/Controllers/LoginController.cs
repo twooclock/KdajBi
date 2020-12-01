@@ -21,8 +21,7 @@ namespace KdajBi.API.Controllers
         }
 
         [AllowAnonymous]
-        [Route("/api/login")]
-        [HttpPost]
+        [HttpPost("/api/login")]
         public async Task<IActionResult> LoginAsync([FromBody] UserCredentialsResource userCredentials)
         {
             if (!ModelState.IsValid)
@@ -41,8 +40,7 @@ namespace KdajBi.API.Controllers
         }
 
         [AllowAnonymous]
-        [Route("/api/loginas")]
-        [HttpPost]
+        [HttpPost("/api/loginas")]
         public async Task<IActionResult> LoginAsAsync([FromBody] UserCredentialsResource userCredentials)
         {
             if (!ModelState.IsValid)
@@ -61,8 +59,7 @@ namespace KdajBi.API.Controllers
         }
 
         [AllowAnonymous]
-        [Route("/api/token/refresh")]
-        [HttpPost]
+        [HttpPost("/api/token/refresh")]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenResource refreshTokenResource)
         {
             if (!ModelState.IsValid)
@@ -80,8 +77,7 @@ namespace KdajBi.API.Controllers
             return Ok(tokenResource);
         }
 
-        [Route("/api/token/revoke")]
-        [HttpPost]
+        [HttpPost("/api/token/revoke")]
         public IActionResult RevokeToken([FromBody] RevokeTokenResource revokeTokenResource)
         {
             if (!ModelState.IsValid)
