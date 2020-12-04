@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using KdajBi.Web.ViewModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace KdajBi.Web.Controllers
 {
@@ -40,7 +41,8 @@ namespace KdajBi.Web.Controllers
         public IActionResult Location(long id)
         {
             vmLocation myVM = new vmLocation();
-            myVM.Location = _context.Locations.Find(id);
+            myVM.Location = _context.Locations.Include(s=>s.Schedule).FirstOrDefault(x => x.Id == id);
+
             if (myVM.Location != null)
             {
                 myVM.Token = _GetToken();

@@ -29,6 +29,14 @@
     <Compile Remove="Migrations\20201118055447_AddSalon.Designer.cs" />
     <Compile Remove="Migrations\20201130080253_addWorkplace.cs" />
     <Compile Remove="Migrations\20201130080253_addWorkplace.Designer.cs" />
+    <Compile Remove="Migrations\20201203102118_addSchedule.cs" />
+    <Compile Remove="Migrations\20201203102118_addSchedule.Designer.cs" />
+    <Compile Remove="Migrations\20201203105716_addSchedule.cs" />
+    <Compile Remove="Migrations\20201203105716_addSchedule.Designer.cs" />
+    <Compile Remove="Migrations\20201203110001_addSchedules.cs" />
+    <Compile Remove="Migrations\20201203110001_addSchedules.Designer.cs" />
+    <Compile Remove="Migrations\20201203112730_addSchedules.cs" />
+    <Compile Remove="Migrations\20201203112730_addSchedules.Designer.cs" />
     <Compile Remove="Models\UserCompany.cs" />
   </ItemGroup>
 

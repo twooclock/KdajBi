@@ -20,6 +20,10 @@ namespace KdajBi.Core.Models
 
         [MinLength(9), MaxLength(15)]
         public string Tel { get; set; }
+
+        [ForeignKey("ScheduleId"), Required]
+        public virtual Schedule Schedule { get; set; }
+
         public Location() { }
 
     }

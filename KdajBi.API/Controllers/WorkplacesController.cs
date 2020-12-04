@@ -48,7 +48,7 @@ namespace KdajBi.API.Controllers
             }
 
             recordsTotal = v.Count();
-            var data = v.Skip(param.start).Take(param.length).ToListAsync();
+            var data = v.Skip(param.start).Take(param.length).ToList();
 
             return Json(new { draw = param.draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
         }
@@ -179,7 +179,7 @@ namespace KdajBi.API.Controllers
 
         private bool WorkplaceExists(long id)
         {
-            return _context.Users.Any(e => e.Id == id);
+            return _context.Workplaces.Any(e => e.Id == id);
         }
 
 

@@ -90,7 +90,7 @@ namespace KdajBi.Web.Controllers
                         myExtraClaims.Add(myClaim);
                     }
                 }
-                //dodaj CompanyId
+                //add CompanyId to claims
                 myClaim = new Claim("CompanyId", appUser.CompanyId.ToString());
                 myExtraClaims.Add(myClaim);
 
@@ -144,10 +144,7 @@ namespace KdajBi.Web.Controllers
                 Active=true
             };
 
-            Location salon = new Location
-            {
-                Name = p_nazivsalona
-            };
+            
             
             //create company
             _context.Companies.Add(company);
@@ -164,17 +161,24 @@ namespace KdajBi.Web.Controllers
                     var currentUser = await userManager.FindByNameAsync(user.UserName);
 
                     await userManager.AddToRoleAsync(currentUser, "Admin");
-                    
+
+                    Location salon = new Location
+                    {
+                        Name = p_nazivsalona
+                    };
                     salon.CompanyId = company.Id;
+                    salon.Schedule = new Schedule { };
+                    
                     _context.Locations.Add(salon);
 
                     try
                     {
                         await _context.SaveChangesAsync();
-                        //add worplace
+                        //add users workplace
                         Workplace wp = new Workplace
                         {
                             LocationId = salon.Id,
+                            UserId=user.Id,
                             Name = user.FirstName
                         };
                         _context.Workplaces.Add(wp);
@@ -197,6 +201,9 @@ namespace KdajBi.Web.Controllers
                             myExtraClaims.Add(myClaim);
                         }
                     }
+                    //add CompanyId to claims
+                    myClaim = new Claim("CompanyId", company.Id.ToString());
+                    myExtraClaims.Add(myClaim);
 
                     var authProperties = new AuthenticationProperties { IsPersistent = false };
                     await signInManager.SignInWithClaimsAsync(currentUser, authProperties, myExtraClaims);
