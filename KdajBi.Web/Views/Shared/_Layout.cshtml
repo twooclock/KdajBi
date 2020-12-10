@@ -52,6 +52,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   </form>
 
                 Right navbar links -->
+               
+                @await Component.InvokeAsync("LocationsCombo", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
+
                 <ul class="navbar-nav ml-auto">
 
                     <li class="nav-item dropdown user user-menu">
@@ -60,7 +63,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             <span class="hidden-xs">@UserManager.GetUserName(User)</span>
                             @if (User.HasClaim("Nadzornik", bool.TrueString))
                             {
-                            <span class="right badge badge-danger" style="position: absolute;right: 15px;top: 22px;">Nadzornik</span>
+                                <span class="right badge badge-danger" style="position: absolute;right: 15px;top: 22px;">Nadzornik</span>
                             }
                         </a>
                         <ul class="dropdown-menu">
@@ -78,15 +81,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 <div class="row">
                                     @if (User.IsInRole("Admin"))
                                     {
-                                    <div class="col-4 text-center">
-                                        <a href="~/companies/mycompany">Podjetje</a>
-                                    </div>
-                                    <div class="col-4 text-center">
-                                        <a href="#">Saloni</a>
-                                    </div>
-                                    <div class="col-4 text-center">
-                                        <a href="#">Zaposleni</a>
-                                    </div>
+                                        <div class="col-4 text-center">
+                                            <a href="~/companies/mycompany">Podjetje</a>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <a id="linkLocations" href="#" onclick="showLocations()" >Saloni</a>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <a id="linkEmployees" href="#" onclick="showEmployees()">Zaposleni</a>
+                                        </div>
                                     }
                                 </div>
                                 <!-- /.row -->
@@ -101,10 +104,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                     {
                                         <div class="col-md-4">
                                             &nbsp;
-                                             @if (User.HasClaim("Nadzornik", bool.TrueString))
-                                             { <a href="~/Account/flipNadzornik" class="btn btn-danger btn-flat">Nadzornik</a> }
-                                                else
-                                             { <a href="~/Account/flipNadzornik" class="btn btn-default btn-flat">Nadzornik</a> }
+                                            @if (User.HasClaim("Nadzornik", bool.TrueString))
+                                            {<a href="~/Account/flipNadzornik" class="btn btn-danger btn-flat">Nadzornik</a> }
+                                            else
+                                            { <a href="~/Account/flipNadzornik" class="btn btn-default btn-flat">Nadzornik</a>}
                                         </div>
                                     }
                                     <div class="float-right col-md-4">
@@ -184,12 +187,26 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             @if (User.HasClaim("Nadzornik", bool.TrueString))
                             {
                                 @await Component.InvokeAsync("LocationsMenu", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
-                                
+
                             }
                         }
 
-
-
+                        <li class="nav-item  ">
+                            <a href="@Url.Content("~/clients")" class="nav-link ">
+                                <i class="nav-icon fas fa-address-card"></i>
+                                <p>
+                                    Stranke
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item  ">
+                            <a href="@Url.Content("~/clients/Index2")" class="nav-link ">
+                                <i class="nav-icon fas fa-address-card"></i>
+                                <p>
+                                    Stranke2
+                                </p>
+                            </a>
+                        </li>
                         <li class="nav-item has-treeview menu-open">
                             <a href="#" class="nav-link active">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -260,6 +277,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- AdminLTE App -->
     <script src="~/js/adminlte.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script> 
+        function showLocations() {
+             window.location = "../location/"+$('#cboLocations').val();
+    }
+    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

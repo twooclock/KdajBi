@@ -1,0 +1,379 @@
+﻿@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "clients";
+}
+
+@section styles{
+    <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+}
+
+
+<!-- page content -->
+<div class="right_col col-md-12" role="main">
+
+
+    <div class="row">
+        <div class="col-md-12 col-smb-12 col-xs-12">
+            <div class="dashboard_graph">
+
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text" onclick="$('#clientsearch').select();">
+                                    <span class="fas fa-user"></span>
+                                </div>
+                            </div>
+                            <input id="clientsearch" type="text" class="form-control" placeholder="Stranka..."  onclick="$('#clientsearch').select();">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" onclick="SelectedClientID = 0; $('#clientsearch').val(''); setClientForm(0);"><i class="fas fa-plus"></i></button>
+                              </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card card-primary card-outline card-outline-tabs">
+                    <div class="card-header p-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="tabClient" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="general-tab" data-toggle="pill" href="#general" role="tab" aria-controls="general" aria-selected="true">Stranka</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="location-tab" data-toggle="pill" href="#location" role="tab" aria-controls="location" aria-selected="false">Saloni</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="employee-tab" data-toggle="pill" href="#employee" role="tab" aria-controls="employee" aria-selected="false">Zaposleni</a>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="custom-tabs-four-tabContent">
+                            <div id="general" class="tab-pane fade active show" role="tabpanel" aria-labelledby="general-tab">
+                                <div class="col-6">
+                                    <form id="dataform" class="dataform" name="dataform">
+                                        <div class="form-row">
+                                            <div class="form-group mb-1 col-sm-6" style=" margin-bottom: 1px;">
+                                                <label for="txtClientFirstName">
+                                                    Ime:
+                                                </label>
+                                                <input type="text" id="txtClientFirstName" name="txtClientFirstName" class="form-control" />
+                                            </div>
+                                            <div class="form-group mb-1 col-sm-6">
+                                                <label for="txtClientLastName">
+                                                    Priimek:
+                                                </label>
+                                                <input type="text" id="txtClientLastName" name="txtClientLastName" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group mb-1 col-sm-6">
+                                                <label for="txtClientMobile">
+                                                    Mobi:
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="text" id="txtClientMobile" name="txtClientMobile" class="form-control" />
+                                                    <div class="input-group-append">
+                                                        <div class="input-group-text text-sm">
+                                                            <input id="cbClientSMS" type="checkbox" aria-label="Checkbox for following text input">&nbsp;dovoli
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group mb-1 col-sm-6">
+                                                <label for="txtClientEmail">
+                                                    Email:
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="text" id="txtClientEmail" name="txtClientEmail" class="form-control" />
+                                                    <div class="input-group-append">
+                                                        <div class="input-group-text text-sm">
+                                                            <input id="cbClientEmail" type="checkbox" aria-label="Checkbox for following text input">&nbsp;dovoli
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-1">
+                                            <label for="txtClientBirthday">
+                                                Rojstni dan:
+                                            </label>
+                                            <input type="text" id="txtClientBirthday" name="txtClientBirthday" class="form-control" />
+                                        </div>
+                                        <div class="form-group mb-1">
+                                            <label for="txtClientAddress">
+                                                Naslov:
+                                            </label>
+                                            <input type="text" id="txtClientAddress" name="txtClientAddress" class="form-control" />
+                                        </div>
+                                        <div class="form-group mb-1">
+                                            <label for="txtClientZip">
+                                                Pošta:
+                                            </label>
+                                            <input type="text" id="txtClientZip" name="txtClientZip" class="form-control" />
+                                        </div>
+                                        <div class="form-group mb-1">
+                                            <label for="txtClientNotes">
+                                                Opombe:
+                                            </label>
+                                            <textarea rows="2" id="txtClientNotes" name="txtClientNotes" class="form-control"></textarea>
+                                        </div>
+
+
+                                    </form>
+                                    <div class="form-group">
+                                        <button class="btn btn-default" onclick="SaveClient(SelectedClientID)">Shrani</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="location" class="tab-pane fade" role="tabpanel" aria-labelledby="location-tab">
+                                <div class="card">
+
+
+
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="employee" role="tabpanel" aria-labelledby="employee-tab">
+                                <div class="card">
+
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <!-- /.card -->
+                </div>
+
+
+
+
+                <div class="clearfix"></div>
+            </div>
+        </div>
+
+    </div>
+    <br />
+
+
+</div>
+<!-- /page content -->
+<!-- modal new client content-->
+<!-- /modal content-->
+
+@section scripts{
+    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+    <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script type="text/javascript">
+
+        var SelectedClientID;
+        @await Html.PartialAsync("_ApiAccess")
+
+        $(document).ready(function () {
+            //bind cboLocations
+            $("#cboLocations").off('change').change(function (evt) {
+                setClientForm(0);
+                GetClients();
+            });
+
+            GetClients();
+
+            $('#dataform').validate({
+                    rules: {
+                        txtClientFirstName: {
+                            minlength: 3,
+                            maxlength: 50,
+                            required: true
+                        }
+                    },
+                    messages: {
+                        txtClientFirstName: "Neveljavno ime!"
+                    },
+                    highlight: function (element) {
+                        $(element).closest('.form-group').addClass('has-error');
+                    },
+                    unhighlight: function (element) {
+                        $(element).closest('.form-group').removeClass('has-error');
+                    },
+                    errorElement: 'span',
+                    errorClass: 'help-block',
+                    errorPlacement: function (error, element) {
+                        if (element.parent('.input-group').length) {
+                            error.insertAfter(element.parent());
+                        } else { error.insertAfter(element); }
+                    }
+                });
+
+
+            });
+
+
+
+
+
+         function GetClients() {
+
+            //fill client search
+            $.ajax({
+                type: "GET",
+                url:  apiURL + "/api/clients/getclientslist/"+$("#cboLocations").val(),
+                contentType: "application/json; charset=utf-8",
+                headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                dataType: "json",
+                async: true,
+                success: function (msg) {
+                    myClients = msg;
+                    $( "#clientsearch" ).autocomplete({
+                        minlength:3,
+                        delay:200,
+                        source: myClients,
+                        select: function (event, ui) {
+                            $("#clientsearch").val(ui.item.label);
+                            SelectedClientID = ui.item.value;
+                            setClientForm(SelectedClientID);
+                            return false;
+                        },
+                        focus:function (event, ui) {event.preventDefault(); return false;}
+                    });
+                },
+                error: function () {
+                    alert("Error filling clients");
+                }
+            });
+
+        }
+
+        function cmdClientAdd_Click() {
+            setClientForm(0);
+            $('#cmdClientDelete').addClass('invisible')
+            $("#cmdClientSave").off('click').click(function (evt) {
+                if (SaveClient(0) != false) {
+
+                }
+            });
+
+
+        }
+
+        function setClientForm(p_ID) {
+            if (p_ID == 0) {
+                //clear form
+                $("#txtClientFirstName").val('');
+                $("#txtClientLastName").val('');
+                $("#txtClientMobile").val('');
+                $("#txtClientEmail").val('');
+                $("#cbClientSMS").prop('checked', true);
+                $("#cbClientEmail").prop('checked', true);
+                $("#txtClientBirthday").val('');
+                $("#txtClientAddress").val('');
+                $("#txtClientZip").val('');
+                $("#txtClientNotes").val('');
+
+            }
+            else {
+                //fill form
+                $.ajax({
+                    type: "get",
+                    url: apiURL+"/api/client/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    async: true,
+                    success: function (result) {
+                        $("#txtClientFirstName").val(result.firstName);
+                        $("#txtClientLastName").val(result.lastName);
+                        $("#txtClientMobile").val(result.mobile);
+                        $("#txtClientEmail").val(result.email);
+                        $("#cbClientSMS").prop('checked', result.allowsSMS);
+                        $("#cbClientEmail").prop('checked', result.allowsEmail);
+                        $("#txtClientBirthday").val(result.birthday);
+                        $("#txtClientAddress").val(result.address);
+                        $("#txtClientZip").val(result.zip);
+                        $("#txtClientNotes").val(result.notes);
+
+
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error:" + error);
+                    }
+                });
+            }
+
+        }
+
+        function showClientDetail(p_ID) {
+            setClientForm(p_ID);
+            $('#cmdClientDelete').removeClass('invisible');
+            $("#cmdClientSave").off('click').click(function (evt) {
+                if (SaveClient(p_ID) != false) {  }
+            });
+            $("#cmdClientDelete").off('click').click(function (evt) {
+                if (DeleteClient(p_ID) != false) { }
+            });
+
+        }
+
+        function DeleteClient(p_ID) {
+            if (confirm("Delete client?") == true) {
+                $.ajax({
+                    type: "DELETE",
+                    url: apiURL+"/api/client/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { GetClients(); return true; }
+                        else { alert(result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error deleting:" + error.toString());
+                        return false;
+                    }
+                });
+
+            } else { return false; }
+
+        }
+
+        function SaveClient(p_ID) {
+            if ($('#dataform').valid()) {
+                var client={};
+                client.id = p_ID;
+                client.LocationId = parseInt($("#cboLocations").val());
+                client.FirstName = $('#txtClientFirstName').val();
+                client.LastName =$("#txtClientLastName").val();
+                client.Mobile =$("#txtClientMobile").val();
+                client.Email =$("#txtClientEmail").val();
+                client.AllowsSMS = $("#cbClientSMS").prop('checked');
+                client.AllowsEmail = $("#cbClientEmail").prop('checked');
+                client.Birthday =new Date($("#txtClientBirthday").val());
+                client.Address =$("#txtClientAddress").val();
+                client.Zip =$("#txtClientZip").val();
+                client.Notes =$("#txtClientNotes").val();
+                client.Active = true;
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(client),
+                    url: apiURL+"/api/client/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                         if (result == "OK") { GetClients(); return true; }
+                        else { alert(result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error saving:" + error.toString());
+                        return false;
+                    }
+                });
+            } else { return false; }
+        }
+
+
+    </script>
+}
+

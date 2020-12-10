@@ -1,0 +1,8 @@
+﻿@using KdajBi.Core.Models;
+@model IEnumerable<Location>
+ <select id="cboLocations" class="custom-select custom-select-sm form-control form-control-sm col-3">
+@foreach (var item in Model)
+        {
+    <option value="@item.Id">@Html.Raw(item.Name)</option>
+        }
+</select>

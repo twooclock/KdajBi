@@ -19,6 +19,7 @@ namespace KdajBi.Core
         public DbSet<Location> Locations { get; set; }
         public DbSet<Workplace> Workplaces { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
+        public DbSet<Client> Clients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

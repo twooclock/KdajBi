@@ -37,6 +37,12 @@
     <Compile Remove="Migrations\20201203110001_addSchedules.Designer.cs" />
     <Compile Remove="Migrations\20201203112730_addSchedules.cs" />
     <Compile Remove="Migrations\20201203112730_addSchedules.Designer.cs" />
+    <Compile Remove="Migrations\20201207093146_addClient.cs" />
+    <Compile Remove="Migrations\20201207093146_addClient.Designer.cs" />
+    <Compile Remove="Migrations\20201207093427_addClient.cs" />
+    <Compile Remove="Migrations\20201207093427_addClient.Designer.cs" />
+    <Compile Remove="Migrations\20201207094029_addClient.cs" />
+    <Compile Remove="Migrations\20201207094029_addClient.Designer.cs" />
     <Compile Remove="Models\UserCompany.cs" />
   </ItemGroup>
 

@@ -24,7 +24,7 @@ namespace KdajBi.Core.Models
         [ForeignKey("ScheduleId"), Required]
         public virtual Schedule Schedule { get; set; }
 
-        public Location() { }
+        public Location() { Active = true; Schedule = new Schedule(); }
 
     }
 }

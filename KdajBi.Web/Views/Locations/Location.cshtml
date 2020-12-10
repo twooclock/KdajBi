@@ -175,9 +175,7 @@
 
                     </div>
                 </div>
-                <button type="button" id="cmdAdd" onclick="cmdAdd_Click();" class="btn btn-primary btn-lg">
-                    Add new
-                </button>
+                
                 <div class="clearfix"></div>
             </div>
         </div>
@@ -262,6 +260,11 @@
         }, "Konec mora biti večji od začetka.");
 
             $(document).ready(function () {
+                //bind cboLocations
+                $("#cboLocations").val( @Html.Raw(@Model.Location.Id));
+                $("#cboLocations").off('change').change(function (evt) {
+                    window.location = "../location/"+$(this).val();
+                });
                 GetTable();
 
 

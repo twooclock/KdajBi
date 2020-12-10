@@ -31,7 +31,7 @@ namespace KdajBi.API.Controllers
             //var user = await _userManager.GetUserAsync(HttpContext.User);
 
             var v = from a in _context.Locations select a;
-
+            v = v.Where(c => c.CompanyId == _CurrentUserCompanyID());
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
             {
@@ -52,7 +52,7 @@ namespace KdajBi.API.Controllers
             List<Location> Location;
             try
             {
-                Location = await _context.Locations.ToListAsync(); ;
+                Location =  _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID()).ToList(); ;
             }
             catch (Exception ex)
             {
@@ -116,8 +116,25 @@ namespace KdajBi.API.Controllers
             {
                 Location.CreatedUserID = _CurrentUserID();
                 Location.CompanyId = _CurrentUserCompanyID();
-
                 _context.Locations.Add(Location);
+                await _context.SaveChangesAsync();
+                //add workplaces for all employees
+                List<AppUser> myEmployees = _context.Users.Where(l => l.CompanyId == Location.CompanyId).ToList();
+                foreach (AppUser item in myEmployees)
+                {
+
+                    Workplace myworkplace = new Workplace
+                    {
+                        CreatedDate = DateTime.Now,
+                        CreatedUserID = _CurrentUserID(),
+                        Name = item.FirstName,
+                        LocationId = Location.Id,
+                        UserId = item.Id
+                    };
+                    //sortposition?
+                    _context.Workplaces.Add(myworkplace);
+                }
+                
                 try
                 {
                     await _context.SaveChangesAsync();
@@ -159,13 +176,21 @@ namespace KdajBi.API.Controllers
         [HttpDelete("/api/Location/{id}")]
         public async Task<ActionResult<Location>> DeleteLocation(long id)
         {
-            var Location = await _context.Locations.FindAsync(id);
+            if (LocationIsMine(id))
+            {
+                return NotFound();
+            }
+            var Location = await _context.Locations.Include(s=>s.Schedule).Where(l=>l.Id==id).FirstOrDefaultAsync();
+            
             if (Location == null)
             {
                 return NotFound();
             }
 
+            _context.Workplaces.RemoveRange(_context.Workplaces.Where(w=>w.LocationId==id));
+            _context.Schedules.Remove(_context.Schedules.Find(Location.Schedule.Id));
             _context.Locations.Remove(Location);
+
             await _context.SaveChangesAsync();
 
             return Json("OK");
@@ -174,6 +199,10 @@ namespace KdajBi.API.Controllers
         private bool LocationExists(long id)
         {
             return _context.Locations.Any(e => e.Id == id);
+        }
+        private bool LocationIsMine(long id)
+        {
+            return (_context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == id).Count() == 1);
         }
     }
 }
