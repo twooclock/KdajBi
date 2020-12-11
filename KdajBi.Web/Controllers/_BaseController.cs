@@ -47,5 +47,24 @@ namespace KdajBi.Web.Controllers
         {
             return _apiTokenProvider.GetToken(User.Identity.Name);
         }
+
+        protected bool LocationIsMine(long locationId)
+        {
+            return (_context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == locationId).Count() == 1);
+        }
+        protected bool ClientIsMine(long clientId)
+        {
+            return (_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == clientId).Count() == 1);
+        }
+
+        protected long DefaultLocationId()
+        {
+            long retval = -1;
+            string id = HttpContext.Request.Cookies[Utils.CookieNames.DefaultLocation];
+            if (long.TryParse(id,out retval)==false) { retval = -1; }
+            return retval;
+        }
+
+       
     }
 }

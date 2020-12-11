@@ -19,12 +19,15 @@ namespace KdajBi.Web.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync(int CompanyId)
         {
-            var items = await GetItemsAsync(CompanyId);
+            var items =  GetItems(CompanyId);
             return View(items);
         }
-        private Task<List<Location>> GetItemsAsync(int p_CompanyId)
+        private IEnumerable<Location> GetItems(int p_CompanyId)
         {
-            return db.Locations.Where(x => x.CompanyId== p_CompanyId).ToListAsync();
+            IEnumerable<Location> retval = db.Locations.Where(x => x.CompanyId == p_CompanyId).ToList();
+            HttpContext.Response.Cookies.Append("DefaultLocation", retval.First().Id.ToString());
+            HttpContext.Items["DefaultLocation"] = retval.First().Id;
+            return retval;
         }
     }
 }

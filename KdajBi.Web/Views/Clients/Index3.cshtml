@@ -5,6 +5,7 @@
 
 @section styles{
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+<link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
 }
 
 
@@ -167,19 +168,38 @@
 @section scripts{
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+<script src="~/plugins/js-cookie/js.cookie.min.js"></script>
+<script src="~/plugins/toastr/toastr.min.js"></script>
     <script type="text/javascript">
 
         var SelectedClientID;
+        
         @await Html.PartialAsync("_ApiAccess")
 
         $(document).ready(function () {
             //bind cboLocations
             $("#cboLocations").off('change').change(function (evt) {
+                Cookies.set('DefaultLocation', $(this).val());
                 setClientForm(0);
                 GetClients();
             });
 
-            GetClients();
+            toastr.options.preventDuplicates = true;
+            toastr.options.timeOut = 1000;
+
+           var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
+           $( "#clientsearch" ).autocomplete({
+                        minlength:3,
+                        delay:200,
+                        source: myClients,
+                        select: function (event, ui) {
+                            $("#clientsearch").val(ui.item.label);
+                            SelectedClientID = ui.item.value;
+                            setClientForm(SelectedClientID);
+                            return false;
+                        },
+                        focus:function (event, ui) {event.preventDefault(); return false;}
+                    });
 
             $('#dataform').validate({
                     rules: {
@@ -240,7 +260,7 @@
                     });
                 },
                 error: function () {
-                    alert("Error filling clients");
+                    toastr.error('Error filling clients')
                 }
             });
 
@@ -293,11 +313,10 @@
                         $("#txtClientAddress").val(result.address);
                         $("#txtClientZip").val(result.zip);
                         $("#txtClientNotes").val(result.notes);
-
-
                     },
                     error: function (xhr, status, error) {
-                        alert("Error:" + error);
+                        
+                        toastr.error("Error getting client data:" + error);
                     }
                 });
             }
@@ -325,11 +344,11 @@
                     headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
                     dataType: "json",
                     success: function (result) {
-                        if (result == "OK") { GetClients(); return true; }
-                        else { alert(result); return false; }
+                        if (result == "OK") { toastr.success("Stranka zbrisana"); GetClients(); return true; }
+                        else { toastr.error("Napaka:"+result); return false; }
                     },
                     error: function (xhr, status, error) {
-                        alert("Error deleting:" + error.toString());
+                        toastr.error("Napaka:" + error.toString());
                         return false;
                     }
                 });
@@ -362,11 +381,11 @@
                     headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
                     dataType: "json",
                     success: function (result) {
-                         if (result == "OK") { GetClients(); return true; }
-                        else { alert(result); return false; }
+                        if (result == "OK") { toastr.success("Shranjeno"); GetClients(); return true; }
+                        else { toastr.error("Napaka:"+result); return false; }
                     },
                     error: function (xhr, status, error) {
-                        alert("Error saving:" + error.toString());
+                        toastr.error("Napaka:" + error.toString());
                         return false;
                     }
                 });

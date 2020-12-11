@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Text.Json;
 
 namespace KdajBi.Web.Controllers
 {
@@ -14,7 +15,7 @@ namespace KdajBi.Web.Controllers
     [Controller]
     public class ClientsController : _BaseController
     {
-        
+
         public ClientsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider)
             : base(context, userManager, signInManager, logger, emailSender, apiTokenProvider)
         {
@@ -26,19 +27,28 @@ namespace KdajBi.Web.Controllers
         [Route("/Clients")]
         public IActionResult Index()
         {
-            vmClient myVM = new vmClient();
-            myVM.Clients = _context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).ToList();
-            myVM.Token = _GetToken();
-            return View(myVM);
+            if (LocationIsMine(DefaultLocationId()))
+            {
+                vmClient myVM = new vmClient();
+                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).ToList());
+                myVM.Token = _GetToken();
+                return View(myVM);
+            }
+            return NotFound();
         }
 
-        [Route("/Clients/Index2")]
-        public IActionResult Index2()
+
+        [Route("/Clients/Index3")]
+        public IActionResult Index3(long idlocation)
         {
-            vmClient myVM = new vmClient();
-            myVM.Clients = _context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).ToList();
-            myVM.Token = _GetToken();
-            return View(myVM);
+            if (LocationIsMine(DefaultLocationId()))
+            {
+                vmClient myVM = new vmClient();
+                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == 12).Select(p => new { value = p.Id, label = p.FullName }).ToList()).Replace(@"\", @"\\");
+                myVM.Token = _GetToken();
+                return View(myVM);
+            }
+            return NotFound();
         }
     }
 }

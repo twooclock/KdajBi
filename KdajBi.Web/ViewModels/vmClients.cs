@@ -8,6 +8,6 @@ namespace KdajBi.Web.ViewModels
 {
     public class vmClient : _BaseViewModel
     {
-        public List<Client> Clients;
+        public string ClientsJson;
     }
 }
