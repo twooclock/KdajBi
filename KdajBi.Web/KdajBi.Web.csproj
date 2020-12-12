@@ -41,6 +41,7 @@
     <Compile Remove="Controllers\LoginController.cs" />
     <Compile Remove="Services\AuthenticationService.cs" />
     <Compile Remove="Services\EmailSettings.cs" />
+    <Compile Remove="Services\MyUserClaimsPrincipalFactory.cs" />
     <Compile Remove="Services\UserService.cs" />
   </ItemGroup>
 

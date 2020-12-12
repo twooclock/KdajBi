@@ -25,8 +25,7 @@ namespace KdajBi.Web.ViewComponents
         private IEnumerable<Location> GetItems(int p_CompanyId)
         {
             IEnumerable<Location> retval = db.Locations.Where(x => x.CompanyId == p_CompanyId).ToList();
-            HttpContext.Response.Cookies.Append("DefaultLocation", retval.First().Id.ToString());
-            HttpContext.Items["DefaultLocation"] = retval.First().Id;
+            HttpContext.Response.Cookies.Append(Utils.CookieNames.DefaultLocation , retval.First().Id.ToString());
             return retval;
         }
     }

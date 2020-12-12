@@ -5,7 +5,7 @@
 
 @section styles{
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
-<link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
 }
 
 
@@ -19,16 +19,16 @@
 
                 <div class="row x_title">
                     <div class="col-md-6">
-                        <div class="input-group mb-3">
+                        <div class="input-group mb-2 mt-2">
                             <div class="input-group-prepend">
                                 <div class="input-group-text" onclick="$('#clientsearch').select();">
                                     <span class="fas fa-user"></span>
                                 </div>
                             </div>
-                            <input id="clientsearch" type="text" class="form-control" placeholder="Stranka..."  onclick="$('#clientsearch').select();">
+                            <input id="clientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#clientsearch').select();">
                             <div class="input-group-append">
-                                <button class="btn btn-outline-secondary" type="button" onclick="SelectedClientID = 0; $('#clientsearch').val(''); setClientForm(0);"><i class="fas fa-plus"></i></button>
-                              </div>
+                                <button class="btn btn-outline-secondary" type="button" onclick="$('#txtClientFirstName').focus(); SelectedClientID = 0; $('#clientsearch').val(''); setClientForm(0);"><i class="fas fa-plus"></i></button>
+                            </div>
 
                         </div>
                     </div>
@@ -52,7 +52,7 @@
                     <div class="card-body">
                         <div class="tab-content" id="custom-tabs-four-tabContent">
                             <div id="general" class="tab-pane fade active show" role="tabpanel" aria-labelledby="general-tab">
-                                <div class="col-6">
+                                <div class="col-md-6">
                                     <form id="dataform" class="dataform" name="dataform">
                                         <div class="form-row">
                                             <div class="form-group mb-1 col-sm-6" style=" margin-bottom: 1px;">
@@ -168,12 +168,43 @@
 @section scripts{
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
-<script src="~/plugins/js-cookie/js.cookie.min.js"></script>
-<script src="~/plugins/toastr/toastr.min.js"></script>
+    <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
+    <script src="~/plugins/toastr/toastr.min.js"></script>
     <script type="text/javascript">
+        function hideKeyboard() {
+            //this set timeout needed for case when hideKeyborad
+            //is called inside of 'onfocus' event handler
+            setTimeout(function () {
+
+                //creating temp field
+                var field = document.createElement('input');
+                field.setAttribute('type', 'text');
+                //hiding temp field from peoples eyes
+                //-webkit-user-modify is nessesary for Android 4.x
+                field.setAttribute('style', 'position:absolute; top: 0px; opacity: 0; -webkit-user-modify: read-write-plaintext-only; left:0px;');
+                document.body.appendChild(field);
+
+                //adding onfocus event handler for out temp field
+                field.onfocus = function () {
+                    //this timeout of 200ms is nessasary for Android 2.3.x
+                    setTimeout(function () {
+
+                        field.setAttribute('style', 'display:none;');
+                        setTimeout(function () {
+                            document.body.removeChild(field);
+                            document.body.focus();
+                        }, 14);
+
+                    }, 200);
+                };
+                //focusing it
+                field.focus();
+
+            }, 50);
+        }
 
         var SelectedClientID;
-        
+
         @await Html.PartialAsync("_ApiAccess")
 
         $(document).ready(function () {
@@ -188,18 +219,20 @@
             toastr.options.timeOut = 1000;
 
            var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
-           $( "#clientsearch" ).autocomplete({
-                        minlength:3,
-                        delay:200,
-                        source: myClients,
-                        select: function (event, ui) {
-                            $("#clientsearch").val(ui.item.label);
-                            SelectedClientID = ui.item.value;
-                            setClientForm(SelectedClientID);
-                            return false;
-                        },
-                        focus:function (event, ui) {event.preventDefault(); return false;}
-                    });
+            $("#clientsearch").autocomplete({
+                minlength: 3,
+                delay: 200,
+                source: myClients,
+                select: function (event, ui) {
+                    hideKeyboard();
+                    $("#clientsearch").val(ui.item.label);
+                    SelectedClientID = ui.item.value;
+                    setClientForm(SelectedClientID);
+                    $("#clientsearch").blur();
+                    return false;
+                },
+                focus: function (event, ui) { event.preventDefault(); return false; }
+            });
 
             $('#dataform').validate({
                     rules: {
@@ -315,7 +348,7 @@
                         $("#txtClientNotes").val(result.notes);
                     },
                     error: function (xhr, status, error) {
-                        
+
                         toastr.error("Error getting client data:" + error);
                     }
                 });

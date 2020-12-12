@@ -95,6 +95,8 @@ namespace KdajBi
 
             services.Configure<ApiSettings>(Configuration.GetSection("ApiSettings"));
             services.AddSingleton<IApiTokenProvider, ApiTokenProvider>();
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -30,7 +30,7 @@ namespace KdajBi.Web.Controllers
             if (LocationIsMine(DefaultLocationId()))
             {
                 vmClient myVM = new vmClient();
-                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).ToList());
+                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o=>o.FirstName).ThenBy(o=>o.LastName).Select(p => new { value = p.Id, label = p.FullName }).ToList()).Replace(@"\", @"\\");
                 myVM.Token = _GetToken();
                 return View(myVM);
             }
@@ -44,7 +44,7 @@ namespace KdajBi.Web.Controllers
             if (LocationIsMine(DefaultLocationId()))
             {
                 vmClient myVM = new vmClient();
-                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == 12).Select(p => new { value = p.Id, label = p.FullName }).ToList()).Replace(@"\", @"\\");
+                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName }).ToList()).Replace(@"\", @"\\");
                 myVM.Token = _GetToken();
                 return View(myVM);
             }

@@ -71,7 +71,7 @@ namespace KdajBi.API.Controllers
         public async Task<ActionResult<dtoUser>> GetClientsList(long locationid)
         {
             if (LocationIsMine(locationid) == false) { return NotFound(); }
-            var Clients = _context.Clients.Where(c => c.LocationId == locationid).Select(p => new { value=p.Id, label=p.FullName }).ToList();
+            var Clients = _context.Clients.Where(c => c.LocationId == locationid).OrderBy(o=>o.FirstName).ThenBy(o=>o.LastName).Select(p => new { value=p.Id, label=p.FullName }).ToList();
 
             if (Clients == null) { return NotFound(); }
 

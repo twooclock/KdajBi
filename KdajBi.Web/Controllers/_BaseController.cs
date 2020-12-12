@@ -61,10 +61,15 @@ namespace KdajBi.Web.Controllers
         {
             long retval = -1;
             string id = HttpContext.Request.Cookies[Utils.CookieNames.DefaultLocation];
-            if (long.TryParse(id,out retval)==false) { retval = -1; }
+            if (long.TryParse(id, out retval) == false)
+            {
+                id = Utils.GetCookieValueFromResponse(HttpContext.Response, Utils.CookieNames.DefaultLocation);
+                if (long.TryParse(id, out retval) == false)
+                { retval = _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID()).FirstOrDefault().Id; }
+            }
             return retval;
         }
 
-       
+
     }
 }

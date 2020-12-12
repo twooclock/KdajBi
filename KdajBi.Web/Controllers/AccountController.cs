@@ -55,7 +55,7 @@ namespace KdajBi.Web.Controllers
             return new ChallengeResult("Google", properties);
         }
 
-       
+
 
         [AllowAnonymous]
         public async Task<IActionResult> GoogleResponse()
@@ -66,11 +66,11 @@ namespace KdajBi.Web.Controllers
                 return RedirectToAction(nameof(Login));
 
             AppUser appUser = await userManager.FindByNameAsync(info.Principal.FindFirst(ClaimTypes.Email).Value);
-            
+
             var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false);
             canContinue = result.Succeeded;
-            if (appUser != null && result.Succeeded==false)
-            { 
+            if (appUser != null && result.Succeeded == false)
+            {
                 var identResult = await userManager.AddLoginAsync(appUser, info);
                 canContinue = identResult.Succeeded;
             }
@@ -78,25 +78,36 @@ namespace KdajBi.Web.Controllers
             if (canContinue)
             {
                 //returning user
-                
-                //add picture to claims  (not into db)
-                List<Claim> myExtraClaims = new List<Claim>();
+                var claimsPrincipal = await signInManager.CreateUserPrincipalAsync(appUser);
+
                 Claim myClaim = new Claim("picture", "");
-                foreach (Claim c in info.Principal.Claims)
+
+                if (claimsPrincipal.FindFirst("picture") == null)
                 {
-                    if (c.Type == "urn:google:picture")
+                    //add picture to claims  (not into db)
+                    foreach (Claim c in info.Principal.Claims)
                     {
-                        myClaim = new Claim("picture", info.Principal.FindFirst("urn:google:picture").Value);
-                        myExtraClaims.Add(myClaim);
+                        if (c.Type == "urn:google:picture")
+                        {
+                            myClaim = new Claim("picture", info.Principal.FindFirst("urn:google:picture").Value);
+                        }
                     }
+                    await userManager.AddClaimAsync(appUser, myClaim);
                 }
-                //add CompanyId to claims
-                myClaim = new Claim("CompanyId", appUser.CompanyId.ToString());
-                myExtraClaims.Add(myClaim);
+
+                if (claimsPrincipal.FindFirst("CompanyId") == null)
+                {
+                    //add CompanyId to claims
+                    myClaim = new Claim("CompanyId", appUser.CompanyId.ToString());
+                    await userManager.AddClaimAsync(appUser, myClaim);
+                }
+
+
+
 
                 var authProperties = new AuthenticationProperties { IsPersistent = false };
-                await signInManager.SignInWithClaimsAsync(appUser, authProperties, myExtraClaims);
-                
+                await signInManager.SignInAsync(appUser, authProperties);
+
                 return Redirect("~/Home/Index");
             }
             else
@@ -110,14 +121,14 @@ namespace KdajBi.Web.Controllers
                     LastName = info.Principal.FindFirst(ClaimTypes.Surname).Value
                 };
 
-               
+
                 return Register(user);
             }
         }
 
         private IActionResult Register(AppUser user)
         {
-            return View("Register",user);
+            return View("Register", user);
         }
 
         [AllowAnonymous]
@@ -134,18 +145,19 @@ namespace KdajBi.Web.Controllers
                 UserName = info.Principal.FindFirst(ClaimTypes.Email).Value,
                 FirstName = p_firstname,
                 LastName = p_lastname,
-                CreatedDate=DateTime.Now
-            };
-            
-
-            Company company = new Company {
-                Davcna= p_davcna,
-                Name=p_naziv.Split('|')[0],
-                Active=true
+                CreatedDate = DateTime.Now
             };
 
-            
-            
+
+            Company company = new Company
+            {
+                Davcna = p_davcna,
+                Name = p_naziv.Split('|')[0],
+                Active = true
+            };
+
+
+
             //create company
             _context.Companies.Add(company);
             _context.SaveChanges();
@@ -168,7 +180,7 @@ namespace KdajBi.Web.Controllers
                     };
                     salon.CompanyId = company.Id;
                     salon.Schedule = new Schedule { };
-                    
+
                     _context.Locations.Add(salon);
 
                     try
@@ -178,7 +190,7 @@ namespace KdajBi.Web.Controllers
                         Workplace wp = new Workplace
                         {
                             LocationId = salon.Id,
-                            UserId=user.Id,
+                            UserId = user.Id,
                             Name = user.FirstName
                         };
                         _context.Workplaces.Add(wp);
@@ -191,22 +203,22 @@ namespace KdajBi.Web.Controllers
                     }
 
                     //add picture to claims (not into database)
-                    List<Claim> myExtraClaims = new List<Claim>();
                     Claim myClaim = new Claim("picture", "");
                     foreach (Claim c in info.Principal.Claims)
                     {
                         if (c.Type == "urn:google:picture")
                         {
                             myClaim = new Claim("picture", info.Principal.FindFirst("urn:google:picture").Value);
-                            myExtraClaims.Add(myClaim);
+
                         }
                     }
+                    await userManager.AddClaimAsync(currentUser, myClaim);
                     //add CompanyId to claims
                     myClaim = new Claim("CompanyId", company.Id.ToString());
-                    myExtraClaims.Add(myClaim);
+                    await userManager.AddClaimAsync(currentUser, myClaim);
 
                     var authProperties = new AuthenticationProperties { IsPersistent = false };
-                    await signInManager.SignInWithClaimsAsync(currentUser, authProperties, myExtraClaims);
+                    await signInManager.SignInAsync(currentUser, authProperties);
 
                     return Redirect("~/Home/Index");
                 }
@@ -220,7 +232,7 @@ namespace KdajBi.Web.Controllers
         {
             // Get User and a claims-based identity
             var identity = new ClaimsIdentity(User.Identity);
-            
+
             var existingClaim = identity.FindFirst("Nadzornik");
             if (existingClaim != null)
             {
