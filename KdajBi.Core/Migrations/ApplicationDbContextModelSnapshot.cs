@@ -230,6 +230,29 @@ namespace KdajBi.Core.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("KdajBi.Core.Models.ClientTag", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("ClientId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TagId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TagId");
+
+                    b.HasIndex("ClientId", "TagId")
+                        .IsUnique();
+
+                    b.ToTable("ClientTags");
+                });
+
             modelBuilder.Entity("KdajBi.Core.Models.Company", b =>
                 {
                     b.Property<long>("Id")
@@ -395,6 +418,47 @@ namespace KdajBi.Core.Migrations
                     b.ToTable("Schedules");
                 });
 
+            modelBuilder.Entity("KdajBi.Core.Models.Tag", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool?>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit");
+
+                    b.Property<long>("CompanyId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedUserID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(20)")
+                        .HasMaxLength(20);
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedUserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
+
+                    b.ToTable("Tags");
+                });
+
             modelBuilder.Entity("KdajBi.Core.Models.Workplace", b =>
                 {
                     b.Property<long>("Id")
@@ -556,6 +620,21 @@ namespace KdajBi.Core.Migrations
                     b.HasOne("KdajBi.Core.Models.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.ClientTag", b =>
+                {
+                    b.HasOne("KdajBi.Core.Models.Client", "Client")
+                        .WithMany("ClientTags")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KdajBi.Core.Models.Tag", "Tag")
+                        .WithMany("ClientTags")
+                        .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

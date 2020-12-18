@@ -1,4 +1,5 @@
-﻿using KdajBi.Core;
+﻿using AutoMapper;
+using KdajBi.Core;
 using KdajBi.Core.dtoModels;
 using KdajBi.Core.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -22,11 +23,11 @@ namespace KdajBi.API.Controllers
     [ApiController]
     public class ClientsController : _BaseController
     {
-
-        public ClientsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<ClientsController> logger, IEmailSender emailSender)
+        private IMapper _mapper;
+        public ClientsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<ClientsController> logger, IEmailSender emailSender, IMapper mapper)
             : base(context, userManager, signInManager, logger, emailSender)
         {
-            
+            _mapper = mapper;
         }
 
 
@@ -41,6 +42,7 @@ namespace KdajBi.API.Controllers
             { v = v.Where(w => w.CompanyId == _CurrentUserCompanyID() && w.LocationId == locationid); }
             else
             { v = v.Where(w => w.CompanyId == _CurrentUserCompanyID()); }
+            v = v.Include(w => w.Tags);
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
             {
@@ -56,10 +58,10 @@ namespace KdajBi.API.Controllers
 
         // GET: api/Clients/5
         [HttpGet("/api/Clients/{locationid}")]
-        public async Task<ActionResult<dtoUser>> GetClients(long locationid)
+        public async Task<ActionResult<Client>> GetClients(long locationid)
         {
             if (LocationIsMine(locationid) == false) { return NotFound(); }
-            var Clients =  _context.Clients.Where(c => c.LocationId == locationid).ToList();
+            var Clients =  _context.Clients.Where(c => c.LocationId == locationid).Include(t => t.ClientTags).ThenInclude(t => t.Tag).ToListAsync();
 
             if (Clients == null) { return NotFound(); }
 
@@ -68,7 +70,7 @@ namespace KdajBi.API.Controllers
 
         // GET: api/Clients/5
         [HttpGet("/api/Clients/getclientslist/{locationid}")]
-        public async Task<ActionResult<dtoUser>> GetClientsList(long locationid)
+        public async Task<ActionResult<Client>> GetClientsList(long locationid)
         {
             if (LocationIsMine(locationid) == false) { return NotFound(); }
             var Clients = _context.Clients.Where(c => c.LocationId == locationid).OrderBy(o=>o.FirstName).ThenBy(o=>o.LastName).Select(p => new { value=p.Id, label=p.FullName }).ToList();
@@ -80,9 +82,9 @@ namespace KdajBi.API.Controllers
 
         // GET: api/Clients/5
         [HttpGet("/api/Client/{id}")]
-        public async Task<ActionResult<dtoUser>> GetClient(long id)
+        public async Task<ActionResult<Client>> GetClient(long id)
         {
-            var Client = _context.Clients.Find(id);
+            var Client = await _context.Clients.Include(t => t.ClientTags).ThenInclude(t => t.Tag).Where(c => c.Id == id).FirstOrDefaultAsync();
 
             if (Client == null) { return NotFound(); }
 
@@ -118,12 +120,14 @@ namespace KdajBi.API.Controllers
 
         // POST: api/Clients
         [HttpPost("/api/Client")]
-        public async Task<ActionResult<Client>> PostClient( Client Client)
+        public async Task<ActionResult<dtoClient>> PostClient(dtoClient p_Client)
         {
-            if (Client.Id == 0)
+            if (p_Client.Id == 0)
             {
                 if (ModelState.IsValid)
                 {
+                    Client Client = _mapper.Map<dtoClient, Client>(p_Client);
+
                     Client.CreatedDate = DateTime.Now;
                     Client.CreatedUserID = _CurrentUserID();
                     Client.CompanyId = _CurrentUserCompanyID();
@@ -140,27 +144,79 @@ namespace KdajBi.API.Controllers
             }
             else
             {
-                if (ClientIsMine(Client.Id) == false) { return NotFound(); }
-                var Clientindb = _context.Clients.Single(c => c.Id == Client.Id);
+                if (ClientIsMine(p_Client.Id) == false) { return NotFound(); }
+                var Clientindb = _context.Clients.Include(ct=>ct.ClientTags).Single(c => c.Id == p_Client.Id);
 
                 Clientindb.UpdatedUserID = _CurrentUserID();
                 Clientindb.UpdatedDate = DateTime.Now;
-                Clientindb.Active  = Client.Active;
-                Clientindb.Address = Client.Address;
-                Clientindb.AllowsEmail = Client.AllowsEmail;
-                Clientindb.AllowsSMS = Client.AllowsSMS;
-                Clientindb.Birthday = Client.Birthday;
+                Clientindb.Address = p_Client.Address;
+                Clientindb.AllowsEmail = p_Client.AllowsEmail;
+                Clientindb.AllowsSMS = p_Client.AllowsSMS;
+                Clientindb.Birthday = p_Client.Birthday;
                 //Clientindb.CompanyId = _CurrentUserCompanyID();
-                Clientindb.CompanyName = Client.CompanyName;
-                Clientindb.Email = Client.Email;
-                Clientindb.FirstName = Client.FirstName;
-                Clientindb.IsCompany = Client.IsCompany;
-                Clientindb.LastName = Client.LastName;
-                Clientindb.LocationId = Client.LocationId;
-                Clientindb.Mobile = Client.Mobile;
-                Clientindb.Notes = Client.Notes;
-                Clientindb.TaxId = Client.TaxId;
-                Clientindb.ZipCode = Client.ZipCode;
+                Clientindb.CompanyName = p_Client.CompanyName;
+                Clientindb.Email = p_Client.Email;
+                Clientindb.FirstName = p_Client.FirstName;
+                Clientindb.IsCompany = p_Client.IsCompany;
+                Clientindb.LastName = p_Client.LastName;
+                Clientindb.LocationId = p_Client.LocationId;
+                Clientindb.Mobile = p_Client.Mobile;
+                Clientindb.Notes = p_Client.Notes;
+                Clientindb.TaxId = p_Client.TaxId;
+                Clientindb.ZipCode = p_Client.ZipCode;
+
+                // Update and Insert children
+                foreach (var childModel in Clientindb.ClientTags)
+                {
+                    var existingChild = p_Client.ClientTags
+                        .Where(c => c.TagId == childModel.TagId)
+                        .SingleOrDefault();
+
+                    if (existingChild != null)
+                    {
+                        // Update child
+
+                        continue;
+                    }
+                    else
+                    {
+                        // zbriši
+                        _context.ClientTags.Remove(childModel);
+
+                    }
+                }
+
+
+                foreach (var child in p_Client.ClientTags)
+                {
+                    if (Clientindb.ClientTags.All(x => x.TagId != child.TagId))
+                    {
+                        // This input child doesn't exist in entity.Children -- dodaj
+                        if (child.TagId > 0)
+                        { Clientindb.ClientTags.Add(new ClientTag(child.ClientId, child.TagId)); }
+                        else
+                        {
+                            Tag newtag = new Tag(_CurrentUserCompanyID(), child.Tag.Title);
+                            _context.Tags.Add(newtag);
+                            _context.SaveChanges();
+                            _context.ClientTags.Add(new ClientTag(child.ClientId, newtag.Id)); }
+                        continue;
+                    }
+                }
+
+                
+                //foreach (var existingChild in p_Client.ClientTags)
+                //{
+                //    if (!Clientindb.ClientTags.Any(c => c.TagId == existingChild.TagId))
+                //    {
+                //        continue;
+                //    }    
+                        
+                //}
+
+               
+
+
 
                 _context.Entry(Clientindb).State = EntityState.Modified;
 
@@ -170,7 +226,7 @@ namespace KdajBi.API.Controllers
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    if (!ClientExists(Client.Id))
+                    if (!ClientExists(p_Client.Id))
                     { return NotFound(); }
                     else
                     { throw; }

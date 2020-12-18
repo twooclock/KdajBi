@@ -135,4 +135,8 @@
     <ProjectReference Include="..\KdajBi.Core\KdajBi.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\Tags\" />
+  </ItemGroup>
+
 </Project>

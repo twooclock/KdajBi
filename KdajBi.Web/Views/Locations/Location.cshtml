@@ -12,6 +12,7 @@
     <link href="~/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
+<link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 }
 
 
@@ -193,7 +194,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="myModalLabel">Delovno mesto</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="formWorkplace" class="formWorkplace" name="formWorkplace">
@@ -242,7 +243,7 @@
     <script src="~/plugins/datatables/jquery.dataTables.js"></script>
     <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
-
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
 
     <script type="text/javascript">
 
@@ -280,13 +281,13 @@
                         txtName: "Invalid name!"
                     },
                     highlight: function (element) {
-                        $(element).closest('.form-group').addClass('has-error');
+                        $(element).closest('.form-control').addClass('is-invalid');
                     },
                     unhighlight: function (element) {
-                        $(element).closest('.form-group').removeClass('has-error');
+                        $(element).closest('.form-control').removeClass('is-invalid');
                     },
                     errorElement: 'span',
-                    errorClass: 'help-block',
+                    errorClass: 'invalid-feedback',
                     errorPlacement: function (error, element) {
                         if (element.parent('.input-group').length) {
                             error.insertAfter(element.parent());
@@ -306,13 +307,13 @@
                         inputName: "Invalid name!"
                     },
                     highlight: function (element) {
-                        $(element).closest('.form-group').addClass('has-error');
+                        $(element).closest('.form-control').addClass('is-invalid');
                     },
                     unhighlight: function (element) {
-                        $(element).closest('.form-group').removeClass('has-error');
+                        $(element).closest('.form-control').removeClass('is-invalid');
                     },
                     errorElement: 'span',
-                    errorClass: 'help-block',
+                    errorClass: 'invalid-feedback',
                     errorPlacement: function (error, element) {
                         if (element.parent('.input-group').length) {
                             error.insertAfter(element.parent());
@@ -321,40 +322,42 @@
                 });
 
                 $('#formSchedule').validate({
-                rules: {
-                    Mo_from: {time: true },
+                    rules: {
+                        Mo_from: { time: true },
                         Mo_to: { time: true, greaterThan: "#Mo_from" },
-                    Tu_from: {time: true },
+                        Tu_from: { time: true },
                         Tu_to: { time: true, greaterThan: "#Tu_from" },
-                    We_from: {time: true },
+                        We_from: { time: true },
                         We_to: { time: true, greaterThan: "#We_from" },
-                    Th_from: {time: true },
+                        Th_from: { time: true },
                         Th_to: { time: true, greaterThan: "#Th_from" },
-                    Fr_from: {time: true },
+                        Fr_from: { time: true },
                         Fr_to: { time: true, greaterThan: "#Fr_from" },
-                    Sa_from: {time: true },
+                        Sa_from: { time: true },
                         Sa_to: { time: true, greaterThan: "#Sa_from" },
-                    Su_from: {time: true },
-                        Su_to: { time:true, greaterThan: "#Su_from" },
-                },
-                highlight: function (element) {
-                $(element).closest('.form-control').addClass('is-invalid');
-            },
-            unhighlight: function (element) {
-                $(element).closest('.form-control').removeClass('is-invalid');
-            },
-            errorElement: 'span',
-            errorClass: 'invalid-feedback',
-            errorPlacement: function (error, element) {
-                if (element.parent('.input-group').length) {
-                    error.appendTo(element.parent('.input-group'));
-                } else {
-                    if (element.parent('.mojgroup').length) {
-                        error.appendTo(element.parent('.mojgroup'));
-                    } else { error.insertAfter(element); }
-                }
-            }
-            });
+                        Su_from: { time: true },
+                        Su_to: { time: true, greaterThan: "#Su_from" },
+                    },
+                    highlight: function (element) {
+                        $(element).closest('.form-control').addClass('is-invalid');
+                    },
+                    unhighlight: function (element) {
+                        $(element).closest('.form-control').removeClass('is-invalid');
+                    },
+                    errorElement: 'span',
+                    errorClass: 'invalid-feedback',
+                    errorPlacement: function (error, element) {
+                        if (element.parent('.input-group').length) {
+                            error.appendTo(element.parent('.input-group'));
+                        } else {
+                            if (element.parent('.mojgroup').length) {
+                                error.appendTo(element.parent('.mojgroup'));
+                            } else { error.insertAfter(element); }
+                        }
+                    }
+                });
+
+
             });
 
         //#region Location
@@ -373,10 +376,10 @@
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { return true; }
-                        else { alert(result); return false; }
+                        else { toastr.error("Napaka:"+result); return false; }
                     },
                     error: function (xhr, status, error) {
-                        alert("Error saving:" + error.toString());
+                        toastr.error("Napaka:" + error.toString());
                         return false;
                     }
                 });
@@ -416,10 +419,10 @@
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { return true; }
-                        else { alert(result); return false; }
+                        else { toastr.error("Napaka:"+result); return false; }
                     },
                     error: function (xhr, status, error) {
-                        alert("Error saving:" + error.toString());
+                        toastr.error("Napaka:" + error.toString());
                         return false;
                     }
                 });
@@ -517,11 +520,11 @@
                     success: function (result) {
                         $("#txtPosition").val(result.sortPosition);
                         $("#txtName").val(result.name);
-                        $("#txtGooCal").val(result.googleCalendarId);
+                        $("#txtGooCal").val(result.googleCalendarID);
                         $("#cbActive").prop('checked', result.active);
                     },
                     error: function (xhr, status, error) {
-                        alert("Error:" + error);
+                        toastr.error("Napaka:" + error.toString());
                     }
                 });
             }
@@ -542,25 +545,31 @@
         }
 
         function DeleteRecord(p_ID) {
-            if (confirm("Zbrišem delovno mesto?") == true) {
-                $.ajax({
-                    type: "DELETE",
-                    url: apiURL+"/api/workplace/"+p_ID,
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                        if (result == "OK") { GetTable(); return true; }
-                        else { alert(result); return false; }
-                    },
-                    error: function (xhr, status, error) {
-                        alert("Error deleting:" + error.toString());
-                        return false;
-                    }
-                });
+            Swal.fire({
+                title: 'Zbrišem delovno mesto?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: "DELETE",
+                        url: apiURL + "/api/workplace/" + p_ID,
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result == "OK") {toastr.success("Zbrisano");  GetTable(); return true; }
+                            else { toastr.error("Napaka:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka:" + error.toString());
+                            return false;
+                        }
+                    });
 
-            } else { return false; }
-
+                } else { return false; }
+            });
         }
 
         function SaveRecord(p_ID) {
@@ -580,10 +589,10 @@
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { GetTable(); return true; }
-                        else { alert(result); return false; }
+                        else { toastr.error("Napaka:"+result);  return false; }
                     },
                     error: function (xhr, status, error) {
-                        alert("Error saving:" + error.toString());
+                        toastr.error("Napaka:" + error.toString());
                         return false;
                     }
                 });

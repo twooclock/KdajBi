@@ -43,6 +43,20 @@
     <Compile Remove="Migrations\20201207093427_addClient.Designer.cs" />
     <Compile Remove="Migrations\20201207094029_addClient.cs" />
     <Compile Remove="Migrations\20201207094029_addClient.Designer.cs" />
+    <Compile Remove="Migrations\20201214054531_addClientTags.cs" />
+    <Compile Remove="Migrations\20201214054531_addClientTags.Designer.cs" />
+    <Compile Remove="Migrations\20201214054803_addClientTags.cs" />
+    <Compile Remove="Migrations\20201214054803_addClientTags.Designer.cs" />
+    <Compile Remove="Migrations\20201214055904_addClientTags.cs" />
+    <Compile Remove="Migrations\20201214055904_addClientTags.Designer.cs" />
+    <Compile Remove="Migrations\20201214060436_addClientTags.cs" />
+    <Compile Remove="Migrations\20201214060436_addClientTags.Designer.cs" />
+    <Compile Remove="Migrations\20201214060634_addClientTags.cs" />
+    <Compile Remove="Migrations\20201214060634_addClientTags.Designer.cs" />
+    <Compile Remove="Migrations\20201214104525_addClientTags.cs" />
+    <Compile Remove="Migrations\20201214104525_addClientTags.Designer.cs" />
+    <Compile Remove="Migrations\20201216062637_addUniqueTag.cs" />
+    <Compile Remove="Migrations\20201216062637_addUniqueTag.Designer.cs" />
     <Compile Remove="Models\UserCompany.cs" />
   </ItemGroup>
 

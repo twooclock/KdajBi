@@ -70,7 +70,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="myModalLabel">companies</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="dataform" class="dataform" name="dataform">
@@ -127,13 +127,13 @@
                         txtName: "Invalid name!"
                     },
                     highlight: function (element) {
-                        $(element).closest('.form-group').addClass('has-error');
+                        $(element).closest('.form-control').addClass('is-invalid');
                     },
                     unhighlight: function (element) {
-                        $(element).closest('.form-group').removeClass('has-error');
+                        $(element).closest('.form-control').removeClass('is-invalid');
                     },
                     errorElement: 'span',
-                    errorClass: 'help-block',
+                    errorClass: 'invalid-feedback',
                     errorPlacement: function (error, element) {
                         if (element.parent('.input-group').length) {
                             error.insertAfter(element.parent());

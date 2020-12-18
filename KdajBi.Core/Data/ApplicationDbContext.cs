@@ -20,6 +20,8 @@ namespace KdajBi.Core
         public DbSet<Workplace> Workplaces { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<Client> Clients { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<ClientTag> ClientTags { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -43,6 +45,9 @@ namespace KdajBi.Core
                     .HasForeignKey(ur => ur.CompanyId)
                     .IsRequired();
             });
+
+            builder.Entity<ClientTag>().HasIndex(p => new { p.ClientId, p.TagId }).IsUnique(true);
+            builder.Entity<Tag>().HasIndex(p => new { p.Title }).IsUnique(true);
 
         }
     }

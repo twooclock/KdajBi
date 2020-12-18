@@ -1,7 +1,11 @@
-﻿using System;
+﻿
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+
 
 namespace KdajBi.Core.Models
 {
@@ -44,11 +48,23 @@ namespace KdajBi.Core.Models
         public bool IsCompany { get; set; }
 
         public string Notes { get; set; }
-    
+
+        [JsonIgnore]
+        public ICollection<ClientTag> ClientTags { get; set; }
+
+        [NotMapped]
+        [JsonProperty( ObjectCreationHandling = ObjectCreationHandling.Replace )]
+        public IEnumerable<Tag> Tags
+        {
+            get => ClientTags.Select(r => r.Tag);
+            set => ClientTags = value.Select(v => new ClientTag() { TagId = v.Id  }).ToList();
+        }
+
         public Client() {
             AllowsEmail = true;
             AllowsSMS = true;
             TaxId = "";
+            ClientTags = new List<ClientTag>();
         }
     }
 }

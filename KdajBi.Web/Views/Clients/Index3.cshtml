@@ -5,7 +5,35 @@
 
 @section styles{
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+
     <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css" rel="stylesheet" />
+    <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+<link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
+
+    <style>
+        .select2-container--default .select2-selection--multiple {
+            background-color: white;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            cursor: text
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border: solid #ced4da 1px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            /*! border:solid black 1px; */ outline: 0
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #3c8dbc;
+            opacity: 0.85;
+            margin-top: 0.6rem;
+        }
+    </style>
 }
 
 
@@ -27,7 +55,7 @@
                             </div>
                             <input id="clientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#clientsearch').select();">
                             <div class="input-group-append">
-                                <button class="btn btn-outline-secondary" type="button" onclick="$('#txtClientFirstName').focus(); SelectedClientID = 0; $('#clientsearch').val(''); setClientForm(0);"><i class="fas fa-plus"></i></button>
+                                <button class="" type="button" onclick="$('#txtClientFirstName').focus(); SelectedClientID = 0; $('#clientsearch').val(''); setClientForm(0);"><i class="fas fa-plus"></i></button>
                             </div>
 
                         </div>
@@ -77,7 +105,10 @@
                                                     <input type="text" id="txtClientMobile" name="txtClientMobile" class="form-control" />
                                                     <div class="input-group-append">
                                                         <div class="input-group-text text-sm">
-                                                            <input id="cbClientSMS" type="checkbox" aria-label="Checkbox for following text input">&nbsp;dovoli
+                                                            <div class="custom-control custom-checkbox">
+                                                                <input type="checkbox" class="custom-control-input" id="cbClientSMS">
+                                                                <label class="p-0 custom-control-label" for="cbClientSMS">Dovoli</label>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -90,18 +121,34 @@
                                                     <input type="text" id="txtClientEmail" name="txtClientEmail" class="form-control" />
                                                     <div class="input-group-append">
                                                         <div class="input-group-text text-sm">
-                                                            <input id="cbClientEmail" type="checkbox" aria-label="Checkbox for following text input">&nbsp;dovoli
+                                                            <div class="custom-control custom-checkbox">
+                                                                <input type="checkbox" class="custom-control-input" id="cbClientEmail">
+                                                                <label class="p-0 custom-control-label" for="cbClientEmail">Dovoli</label>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="form-group mb-1">
+
+                                       
+                                        
+
+                                        <div id="test2" class="form-group mb-1 ">
                                             <label for="txtClientBirthday">
                                                 Rojstni dan:
                                             </label>
-                                            <input type="text" id="txtClientBirthday" name="txtClientBirthday" class="form-control" />
+                                            <div class="input-group flatpickr">
+                                                <input type="text" id="txtClientBirthday" name="txtClientBirthday" class="form-control" aria-describedby="basic-addonY" data-input/>
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
+                                                        <i class="fas fa-calendar"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         </div>
+
                                         <div class="form-group mb-1">
                                             <label for="txtClientAddress">
                                                 Naslov:
@@ -120,11 +167,16 @@
                                             </label>
                                             <textarea rows="2" id="txtClientNotes" name="txtClientNotes" class="form-control"></textarea>
                                         </div>
+                                        <div class="form-group mb-1">
+                                            <label for="tags">Oznake:</label>
+                                            <select id="txtTags" class="form-control" multiple="multiple">
+                                            </select>
+                                        </div>
 
 
                                     </form>
                                     <div class="form-group">
-                                        <button class="btn btn-default" onclick="SaveClient(SelectedClientID)">Shrani</button>
+                                        <button class="btn btn-default" onclick="SaveClient(SelectedClientID);">Shrani</button>
                                     </div>
                                 </div>
                             </div>
@@ -170,7 +222,25 @@
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
     <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
     <script src="~/plugins/toastr/toastr.min.js"></script>
+    <script src="~/plugins/select2/js/select2.full.min.js"></script>
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+
+<script src="~/plugins/flatpickr/flatpickr.min.js"></script>
+<script src="~/plugins/flatpickr/l10n/sl.js"></script>
+
+<script src="~/plugins/dayjs/dayjs.min.js"></script>
+<script src="~/plugins/dayjs/locale/sl.js"> </script>
+<script src="~/plugins/dayjs/plugin/utc.js"></script>
+<script>dayjs.extend(window.dayjs_plugin_utc)</script>
+<script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
+<script>dayjs.extend(window.dayjs_plugin_localizedFormat); dayjs.locale('sl');</script>
+<script src="~/plugins/dayjs/plugin/localeData.js"></script>
+<script>dayjs.extend(window.dayjs_plugin_localeData)</script>
+<script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
+<script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
     <script type="text/javascript">
+        
+        
         function hideKeyboard() {
             //this set timeout needed for case when hideKeyborad
             //is called inside of 'onfocus' event handler
@@ -204,10 +274,29 @@
         }
 
         var SelectedClientID;
+        var fp;
 
         @await Html.PartialAsync("_ApiAccess")
 
+        
+        
         $(document).ready(function () {
+            // Get flatpicker instance
+            fp = $(".flatpickr").flatpickr({
+                locale:dayjs.locale(),
+                clickOpens: false, allowInput: true, wrap: true,
+                //allowInvalidPreload: true,
+                altFormat: dayjs.localeData().longDateFormat('l'),
+                ariaDateFormat: dayjs.localeData().longDateFormat('l'),
+                dateFormat: dayjs.localeData().longDateFormat('l'),
+                parseDate: (datestr, format) => {
+                    return dayjs(datestr, format).toDate();
+                },
+                formatDate: (date, format, locale) => {
+                    // locale can also be used
+                    return dayjs(date).format(format);
+                }
+            });
             //bind cboLocations
             $("#cboLocations").off('change').change(function (evt) {
                 Cookies.set('DefaultLocation', $(this).val());
@@ -215,6 +304,7 @@
                 GetClients();
             });
 
+            //init toastr
             toastr.options.preventDuplicates = true;
             toastr.options.timeOut = 1000;
 
@@ -246,13 +336,13 @@
                         txtClientFirstName: "Neveljavno ime!"
                     },
                     highlight: function (element) {
-                        $(element).closest('.form-group').addClass('has-error');
+                        $(element).closest('.form-control').addClass('is-invalid');
                     },
                     unhighlight: function (element) {
-                        $(element).closest('.form-group').removeClass('has-error');
+                        $(element).closest('.form-control').removeClass('is-invalid');
                     },
                     errorElement: 'span',
-                    errorClass: 'help-block',
+                    errorClass: 'invalid-feedback',
                     errorPlacement: function (error, element) {
                         if (element.parent('.input-group').length) {
                             error.insertAfter(element.parent());
@@ -260,7 +350,7 @@
                     }
                 });
 
-
+            initTags();
             });
 
 
@@ -342,13 +432,15 @@
                         $("#txtClientEmail").val(result.email);
                         $("#cbClientSMS").prop('checked', result.allowsSMS);
                         $("#cbClientEmail").prop('checked', result.allowsEmail);
-                        $("#txtClientBirthday").val(result.birthday);
+                        if (dayjs.utc(result.birthday).isValid())
+                            { $("#txtClientBirthday").val(dayjs.utc(result.birthday).format('L')); }
+                        else { $("#txtClientBirthday").val();}
                         $("#txtClientAddress").val(result.address);
                         $("#txtClientZip").val(result.zip);
                         $("#txtClientNotes").val(result.notes);
+                        $("#txtTags").val(result.tags.map(a => a.id)).trigger('change');
                     },
                     error: function (xhr, status, error) {
-
                         toastr.error("Error getting client data:" + error);
                     }
                 });
@@ -369,25 +461,31 @@
         }
 
         function DeleteClient(p_ID) {
-            if (confirm("Delete client?") == true) {
-                $.ajax({
-                    type: "DELETE",
-                    url: apiURL+"/api/client/"+p_ID,
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                        if (result == "OK") { toastr.success("Stranka zbrisana"); GetClients(); return true; }
-                        else { toastr.error("Napaka:"+result); return false; }
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Napaka:" + error.toString());
-                        return false;
-                    }
-                });
+            Swal.fire({
+                title: 'Zbrišem stranko?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: "DELETE",
+                        url: apiURL + "/api/client/" + p_ID,
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result == "OK") { toastr.success("Stranka zbrisana"); GetClients(); return true; }
+                            else { toastr.error("Napaka:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka:" + error.toString());
+                            return false;
+                        }
+                    });
 
-            } else { return false; }
-
+                } else { return false; }
+            });
         }
 
         function SaveClient(p_ID) {
@@ -401,10 +499,30 @@
                 client.Email =$("#txtClientEmail").val();
                 client.AllowsSMS = $("#cbClientSMS").prop('checked');
                 client.AllowsEmail = $("#cbClientEmail").prop('checked');
-                client.Birthday =new Date($("#txtClientBirthday").val());
+                if (dayjs.utc($("#txtClientBirthday").val(),"l").isValid())
+                { client.Birthday = dayjs.utc($("#txtClientBirthday").val(),"l");}
                 client.Address =$("#txtClientAddress").val();
                 client.Zip =$("#txtClientZip").val();
-                client.Notes =$("#txtClientNotes").val();
+                client.Notes = $("#txtClientNotes").val();
+
+                var myTags = [];
+                $('#txtTags').select2('data').forEach(function (item) {
+                    var clientTag = {};
+                    clientTag.clientId = p_ID;
+                    clientTag.tagId = item.id;
+                    var tag = { id:0, Title: 'Title'};
+
+                    if (item.added == true)
+                    { tag.id == 0; tag.Title = item.text; }
+                    else
+                    { tag.id == item.id }
+                    clientTag.Tag=tag;
+
+                    myTags.push(clientTag);
+                });
+
+                client.ClientTags = myTags;
+
                 client.Active = true;
                 $.ajax({
                     type: "post",
@@ -425,7 +543,85 @@
             } else { return false; }
         }
 
+        //#region tags
+        var lastResults = [];
 
+
+        function initTags() {
+
+            //get tags
+            var myTags= [];
+
+            $.ajax({
+                    type: "get",
+                    url: apiURL+"/api/tags/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    dataType: "json",
+                    async: false,
+                    success: function (result) {
+                        var retval = [];
+                        result.forEach(function(item) {
+                            retval.push({ id: item.id, text: item.title })
+                            });
+                        myTags= retval;
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Error getting data:" + error);
+                    }
+                });
+
+            $("#txtTags").select2({
+                multiple: true,
+                tags: true,
+                placeholder: "",
+                tokenSeparators: [","],
+
+                data: myTags,
+
+                createTag: function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '') { return null; }
+                    //var text = term + (lastResults.some(function (r) { return r.text == term }) ? "" : " (nova oznaka)");
+                    return {
+                        id: lastResults.length,
+                        text: term, added: true, tagId: 0
+                    };
+                },
+                insertTag: function (data, tag) {
+                    // Insert the tag at the end of the results
+                    data.push(tag);
+                  }
+            });
+
+
+            $('#txtTags').on("select2:select", function (e) {
+                var data = e.params.data;
+                if (data.added) {
+                    Swal.fire({
+                        title: "Želite dodati novo oznako " + data.text.split('(')[0] + "?",
+                        showDenyButton: true,
+                        confirmButtonText: 'Da',
+                        denyButtonText: 'Ne',
+                    }).then((result) => {
+                        if (result.isDenied) {
+                            var selectedTags = $("#txtTags").val();
+                            var index = selectedTags.indexOf(data.id);
+                            selectedTags.splice(index, 1);
+                            if (selectedTags.length == 0) {
+                                $("#txtTags").val("").trigger("change");
+                            } else {
+                                $("#txtTags").val(selectedTags).trigger("change");
+                            }
+                        }
+                    });
+                }
+            });
+
+        }
+
+
+        //#endregion
     </script>
 }
 
