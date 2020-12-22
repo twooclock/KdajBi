@@ -39,7 +39,7 @@ namespace KdajBi.Web.Controllers
 
 
         [Route("/Clients/Index3")]
-        public IActionResult Index3(long idlocation)
+        public IActionResult Index3()
         {
             if (LocationIsMine(DefaultLocationId()))
             {
@@ -50,5 +50,19 @@ namespace KdajBi.Web.Controllers
             }
             return NotFound();
         }
+
+        [Route("/Clients/Notification")]
+        public IActionResult Notification()
+        {
+            if (LocationIsMine(DefaultLocationId()))
+            {
+                vmClient myVM = new vmClient();
+                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId() && c.AllowsSMS == true && c.Mobile != "").OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { Id = p.Id, FullName = p.FullName }).ToList()).Replace(@"\", @"\\");
+                myVM.Token = _GetToken();
+                return View(myVM);
+            }
+            return NotFound();
+        }
+
     }
 }

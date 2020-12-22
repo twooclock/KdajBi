@@ -1,6 +1,6 @@
 ﻿@using Newtonsoft.Json;
 @{
-    ViewData["Title"] = "Stranke";
+    ViewData["Title"] = "Obveščanje strank";
 }
 
 @section styles{
@@ -10,8 +10,9 @@
     <link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
     <link href="~/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css" rel="stylesheet" />
     <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
-    <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
-
+<link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
+<link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
+<link href="~/plugins/bs-stepper/css/bs-stepper.min.css" rel="stylesheet" />
     <style>
         .select2-container--default .select2-selection--multiple {
             background-color: white;
@@ -42,170 +43,76 @@
 
 
     <div class="row">
-        <div class="col-md-12 col-smb-12 col-xs-12">
-            <div class="dashboard_graph">
-
-                <div class="row x_title">
-                    <div class="col-md-6">
-                        <div class="input-group mb-2 mt-2">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text" onclick="$('#clientsearch').select();">
-                                    <span class="fas fa-user"></span>
-                                </div>
-                            </div>
-                            <input id="clientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#clientsearch').select();">
-                            <div class="input-group-append">
-                                <button class="" type="button" onclick="$('#txtClientFirstName').focus(); SelectedClientID = 0; $('#clientsearch').val(''); setClientForm(0);"><i class="fas fa-plus"></i></button>
-                            </div>
-
-                        </div>
-                    </div>
-
+        
+        <div class="col-md-12 mt-1">
+          <h2>Obveščanje strank</h2>
+          <div id="stepper2" class="bs-stepper">
+            <div class="bs-stepper-header">
+              <div class="step" data-target="#step-nl-1">
+                <button type="button" class="btn step-trigger">
+                  <span class="bs-stepper-circle">1</span>
+                  <span class="bs-stepper-label">Izbira strank</span>
+                </button>
+              </div>
+              <div class="line"></div>
+              <div class="step" data-target="#step-nl-2">
+                <div class="btn step-trigger">
+                  <span class="bs-stepper-circle">2</span>
+                  <span class="bs-stepper-label">Priprava sporočila</span>
                 </div>
-                <div class="card card-primary card-outline card-outline-tabs">
-                    <div class="card-header p-0 border-bottom-0">
-                        <ul class="nav nav-tabs" id="tabClient" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" id="general-tab" data-toggle="pill" href="#general" role="tab" aria-controls="general" aria-selected="true">Stranka</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="location-tab" data-toggle="pill" href="#location" role="tab" aria-controls="location" aria-selected="false">Saloni</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="employee-tab" data-toggle="pill" href="#employee" role="tab" aria-controls="employee" aria-selected="false">Zaposleni</a>
-                            </li>
-
-                        </ul>
-                    </div>
-                    <div class="card-body">
-                        <div class="tab-content" id="custom-tabs-four-tabContent">
-                            <div id="general" class="tab-pane fade active show" role="tabpanel" aria-labelledby="general-tab">
-                                <div class="col-md-12">
-                                    <form id="dataform" class="dataform" name="dataform">
-                                        <div class="form-row">
-                                            <div class="form-group mb-1 col-sm-6" style=" margin-bottom: 1px;">
-                                                <label for="txtClientFirstName">
-                                                    Ime:
-                                                </label>
-                                                <input type="text" id="txtClientFirstName" name="txtClientFirstName" class="form-control" />
-                                            </div>
-                                            <div class="form-group mb-1 col-sm-6">
-                                                <label for="txtClientLastName">
-                                                    Priimek:
-                                                </label>
-                                                <input type="text" id="txtClientLastName" name="txtClientLastName" class="form-control" />
-                                            </div>
-                                        </div>
-                                        <div class="form-row">
-                                            <div class="form-group mb-1 col-sm-6">
-                                                <label for="txtClientMobile">
-                                                    Mobi:
-                                                </label>
-                                                <div class="input-group">
-                                                    <input type="text" id="txtClientMobile" name="txtClientMobile" class="form-control" />
-                                                    <div class="input-group-append">
-                                                        <div class="input-group-text text-sm">
-                                                            <div class="custom-control custom-checkbox">
-                                                                <input type="checkbox" class="custom-control-input" id="cbClientSMS">
-                                                                <label class="p-0 custom-control-label" for="cbClientSMS">Dovoli</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="form-group mb-1 col-sm-6">
-                                                <label for="txtClientEmail">
-                                                    Email:
-                                                </label>
-                                                <div class="input-group">
-                                                    <input type="text" id="txtClientEmail" name="txtClientEmail" class="form-control" />
-                                                    <div class="input-group-append">
-                                                        <div class="input-group-text text-sm">
-                                                            <div class="custom-control custom-checkbox">
-                                                                <input type="checkbox" class="custom-control-input" id="cbClientEmail">
-                                                                <label class="p-0 custom-control-label" for="cbClientEmail">Dovoli</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-
-
-                                        <div id="test2" class="form-group mb-1 ">
-                                            <label for="txtClientBirthday">
-                                                Rojstni dan:
-                                            </label>
-                                            <div class="input-group flatpickr">
-                                                <input type="text" id="txtClientBirthday" name="txtClientBirthday" class="form-control" aria-describedby="basic-addonY" data-input />
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
-                                                        <i class="fas fa-calendar"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                        <div class="form-group mb-1">
-                                            <label for="txtClientAddress">
-                                                Naslov:
-                                            </label>
-                                            <input type="text" id="txtClientAddress" name="txtClientAddress" class="form-control" />
-                                        </div>
-                                        <div class="form-group mb-1">
-                                            <label for="txtClientZip">
-                                                Pošta:
-                                            </label>
-                                            <input type="text" id="txtClientZip" name="txtClientZip" class="form-control" />
-                                        </div>
-                                        <div class="form-group mb-1">
-                                            <label for="txtClientNotes">
-                                                Opombe:
-                                            </label>
-                                            <textarea rows="2" id="txtClientNotes" name="txtClientNotes" class="form-control"></textarea>
-                                        </div>
-                                        <div class="form-group mb-1">
-                                            <label for="tags">Oznake:</label>
-                                            <select id="txtTags" class="form-control" multiple="multiple">
-                                            </select>
-                                        </div>
-
-
-                                    </form>
-                                    <div class="form-group">
-                                        <button class="btn btn-default" onclick="SaveClient(SelectedClientID);">Shrani</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="location" class="tab-pane fade" role="tabpanel" aria-labelledby="location-tab">
-                                <div class="card">
-
-
-
-                                </div>
-                            </div>
-
-                            <div class="tab-pane fade" id="employee" role="tabpanel" aria-labelledby="employee-tab">
-                                <div class="card">
-
-                                </div>
-                            </div>
-
-
-                        </div>
-                    </div>
-                    <!-- /.card -->
-                </div>
-
-
-
-
-                <div class="clearfix"></div>
+              </div>
+              <div class="line"></div>
+              <div class="step" data-target="#step-nl-3">
+                <button type="button" class="btn step-trigger">
+                  <span class="bs-stepper-circle">3</span>
+                  <span class="bs-stepper-label">Pošiljanje</span>
+                </button>
+              </div>
             </div>
+            <div class="bs-stepper-content">
+                <div id="step-nl-1" class="content">
+                    <p id="lblStranke" class="">Stranke</p>
+                    <div id="cblClients" class="col-md-6">
+                        <div id="cblHeader"class="form-control custom-control custom-checkbox" style="padding-left: 2rem;"><input class="custom-control-input" type="checkbox" id="cbSelectAll"><label for="cbSelectAll" class="custom-control-label"> </label>
+                        <input id="txtClientSearch" style="border:0" type="text" value="" >
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="stepper2.next()">Naprej</button>
+                </div>
+                <div id="step-nl-2" class="content">
+                    <div class="form-group mb-1">
+                        <label id="lblMessage" for="txtMessage">
+                            Sporočilo:
+                        </label>
+                        <textarea rows="5" id="txtMessage" name="txtMessage" class="form-control" maxlength="640"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="stepper2.next()">Naprej</button>
+                </div>
+                <div id="step-nl-3" class="content">
+                    <div id="test2" class="form-group mb-1 ">
+                        <label for="txtNotificationTime">
+                            Sporočilo pošlji:
+                        </label>
+                        <div class="input-group flatpickr">
+                            <input type="text" id="txtNotificationTime" name="txtNotificationTime" class="form-control col-md-6" aria-describedby="basic-addonY" data-input />
+                            <div class="input-group-append">
+                                <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
+                                    <i class="fas fa-calendar"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-1">
+                                            <label for="txtDebug">
+                                                Debug:
+                                            </label>
+                                            <textarea rows="10" id="txtDebug" name="txtDebug" class="form-control"></textarea>
+                                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendMessage()">Pošlji</button>
+                    <button type="button" class="btn btn-default" onclick="test();">TEST</button>
+                </div>
+            </div>
+          </div>
         </div>
 
     </div>
@@ -226,20 +133,21 @@
     <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
 
     <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
+    <script src="~/plugins/flatpickr/plugins/confirmDate/confirmDate.js"></script>
 
     <script src="~/plugins/dayjs/dayjs.min.js"></script>
     <script src="~/plugins/dayjs/plugin/utc.js"></script>
     <script>dayjs.extend(window.dayjs_plugin_utc)</script>
     <script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
-    <script>dayjs.extend(window.dayjs_plugin_localizedFormat);</script>
+    <script>dayjs.extend(window.dayjs_plugin_localizedFormat); </script>
     <script src="~/plugins/dayjs/plugin/localeData.js"></script>
     <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
     <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
     <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
+    <script src="~/plugins/bs-stepper/js/bs-stepper.min.js"></script>
 
     <script type="text/javascript">
-
-
+        
         function getAPIToken() {
             var tnow = (621355968e9 + 10000 + (new Date()).getTime() * 1e4);
             var reqdata = { Token: apiToken.RefreshToken, UserEmail: apiUser };
@@ -319,15 +227,106 @@
             });
         }
 
-        var SelectedClientID;
+        var delay = (function () {
+            var timer = {}
+                , values = {}
+            return function (el) {
+                var id = el.id + '.' + el.name
+                return {
+                    enqueue: function (ms, cb) {
+                        if (values[id] == el.value) return
+                        //if (!el.value) return
+                        var original = values[id] = el.value
+                        clearTimeout(timer[id])
+                        timer[id] = setTimeout(function () {
+                            if (original != el.value) return // solves race condition
+                            cb.apply(el)
+                        }, ms)
+                    }
+                }
+            }
+        }());
+
+
         var fp;
+
+        var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
+        
 
         @await Html.PartialAsync("_ApiAccess")
 
+        var stepper2 = new Stepper(document.querySelector('#stepper2'), {
+            linear: false,
+            animation: true
+        })
+
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear(),
+                hour = d.getHours(),
+                min = d.getMinutes();
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [day, month, year, hour,min].join('.');
+        }
+        function test() {
+            var tekst = $('#txtDebug').val();
+            tekst = 'fp.selectedDates:' + formatDate(fp.selectedDates[0]) + 'utc:' + new Date(dayjs(fp.selectedDates[0]).utc()) + '\n' + tekst;
+            dayjs(fp.selectedDates[0]).utc()
+            $('#txtDebug').val(tekst)
+            return false;
+        }
+
+        function sendMessage() {
+            var sendMsg = { Message: $('#txtMessage').val(), SendDate: fp.selectedDates[0] }
+            var tekst = $('#txtDebug').val();
+            tekst = 'send:' + JSON.stringify(sendMsg) + '\n' + tekst;
+            $('#txtDebug').val(tekst)
+        }
 
 
+        function filterClients(p_filter) {
+            //set show/hide
+            console.info(new Date(), p_filter);
+            var array = document.querySelectorAll('#cblClients li')
+            for(var i = 0; i< array.length; i++) {
+				array[i].style.display = 'none';
+			}
+            array = Array.prototype.filter.call(document.querySelectorAll('#cblClients li'), 
+				function (obj) {
+					return obj.childNodes[0].childNodes[1].innerHTML.toLowerCase().indexOf(p_filter) > -1;
+                });
+            for(var i = 0; i< array.length; i++) {
+				array[i].style.display = 'block';
+			}
+        }
+        function getSelected() {
+            return $('#cblClients input:checked').length;
+        }
+
+        function checkClient(id) {
+            document.getElementById('lblStranke').innerHTML = 'Stranke ' + getSelected() + '/' + myClients.length + ':';
+        }
+         
 
         $(document).ready(function () {
+            var globalTimeout = null; 
+            $('#txtClientSearch').keyup(function () {
+                delay(this).enqueue(800, function () {
+                    filterClients($('#txtClientSearch').val());
+                });
+
+                
+            }); 
+            //count message characters
+            document.getElementById('txtMessage').onkeyup = function () {
+                document.getElementById('lblMessage').innerHTML = "Sporočilo (" + (640 - this.value.length)+"/640):";
+            };
 
             // load locale and Get flatpicker localized instance
             loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
@@ -337,29 +336,37 @@
                         .then(function () {
                             fp = $(".flatpickr").flatpickr({
                                 altInput: true,
+                                defaultDate: new Date(),
+                                minDate: new Date(),
                                 locale: dayjs.locale(),
-                                clickOpens: false, allowInput: true,
-                                wrap: true,
-                                altFormat: dayjs.localeData().longDateFormat('l'),
-                                ariaDateFormat: dayjs.localeData().longDateFormat('l'),
-                                dateFormat: dayjs.localeData().longDateFormat('l'),
+                                plugins: [new confirmDatePlugin({ showAlways: true })],
+                                enableTime: true, minTime: "8:00", maxTime: "20:00",
+                                dateFormat: "llll",
+                                clickOpens: true, allowInput: false, wrap: true,
+                                //allowInvalidPreload: true,
+                                altFormat: dayjs.localeData().longDateFormat('llll'),
+                                //ariaDateFormat: dayjs.localeData().longDateFormat('llll'),
+                                dateFormat: dayjs.localeData().longDateFormat('llll'),
                                 parseDate: (datestr, format) => {
                                     var fmt = format;
-                                    if (fmt == 'Y-m-d') { fmt = 'YYYY-MM-DD'; }
+                                    if (fmt == 'Y-m-d\\TH:i:S') { fmt = 'YYYY-MM-DD\\THH:mm'; }
+                                    if (fmt == 'H:i:S') { fmt = 'HH:mm'; }
+                                    var tekst = $('#txtDebug').val();
+                                    tekst = 'parseDate(' + datestr + ',' + fmt + ') return:' + formatDate(dayjs(datestr, fmt).toDate()) + '\n' + tekst;
+                                    $('#txtDebug').val(tekst)
                                     return dayjs(datestr, fmt).toDate();
                                 },
                                 formatDate: (date, format, locale) => {
                                     if (format != 'F j, Y') {
+                                        var tekst = $('#txtDebug').val();
+                                        tekst = 'formatDate:' + formatDate(date) + '-' + format + '-' + locale.weekdays.longhand[0] + '\n' + tekst;
+                                        $('#txtDebug').val(tekst)
                                         return dayjs(date).format(format);
                                     }
                                 }
                             });
                         });
                 });
-
-
-
-
 
 
             //bind cboLocations
@@ -373,7 +380,43 @@
             toastr.options.preventDuplicates = true;
             toastr.options.timeOut = 1000;
 
-           var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
+           
+            //create checkboxlist
+            var myUL = document.createElement("ul");
+            myUL.style = "padding-left: 0px; list-style-type: none; max-height: 200px; overflow-y: scroll;";
+                myClients.forEach(function (item) {
+                    var myLI = document.createElement("li");
+                    myLI.id = item.Id;
+                    var myLIspan = document.createElement("span");
+                    myLIspan.innerHTML = item.FullName;
+
+                    var myLIDiv = document.createElement("div");
+                    myLIDiv.addEventListener('click', function () { checkClient(this.id);});
+
+                    myLIDiv.className = "form-control custom-control custom-checkbox";
+                    myLIDiv.style = "padding-left: 2rem;";
+                        var myLIDivInput = document.createElement("input");
+                    myLIDivInput.className  = "custom-control-input";
+                    myLIDivInput.type = "checkbox";
+                    myLIDivInput.id = "customCheckbox"+item.Id;
+                    
+                    var myLIDivLabel = document.createElement("label");
+                    myLIDivLabel.setAttribute("for" , "customCheckbox" + item.Id);
+                    myLIDivLabel.className ="custom-control-label";
+                    myLIDivLabel.innerHTML = item.FullName;
+                    $(myLIDiv).append(myLIDivInput)
+                    $(myLIDiv).append(myLIDivLabel)
+
+                    
+                    $(myLI).append(myLIDiv)
+
+
+                    //$(myLI).append(myLIspan)
+                    $(myUL).append(myLI)
+                });
+                $('#cblClients').append(myUL);
+
+
             $("#clientsearch").autocomplete({
                 minlength: 3,
                 delay: 200,
@@ -389,31 +432,7 @@
                 focus: function (event, ui) { event.preventDefault(); return false; }
             });
 
-            $('#dataform').validate({
-                    rules: {
-                        txtClientFirstName: {
-                            minlength: 3,
-                            maxlength: 50,
-                            required: true
-                        }
-                    },
-                    messages: {
-                        txtClientFirstName: "Neveljavno ime!"
-                    },
-                    highlight: function (element) {
-                        $(element).closest('.form-control').addClass('is-invalid');
-                    },
-                    unhighlight: function (element) {
-                        $(element).closest('.form-control').removeClass('is-invalid');
-                    },
-                    errorElement: 'span',
-                    errorClass: 'invalid-feedback',
-                    errorPlacement: function (error, element) {
-                        if (element.parent('.input-group').length) {
-                            error.insertAfter(element.parent());
-                        } else { error.insertAfter(element); }
-                    }
-                });
+            
 
             initTags();
             });
@@ -429,7 +448,7 @@
                 type: "GET",
                 url:  apiURL + "/api/clients/getclientslist/"+$("#cboLocations").val(),
                 contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
                 dataType: "json",
                 async: true,
                 success: function (msg) {
@@ -487,7 +506,7 @@
                     type: "get",
                     url: apiURL+"/api/client/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -538,7 +557,7 @@
                         type: "DELETE",
                         url: apiURL + "/api/client/" + p_ID,
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
+                        headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") { toastr.success("Stranka zbrisana"); GetClients(); return true; }
@@ -565,11 +584,9 @@
                 client.Email =$("#txtClientEmail").val();
                 client.AllowsSMS = $("#cbClientSMS").prop('checked');
                 client.AllowsEmail = $("#cbClientEmail").prop('checked');
-                //if (dayjs.utc($("#txtClientBirthday").val(),"l").isValid())
-                //{ client.Birthday = dayjs.utc($("#txtClientBirthday").val(),"l");}
-
-                client.Birthday =fp.selectedDates[0];
-                client.Address = $("#txtClientAddress").val();
+                if (dayjs.utc($("#txtClientBirthday").val(),"l").isValid())
+                { client.Birthday = dayjs.utc($("#txtClientBirthday").val(),"l");}
+                client.Address =$("#txtClientAddress").val();
                 client.Zip =$("#txtClientZip").val();
                 client.Notes = $("#txtClientNotes").val();
 
@@ -592,20 +609,12 @@
                 client.ClientTags = myTags;
 
                 client.Active = true;
-
-                var replacer = function (key, value) {
-                    if (this[key] instanceof Date) {
-                        return dayjs(this[key]).format('YYYY-MM-DD HH:mmZ');
-                    }
-                    return value;
-                }
-
                 $.ajax({
                     type: "post",
-                    data: JSON.stringify(client,replacer),
+                    data: JSON.stringify(client),
                     url: apiURL+"/api/client/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
                     dataType: "json",
                     success: function (result) {
                         if (result == "OK") { toastr.success("Shranjeno"); GetClients(); return true; }
@@ -632,7 +641,7 @@
                     type: "get",
                     url: apiURL+"/api/tags/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
                     dataType: "json",
                     async: false,
                     success: function (result) {
