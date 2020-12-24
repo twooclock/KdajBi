@@ -7,32 +7,44 @@
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
 
     <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
-    <link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
-    <link href="~/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css" rel="stylesheet" />
     <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
-<link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
-<link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
-<link href="~/plugins/bs-stepper/css/bs-stepper.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
+    <link href="~/plugins/bs-stepper/css/bs-stepper.min.css" rel="stylesheet" />
     <style>
-        .select2-container--default .select2-selection--multiple {
-            background-color: white;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            cursor: text
+       
+
+        .tc__rendered {
+            list-style-type: none;
+            white-space: nowrap
         }
 
-        .select2-container--default.select2-container--focus .select2-selection--multiple {
+        .tc__choice {
+            cursor: pointer;
             border: solid #ced4da 1px;
-        }
-
-        .select2-container--default.select2-container--focus .select2-selection--multiple {
-            /*! border:solid black 1px; */ outline: 0
-        }
-
-        .select2-container--default .select2-selection--multiple .select2-selection__choice {
-            background-color: #3c8dbc;
             opacity: 0.85;
-            margin-top: 0.6rem;
+            float: left;
+            border-radius: 4px;
+        }
+        .tc__choice.active {
+            background-color: #3c8dbc;
+        }
+
+        .cCB {
+            padding-left: 2rem;
+        }
+        .cCB2 {
+            padding-left: 0.7rem;
+        }
+
+        .ulClients {
+            padding-left: 0px;
+            list-style-type: none;
+            max-height: 300px;
+            overflow-y: scroll;
+        }
+        .ccl {
+            padding-left: 0.5rem;
         }
     </style>
 }
@@ -43,76 +55,87 @@
 
 
     <div class="row">
-        
+
         <div class="col-md-12 mt-1">
-          <h2>Obveščanje strank</h2>
-          <div id="stepper2" class="bs-stepper">
-            <div class="bs-stepper-header">
-              <div class="step" data-target="#step-nl-1">
-                <button type="button" class="btn step-trigger">
-                  <span class="bs-stepper-circle">1</span>
-                  <span class="bs-stepper-label">Izbira strank</span>
-                </button>
-              </div>
-              <div class="line"></div>
-              <div class="step" data-target="#step-nl-2">
-                <div class="btn step-trigger">
-                  <span class="bs-stepper-circle">2</span>
-                  <span class="bs-stepper-label">Priprava sporočila</span>
-                </div>
-              </div>
-              <div class="line"></div>
-              <div class="step" data-target="#step-nl-3">
-                <button type="button" class="btn step-trigger">
-                  <span class="bs-stepper-circle">3</span>
-                  <span class="bs-stepper-label">Pošiljanje</span>
-                </button>
-              </div>
-            </div>
-            <div class="bs-stepper-content">
-                <div id="step-nl-1" class="content">
-                    <p id="lblStranke" class="">Stranke</p>
-                    <div id="cblClients" class="col-md-6">
-                        <div id="cblHeader"class="form-control custom-control custom-checkbox" style="padding-left: 2rem;"><input class="custom-control-input" type="checkbox" id="cbSelectAll"><label for="cbSelectAll" class="custom-control-label"> </label>
-                        <input id="txtClientSearch" style="border:0" type="text" value="" >
+            <h2>Obveščanje strank</h2>
+            <div id="stepper2" class="bs-stepper">
+                <div class="bs-stepper-header">
+                    <div class="step" data-target="#step-nl-1">
+                        <button type="button" class="btn step-trigger">
+                            <span class="bs-stepper-circle">1</span>
+                            <span class="bs-stepper-label">Izbira strank</span>
+                        </button>
+                    </div>
+                    <div class="line"></div>
+                    <div class="step" data-target="#step-nl-2">
+                        <div class="btn step-trigger">
+                            <span class="bs-stepper-circle">2</span>
+                            <span class="bs-stepper-label">Priprava sporočila</span>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="stepper2.next()">Naprej</button>
-                </div>
-                <div id="step-nl-2" class="content">
-                    <div class="form-group mb-1">
-                        <label id="lblMessage" for="txtMessage">
-                            Sporočilo:
-                        </label>
-                        <textarea rows="5" id="txtMessage" name="txtMessage" class="form-control" maxlength="640"></textarea>
+                    <div class="line"></div>
+                    <div class="step" data-target="#step-nl-3">
+                        <button type="button" class="btn step-trigger">
+                            <span class="bs-stepper-circle">3</span>
+                            <span class="bs-stepper-label">Pošiljanje</span>
+                        </button>
                     </div>
-                    <button class="btn btn-primary" onclick="stepper2.next()">Naprej</button>
                 </div>
-                <div id="step-nl-3" class="content">
-                    <div id="test2" class="form-group mb-1 ">
-                        <label for="txtNotificationTime">
-                            Sporočilo pošlji:
-                        </label>
-                        <div class="input-group flatpickr">
-                            <input type="text" id="txtNotificationTime" name="txtNotificationTime" class="form-control col-md-6" aria-describedby="basic-addonY" data-input />
-                            <div class="input-group-append">
-                                <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
-                                    <i class="fas fa-calendar"></i>
+                <div class="bs-stepper-content">
+                    <div id="step-nl-1" class="content">
+                        <p id="lblStranke" class="">Stranke</p>
+                        <div id="cblClients" class="col-md-6">
+                            <div id="cblHeader" class="form-control custom-control custom-checkbox cCB h-100">
+                                <div class="row">
+                                    <div class="col-0 pl-2">
+                                        <input class="custom-control-input" type="checkbox" id="cbSelectAll"><label for="cbSelectAll" class="custom-control-label"> </label>
+                                    </div>
+                                    <div class="col-md-5 p-0">
+                                        <input id="txtClientSearch" style="border:0" type="text" value="" placeholder="Stranka...">
+                                    </div>
+                                    <div  class="col-md-6">
+                                        <ul id="tagCloud"  class="tc__rendered p-0">
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group mb-1">
-                                            <label for="txtDebug">
-                                                Debug:
-                                            </label>
-                                            <textarea rows="10" id="txtDebug" name="txtDebug" class="form-control"></textarea>
-                                        </div>
+                        <button class="btn btn-primary" onclick="stepper2.next()">Naprej</button>
                     </div>
-                    <button class="btn btn-primary" onclick="sendMessage()">Pošlji</button>
-                    <button type="button" class="btn btn-default" onclick="test();">TEST</button>
+                    <div id="step-nl-2" class="content">
+                        <div class="form-group mb-1">
+                            <label id="lblMessage" for="txtMessage">
+                                Sporočilo:
+                            </label>
+                            <textarea rows="5" id="txtMessage" name="txtMessage" class="form-control" maxlength="640"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="stepper2.next()">Naprej</button>
+                    </div>
+                    <div id="step-nl-3" class="content">
+                        <div id="test2" class="form-group mb-1 ">
+                            <label for="txtNotificationTime">
+                                Sporočilo pošlji:
+                            </label>
+                            <div class="input-group flatpickr">
+                                <input type="text" id="txtNotificationTime" name="txtNotificationTime" class="form-control col-md-6" aria-describedby="basic-addonY" data-input />
+                                <div class="input-group-append">
+                                    <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group mb-1">
+                                <label for="txtDebug">
+                                    Debug:
+                                </label>
+                                <textarea rows="10" id="txtDebug" name="txtDebug" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="sendMessage()">Pošlji</button>
+                        <button type="button" class="btn btn-default" onclick="test();">TEST</button>
+                    </div>
                 </div>
             </div>
-          </div>
         </div>
 
     </div>
@@ -129,7 +152,6 @@
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
     <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
     <script src="~/plugins/toastr/toastr.min.js"></script>
-    <script src="~/plugins/select2/js/select2.full.min.js"></script>
     <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
 
     <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
@@ -139,7 +161,7 @@
     <script src="~/plugins/dayjs/plugin/utc.js"></script>
     <script>dayjs.extend(window.dayjs_plugin_utc)</script>
     <script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
-    <script>dayjs.extend(window.dayjs_plugin_localizedFormat); </script>
+    <script>dayjs.extend(window.dayjs_plugin_localizedFormat);</script>
     <script src="~/plugins/dayjs/plugin/localeData.js"></script>
     <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
     <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
@@ -147,7 +169,7 @@
     <script src="~/plugins/bs-stepper/js/bs-stepper.min.js"></script>
 
     <script type="text/javascript">
-        
+
         function getAPIToken() {
             var tnow = (621355968e9 + 10000 + (new Date()).getTime() * 1e4);
             var reqdata = { Token: apiToken.RefreshToken, UserEmail: apiUser };
@@ -251,7 +273,7 @@
         var fp;
 
         var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
-        
+
 
         @await Html.PartialAsync("_ApiAccess")
 
@@ -292,37 +314,67 @@
 
         function filterClients(p_filter) {
             //set show/hide
+            p_filter = p_filter.toLowerCase();
             console.info(new Date(), p_filter);
-            var array = document.querySelectorAll('#cblClients li')
+
+            var myUL = document.querySelector('#ulClients');
+            myUL.style.display = 'none';
+            var array = document.querySelectorAll('#ulClients li')
             for(var i = 0; i< array.length; i++) {
 				array[i].style.display = 'none';
-			}
-            array = Array.prototype.filter.call(document.querySelectorAll('#cblClients li'), 
+            }
+            //filter string
+            array = Array.prototype.filter.call(document.querySelectorAll('#ulClients li'),
 				function (obj) {
-					return obj.childNodes[0].childNodes[1].innerHTML.toLowerCase().indexOf(p_filter) > -1;
+					return (obj.childNodes[0].childNodes[1].innerHTML.toLowerCase().indexOf(p_filter) > -1);
                 });
-            for(var i = 0; i< array.length; i++) {
+            //filter tags
+            selectedTags = [];
+            $("#tagCloud .tc__choice.active").each(function (i, obj) {
+                selectedTags.push('#' + $(this).attr("data-id") + '#');
+                });
+            if (selectedTags.length > 0) {
+                array = Array.prototype.filter.call(array,
+                    function (obj) {
+                        return selectedTags.some(v => obj.childNodes[0].childNodes[1].getAttribute("tags").includes(v));
+                    });
+            }
+            //results
+            for (var i = 0; i < array.length; i++) {
 				array[i].style.display = 'block';
-			}
+            }
+            myUL.style.display = 'block';
         }
         function getSelected() {
-            return $('#cblClients input:checked').length;
+            return $('.ulClients input:checked').length;
         }
 
         function checkClient(id) {
+            console.info(new Date(),'checkClient',id);
             document.getElementById('lblStranke').innerHTML = 'Stranke ' + getSelected() + '/' + myClients.length + ':';
         }
-         
+
 
         $(document).ready(function () {
-            var globalTimeout = null; 
+            const maxListItems=1000;
             $('#txtClientSearch').keyup(function () {
                 delay(this).enqueue(800, function () {
                     filterClients($('#txtClientSearch').val());
                 });
 
-                
-            }); 
+
+            });
+
+            $("#cbSelectAll").click(function () {
+                var myUL = document.querySelector('#ulClients');
+                var items = myUL.querySelectorAll('li:not([style*="display:none"]):not([style*="display: none"]) .icb');
+                items[0].parentNode.style.display = 'none';
+                for (i = 0; i < items.length; ++i) {
+                    items[i].checked = this.checked;
+                };
+                items[0].parentNode.style.display = 'block';
+                checkClient(0);
+            });
             //count message characters
             document.getElementById('txtMessage').onkeyup = function () {
                 document.getElementById('lblMessage').innerHTML = "Sporočilo (" + (640 - this.value.length)+"/640):";
@@ -380,64 +432,90 @@
             toastr.options.preventDuplicates = true;
             toastr.options.timeOut = 1000;
 
-           
+
             //create checkboxlist
             var myUL = document.createElement("ul");
-            myUL.style = "padding-left: 0px; list-style-type: none; max-height: 200px; overflow-y: scroll;";
-                myClients.forEach(function (item) {
-                    var myLI = document.createElement("li");
-                    myLI.id = item.Id;
-                    var myLIspan = document.createElement("span");
-                    myLIspan.innerHTML = item.FullName;
+            myUL.id = "ulClients";
+            myUL.className = "ulClients";
+            const fragment = document.createDocumentFragment();
+            let myLI = document.createElement("li");
+            let myLIspan = document.createElement("span");
 
-                    var myLIDiv = document.createElement("div");
-                    myLIDiv.addEventListener('click', function () { checkClient(this.id);});
+            let myLIDiv = document.createElement("div");
 
-                    myLIDiv.className = "form-control custom-control custom-checkbox";
-                    myLIDiv.style = "padding-left: 2rem;";
-                        var myLIDivInput = document.createElement("input");
-                    myLIDivInput.className  = "custom-control-input";
-                    myLIDivInput.type = "checkbox";
-                    myLIDivInput.id = "customCheckbox"+item.Id;
-                    
-                    var myLIDivLabel = document.createElement("label");
-                    myLIDivLabel.setAttribute("for" , "customCheckbox" + item.Id);
-                    myLIDivLabel.className ="custom-control-label";
-                    myLIDivLabel.innerHTML = item.FullName;
-                    $(myLIDiv).append(myLIDivInput)
-                    $(myLIDiv).append(myLIDivLabel)
+            if (myClients.length < maxListItems) { myLIDiv.className = "form-control custom-control custom-checkbox cCB"; }
+            else { myLIDiv.className = "cCB2"; }
+            let myLIDivInput = document.createElement("input");
+            if (myClients.length < maxListItems) { myLIDivInput.className = "icb custom-control-input"; }
+            else { myLIDivInput.className = "icb"; }
+            myLIDivInput.type = "checkbox";
 
-                    
-                    $(myLI).append(myLIDiv)
+            let myLIDivLabel = document.createElement("label");
+            if (myClients.length < maxListItems) { myLIDivLabel.className = "custom-control-label"; }
+            else { myLIDivLabel.className = "ccl"; }
+
+            myClients.forEach(function (item) {
+                let myLIClone = myLI.cloneNode(false);
+                myLIClone.id = item.Id;
+                let myLIspanClone = myLIspan.cloneNode(false);
+                myLIspanClone.innerHTML = item.FullName;
+                let myLIDivClone = myLIDiv.cloneNode(false);
+                let myLIDivInputClone = myLIDivInput.cloneNode(false);
+                myLIDivInputClone.addEventListener('click', function () { checkClient(item.Id); });
+                myLIDivInputClone.id = "cCB" + item.Id;
+                let myLIDivLabelClone = myLIDivLabel.cloneNode(false);
+                myLIDivLabelClone.setAttribute("for", "cCB" + item.Id);
+                myLIDivLabelClone.setAttribute("tags",  item.ct);
+                myLIDivLabelClone.innerHTML = item.FullName;
+                myLIDivClone.appendChild(myLIDivInputClone)
+                myLIDivClone.appendChild(myLIDivLabelClone)
+
+                myLIClone.appendChild(myLIDivClone)
+
+                fragment.appendChild(myLIClone)
+            });
+
+            myUL.appendChild(fragment)
+            document.getElementById('cblClients').appendChild(myUL);
 
 
-                    //$(myLI).append(myLIspan)
-                    $(myUL).append(myLI)
-                });
-                $('#cblClients').append(myUL);
-
-
-            $("#clientsearch").autocomplete({
-                minlength: 3,
-                delay: 200,
-                source: myClients,
-                select: function (event, ui) {
-                    hideKeyboard();
-                    $("#clientsearch").val(ui.item.label);
-                    SelectedClientID = ui.item.value;
-                    setClientForm(SelectedClientID);
-                    $("#clientsearch").blur();
-                    return false;
+            //create tag cloud
+            $.ajax({
+                type: "get",
+                url: apiURL + "/api/tags/",
+                contentType: "application/json; charset=utf-8",
+                headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    const fragment = document.createDocumentFragment();
+                    let myLI = document.createElement("li");
+                    myLI.className = "tc__choice px-1";
+                    result.forEach(function (item) {
+                        let myLIClone = myLI.cloneNode(false);
+                        myLIClone.innerHTML = item.title;
+                        myLIClone.setAttribute("data-id", item.id);
+                        fragment.appendChild(myLIClone)
+                    });
+                    document.getElementById('tagCloud').appendChild(fragment);
+                    $(".tc__choice").click(function () {
+                        //toggle active class
+                        $(this).toggleClass("active");
+                        TagCloud_Change();
+                        
+                    });
                 },
-                focus: function (event, ui) { event.preventDefault(); return false; }
-            });
-
-            
-
-            initTags();
+                error: function (xhr, status, error) {
+                    toastr.error("Error getting data:" + error);
+                }
             });
 
 
+            });
+
+        function TagCloud_Change() {
+            filterClients($('#txtClientSearch').val());
+        }
 
 
 
@@ -453,18 +531,7 @@
                 async: true,
                 success: function (msg) {
                     myClients = msg;
-                    $( "#clientsearch" ).autocomplete({
-                        minlength:3,
-                        delay:200,
-                        source: myClients,
-                        select: function (event, ui) {
-                            $("#clientsearch").val(ui.item.label);
-                            SelectedClientID = ui.item.value;
-                            setClientForm(SelectedClientID);
-                            return false;
-                        },
-                        focus:function (event, ui) {event.preventDefault(); return false;}
-                    });
+
                 },
                 error: function () {
                     toastr.error('Error filling clients')
@@ -473,240 +540,17 @@
 
         }
 
-        function cmdClientAdd_Click() {
-            setClientForm(0);
-            $('#cmdClientDelete').addClass('invisible')
-            $("#cmdClientSave").off('click').click(function (evt) {
-                if (SaveClient(0) != false) {
+       
 
-                }
-            });
+     
 
+       
 
-        }
-
-        function setClientForm(p_ID) {
-            if (p_ID == 0) {
-                //clear form
-                $("#txtClientFirstName").val('');
-                $("#txtClientLastName").val('');
-                $("#txtClientMobile").val('');
-                $("#txtClientEmail").val('');
-                $("#cbClientSMS").prop('checked', true);
-                $("#cbClientEmail").prop('checked', true);
-                fp.clear(); //$("#txtClientBirthday").val('');
-                $("#txtClientAddress").val('');
-                $("#txtClientZip").val('');
-                $("#txtClientNotes").val('');
-
-            }
-            else {
-                //fill form
-                $.ajax({
-                    type: "get",
-                    url: apiURL+"/api/client/"+p_ID,
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
-                    dataType: "json",
-                    async: true,
-                    success: function (result) {
-                        $("#txtClientFirstName").val(result.firstName);
-                        $("#txtClientLastName").val(result.lastName);
-                        $("#txtClientMobile").val(result.mobile);
-                        $("#txtClientEmail").val(result.email);
-                        $("#cbClientSMS").prop('checked', result.allowsSMS);
-                        $("#cbClientEmail").prop('checked', result.allowsEmail);
-                        fp.clear();
-                        if (result.birthday != null) {
-                            fp.setDate(new Date(result.birthday));
-                        }
-                        $("#txtClientAddress").val(result.address);
-                        $("#txtClientZip").val(result.zip);
-                        $("#txtClientNotes").val(result.notes);
-                        $("#txtTags").val(result.tags.map(a => a.id)).trigger('change');
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Error getting client data:" + error);
-                    }
-                });
-            }
-
-        }
-
-        function showClientDetail(p_ID) {
-            setClientForm(p_ID);
-            $('#cmdClientDelete').removeClass('invisible');
-            $("#cmdClientSave").off('click').click(function (evt) {
-                if (SaveClient(p_ID) != false) {  }
-            });
-            $("#cmdClientDelete").off('click').click(function (evt) {
-                if (DeleteClient(p_ID) != false) { }
-            });
-
-        }
-
-        function DeleteClient(p_ID) {
-            Swal.fire({
-                title: 'Zbrišem stranko?',
-                showDenyButton: true,
-                confirmButtonText: 'Da',
-                denyButtonText: 'Ne',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        type: "DELETE",
-                        url: apiURL + "/api/client/" + p_ID,
-                        contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
-                        dataType: "json",
-                        success: function (result) {
-                            if (result == "OK") { toastr.success("Stranka zbrisana"); GetClients(); return true; }
-                            else { toastr.error("Napaka:" + result); return false; }
-                        },
-                        error: function (xhr, status, error) {
-                            toastr.error("Napaka:" + error.toString());
-                            return false;
-                        }
-                    });
-
-                } else { return false; }
-            });
-        }
-
-        function SaveClient(p_ID) {
-            if ($('#dataform').valid()) {
-                var client={};
-                client.id = p_ID;
-                client.LocationId = parseInt($("#cboLocations").val());
-                client.FirstName = $('#txtClientFirstName').val();
-                client.LastName =$("#txtClientLastName").val();
-                client.Mobile =$("#txtClientMobile").val();
-                client.Email =$("#txtClientEmail").val();
-                client.AllowsSMS = $("#cbClientSMS").prop('checked');
-                client.AllowsEmail = $("#cbClientEmail").prop('checked');
-                if (dayjs.utc($("#txtClientBirthday").val(),"l").isValid())
-                { client.Birthday = dayjs.utc($("#txtClientBirthday").val(),"l");}
-                client.Address =$("#txtClientAddress").val();
-                client.Zip =$("#txtClientZip").val();
-                client.Notes = $("#txtClientNotes").val();
-
-                var myTags = [];
-                $('#txtTags').select2('data').forEach(function (item) {
-                    var clientTag = {};
-                    clientTag.clientId = p_ID;
-                    clientTag.tagId = item.id;
-                    var tag = { id:0, Title: 'Title'};
-
-                    if (item.added == true)
-                    { tag.id == 0; tag.Title = item.text; }
-                    else
-                    { tag.id == item.id }
-                    clientTag.Tag=tag;
-
-                    myTags.push(clientTag);
-                });
-
-                client.ClientTags = myTags;
-
-                client.Active = true;
-                $.ajax({
-                    type: "post",
-                    data: JSON.stringify(client),
-                    url: apiURL+"/api/client/",
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                        if (result == "OK") { toastr.success("Shranjeno"); GetClients(); return true; }
-                        else { toastr.error("Napaka:"+result); return false; }
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Napaka:" + error.toString());
-                        return false;
-                    }
-                });
-            } else { return false; }
-        }
-
-        //#region tags
-        var lastResults = [];
+        
 
 
-        function initTags() {
 
-            //get tags
-            var myTags= [];
-
-            $.ajax({
-                    type: "get",
-                    url: apiURL+"/api/tags/",
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
-                    dataType: "json",
-                    async: false,
-                    success: function (result) {
-                        var retval = [];
-                        result.forEach(function(item) {
-                            retval.push({ id: item.id, text: item.title })
-                            });
-                        myTags= retval;
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Error getting data:" + error);
-                    }
-                });
-
-            $("#txtTags").select2({
-                multiple: true,
-                tags: true,
-                placeholder: "",
-                tokenSeparators: [","],
-
-                data: myTags,
-
-                createTag: function (params) {
-                    var term = $.trim(params.term);
-                    if (term === '') { return null; }
-                    //var text = term + (lastResults.some(function (r) { return r.text == term }) ? "" : " (nova oznaka)");
-                    return {
-                        id: lastResults.length,
-                        text: term, added: true, tagId: 0
-                    };
-                },
-                insertTag: function (data, tag) {
-                    // Insert the tag at the end of the results
-                    data.push(tag);
-                  }
-            });
-
-
-            $('#txtTags').on("select2:select", function (e) {
-                var data = e.params.data;
-                if (data.added) {
-                    Swal.fire({
-                        title: "Želite dodati novo oznako " + data.text.split('(')[0] + "?",
-                        showDenyButton: true,
-                        confirmButtonText: 'Da',
-                        denyButtonText: 'Ne',
-                    }).then((result) => {
-                        if (result.isDenied) {
-                            var selectedTags = $("#txtTags").val();
-                            var index = selectedTags.indexOf(data.id);
-                            selectedTags.splice(index, 1);
-                            if (selectedTags.length == 0) {
-                                $("#txtTags").val("").trigger("change");
-                            } else {
-                                $("#txtTags").val(selectedTags).trigger("change");
-                            }
-                        }
-                    });
-                }
-            });
-
-        }
-
-
-        //#endregion
+        
     </script>
 }
 
