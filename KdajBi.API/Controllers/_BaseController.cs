@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Security.Claims;
 
 namespace KdajBi.API.Controllers
 {
@@ -31,6 +32,15 @@ namespace KdajBi.API.Controllers
         protected int _CurrentUserCompanyID()
         {
             return int.Parse(User.Claims.First(i => i.Type == "CompanyId").Value);
+        }
+
+        protected string _CurrentUserCompanyTaxID()
+        {
+            return User.Claims.First(i => i.Type == "CompanyTaxId").Value;
+        }
+        protected string _CurrentUserEmail()
+        {
+            return User.FindFirst(ClaimTypes.NameIdentifier).Value;
         }
     }
 }

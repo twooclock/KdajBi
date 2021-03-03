@@ -247,7 +247,7 @@
                     type: "get",
                     url: apiURL+"/api/Locations/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -281,7 +281,7 @@
                     type: "DELETE",
                     url: apiURL+"/api/locations/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     success: function (result) {
                         if (result == "OK") { GetTable(); return true; }
@@ -308,7 +308,7 @@
                     data: JSON.stringify(company),
                     url: apiURL+"/api/location/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { GetTable(); return true; }

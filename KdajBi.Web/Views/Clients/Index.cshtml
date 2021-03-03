@@ -190,7 +190,7 @@
                 type: "GET",
                 url:  apiURL + "/api/clients/"+$("#cboLocations").val(),
                 contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                headers: { 'Authorization': 'Bearer '+getAPIToken() },
                 dataType: "json",
                 async: true,
                 success: function (msg) {
@@ -272,7 +272,7 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + apiToken.AccessToken);}
+                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
 
                 },
                 'columns': [
@@ -332,7 +332,7 @@
                     type: "get",
                     url: apiURL+"/api/client/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -376,7 +376,7 @@
                     type: "DELETE",
                     url: apiURL+"/api/client/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     success: function (result) {
                         if (result == "OK") { GetClientsTable(); return true; }
@@ -413,7 +413,7 @@
                     data: JSON.stringify(client),
                     url: apiURL+"/api/client/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { GetClientsTable(); return true; }

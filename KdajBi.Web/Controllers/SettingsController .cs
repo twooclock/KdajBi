@@ -16,12 +16,13 @@ namespace KdajBi.Web.Controllers
 {
     [Authorize(Roles = "Admin")]
     [Controller]
-    public class LocationsController : _BaseController
+    public class SettingsController : _BaseController
     {
-        public LocationsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider)
+        public SettingsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider)
             : base(context, userManager, signInManager, logger, emailSender, apiTokenProvider)
         {
         }
+        [Route("/settings/")]
         public IActionResult Index()
         {
             long curruserCompanyId = _CurrentUserCompanyID();
@@ -37,27 +38,6 @@ namespace KdajBi.Web.Controllers
             return View(myVM);
         }
 
-        [Route("/location/{id}")]
-        public IActionResult Location(long id)
-        {
-            try
-            {
-                vmLocation myVM = new vmLocation();
-                myVM.Location = _context.Locations.Include(s => s.Schedule).FirstOrDefault(x => x.Id == id);
-
-                if (myVM.Location != null)
-                {
-                    myVM.Token = _GetToken();
-                    return View(myVM);
-                }
-                else
-                { return new NotFoundResult(); }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error /location/{id}");
-                throw;
-            }
-        }
+        
     }
 }

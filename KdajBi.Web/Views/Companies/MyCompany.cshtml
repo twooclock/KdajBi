@@ -471,7 +471,7 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + apiToken.AccessToken);}
+                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
 
                 },
                 'columns': [
@@ -526,7 +526,7 @@
                     type: "get",
                     url: apiURL+"/api/myappuser/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -568,7 +568,7 @@
                         type: "DELETE",
                         url: apiURL + "/api/myappuser/" + p_ID,
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
+                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") { toastr.success("Zbrisano"); GetEmployeesTable(); return true; }
@@ -597,7 +597,7 @@
                     data: JSON.stringify(user),
                     url: apiURL+"/api/myappuser",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { toastr.success("Shranjeno"); GetEmployeesTable(); return true; }
@@ -632,7 +632,7 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + apiToken.AccessToken);}
+                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
 
                 },
                 'columns': [
@@ -687,7 +687,7 @@
                     type: "get",
                     url: apiURL+"/api/location/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -729,7 +729,7 @@
                         type: "DELETE",
                         url: apiURL + "/api/location/" + p_ID,
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
+                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") { toastr.success("Zbrisano"); GetLocationsTable(); return true; }
@@ -757,7 +757,7 @@
                     data: JSON.stringify(location),
                     url: apiURL+"/api/location",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { toastr.success("Shranjeno"); GetLocationsTable(); return true; }
@@ -793,7 +793,7 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + apiToken.AccessToken);}
+                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
 
                 },
                 'columns': [
@@ -844,7 +844,7 @@
                     type: "get",
                     url: apiURL+"/api/tag/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -884,7 +884,7 @@
                         type: "DELETE",
                         url: apiURL + "/api/tag/" + p_ID,
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
+                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") { toastr.success("Zbrisano"); GetTagsTable(); return true; }
@@ -912,7 +912,7 @@
                     data: JSON.stringify(tag),
                     url: apiURL+"/api/tag",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { toastr.success("Shranjeno");GetTagsTable(); return true; }

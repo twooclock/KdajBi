@@ -54,7 +54,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   </form>
 
                 Right navbar links -->
-               
+
                 @await Component.InvokeAsync("LocationsCombo", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
 
                 <ul class="navbar-nav ml-auto">
@@ -90,7 +90,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                             <a id="linkLocations" href="#" onclick="showLocations()">Saloni</a>
                                         </div>
                                         <div class="col-4 text-center">
-                                            <a id="linkEmployees" href="#" onclick="showEmployees()">Zaposleni</a>
+                                            <a id="linkSettings" href="~/settings" >Nastavitve</a>
                                         </div>
                                     }
                                 </div>
@@ -209,13 +209,34 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </p>
                             </a>
                         </li>
-                        <li class="nav-item  ">
-                            <a href="@Url.Content("~/clients/Notification/")" class="nav-link ">
+                        <li class="nav-item has-treeview menu-open">
+                            <a href="#" class="nav-link ">
                                 <i class="nav-icon fas fa-bullhorn"></i>
                                 <p>
                                     Obveščanje strank
                                 </p>
                             </a>
+                            <ul class="nav nav-treeview" style="display: block;">
+                                <li class="nav-item">
+                                    <a href="@Url.Content("~/sms/Notification/")" class="nav-link">
+                                        <i class="far nav-icon"></i>
+                                        <p>Obvesti prek SMS</p>
+                                    </a>
+                                </li>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    @if (User.HasClaim("Nadzornik", bool.TrueString))
+                                    {
+                                        <li class="nav-item">
+                                            <a href="@Url.Content("~/sms/Campaigns")" class="nav-link">
+                                                <i class="far nav-icon"></i>
+                                                <p>Pregled poslanih SMS</p>
+                                            </a>
+                                        </li>
+                                    }
+                                }
+
+                            </ul>
                         </li>
                         <li class="nav-item has-treeview menu-open">
                             <a href="#" class="nav-link active">
@@ -287,10 +308,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- AdminLTE App -->
     <script src="~/js/adminlte.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script> 
+    <script>
         function showLocations() {
-             window.location = "../location/"+$('#cboLocations').val();
-    }
+            window.location = @Url.Content("~/location/") + $('#cboLocations').val();
+        }
     </script>
     @RenderSection("Scripts", required: false)
 </body>

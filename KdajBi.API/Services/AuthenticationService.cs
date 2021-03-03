@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using KdajBi.Core.Models;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace KdajBi.API.Services
 {
@@ -26,8 +27,11 @@ namespace KdajBi.API.Services
 
         public async Task<TokenResponse> CreateAccessTokenAsync(string email, string password)
         {
-            var user = await _userManager.FindByEmailAsync(email);
-           
+            //var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.Users
+                    .Include(x => x.Company)
+                    .SingleAsync(x => x.NormalizedEmail == email);
+
             if (user == null)
             {
                 return new TokenResponse(false, "Invalid credentials.", null);
@@ -51,7 +55,10 @@ namespace KdajBi.API.Services
 
         public async Task<TokenResponse> CreateAccessTokenForAsync(string email)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            //var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.Users
+                    .Include(x => x.Company)
+                    .SingleAsync(x => x.NormalizedEmail == email);
 
             if (user == null)
             {
@@ -86,7 +93,10 @@ namespace KdajBi.API.Services
                 return new TokenResponse(false, "Expired refresh token.", null);
             }
 
-            var user = await _userManager.FindByEmailAsync(userEmail);
+            //var user = await _userManager.FindByEmailAsync(userEmail);
+            var user = await _userManager.Users
+                    .Include(x => x.Company)
+                    .SingleAsync(x => x.NormalizedEmail == userEmail);
             if (user == null)
             {
                 return new TokenResponse(false, "Invalid refresh token user.", null);

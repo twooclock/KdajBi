@@ -23,6 +23,10 @@ namespace KdajBi.Core
         public DbSet<Tag> Tags { get; set; }
         public DbSet<ClientTag> ClientTags { get; set; }
 
+        public DbSet<SmsCampaign> SmsCampaigns { get; set; }
+        public DbSet<SmsMsg> SmsMsgs { get; set; }
+        public DbSet<Setting> Settings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

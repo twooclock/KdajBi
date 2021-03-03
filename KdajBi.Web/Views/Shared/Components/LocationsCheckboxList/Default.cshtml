@@ -1,0 +1,20 @@
+﻿@using KdajBi.Core.Models;
+@model IEnumerable<Location>
+
+<div>
+    @{int i = 0; }
+    @foreach (var item in Model)
+    {
+         i++;
+        <div class="custom-control custom-checkbox">
+            <input class="custom-control-input" type="checkbox" id="@Html.Raw("cbL" + i.ToString())" value="@item.Id">
+            <label for="@Html.Raw("cbL" + i.ToString())" class="custom-control-label">@Html.Raw(item.Name)</label>
+        </div>
+    }
+
+
+
+
+</div>
+
+

@@ -136,6 +136,8 @@ namespace KdajBi
             services.AddTransient<IEmailSender, EmailSender>();
             //services.AddTransient<IEmailService, EmailSender>();
             services.AddAutoMapper(this.GetType().Assembly);
+            services.AddTransient<ISmsInfo, SmsInfo>(s => new SmsInfo(Configuration.GetSection("Settings")["SmsInfoWS"]));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

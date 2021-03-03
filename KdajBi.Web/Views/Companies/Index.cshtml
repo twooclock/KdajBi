@@ -171,7 +171,7 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + apiToken.AccessToken);}
+                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
                     
                 },
                 'columns': [
@@ -222,7 +222,7 @@
                     type: "get",
                     url: apiURL+"/api/companies/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -256,7 +256,7 @@
                     type: "DELETE",
                     url: apiURL+"/api/Companies/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     success: function (result) {
                         if (result == "OK") { GetTable(); return true; }
@@ -283,7 +283,7 @@
                     data: JSON.stringify(company),
                     url: apiURL+"/api/company/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { GetTable(); return true; }

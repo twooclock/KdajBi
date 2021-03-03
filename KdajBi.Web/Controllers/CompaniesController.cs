@@ -13,7 +13,6 @@ namespace KdajBi.Web.Controllers
     [Controller]
     public class CompaniesController : _BaseController
     {
-        
         public CompaniesController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider)
             : base(context, userManager, signInManager, logger, emailSender, apiTokenProvider)
         {

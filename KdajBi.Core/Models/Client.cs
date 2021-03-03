@@ -48,6 +48,9 @@ namespace KdajBi.Core.Models
         public bool IsCompany { get; set; }
 
         public string Notes { get; set; }
+        
+        [MaxLength(1)]
+        public string Sex { get; set; }
 
         [JsonIgnore]
         public ICollection<ClientTag> ClientTags { get; set; }

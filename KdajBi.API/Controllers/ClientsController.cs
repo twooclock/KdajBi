@@ -42,7 +42,7 @@ namespace KdajBi.API.Controllers
             { v = v.Where(w => w.CompanyId == _CurrentUserCompanyID() && w.LocationId == locationid); }
             else
             { v = v.Where(w => w.CompanyId == _CurrentUserCompanyID()); }
-            v = v.Include(w => w.Tags);
+            //v = v.Include(w => w.Tags);
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
             {
@@ -61,7 +61,7 @@ namespace KdajBi.API.Controllers
         public async Task<ActionResult<Client>> GetClients(long locationid)
         {
             if (LocationIsMine(locationid) == false) { return NotFound(); }
-            var Clients =  _context.Clients.Where(c => c.LocationId == locationid).Include(t => t.ClientTags).ThenInclude(t => t.Tag).ToListAsync();
+            var Clients =  await _context.Clients.Where(c => c.LocationId == locationid).Include(t => t.ClientTags).ThenInclude(t => t.Tag).ToListAsync();
 
             if (Clients == null) { return NotFound(); }
 

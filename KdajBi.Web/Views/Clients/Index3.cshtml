@@ -69,10 +69,10 @@
                                 <a class="nav-link active" id="general-tab" data-toggle="pill" href="#general" role="tab" aria-controls="general" aria-selected="true">Stranka</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="location-tab" data-toggle="pill" href="#location" role="tab" aria-controls="location" aria-selected="false">Saloni</a>
+                                <a class="nav-link" id="location-tab" data-toggle="pill" href="#location" role="tab" aria-controls="location" aria-selected="false">Splošno</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="employee-tab" data-toggle="pill" href="#employee" role="tab" aria-controls="employee" aria-selected="false">Zaposleni</a>
+                                <a class="nav-link" id="employee-tab" data-toggle="pill" href="#employee" role="tab" aria-controls="employee" aria-selected="false">Opombe</a>
                             </li>
 
                         </ul>
@@ -240,30 +240,7 @@
     <script type="text/javascript">
 
 
-        function getAPIToken() {
-            var tnow = (621355968e9 + 10000 + (new Date()).getTime() * 1e4);
-            var reqdata = { Token: apiToken.RefreshToken, UserEmail: apiUser };
-            if (tnow < apiToken.Expiration)
-            { return apiToken.AccessToken; }
-            else {
-                //request new token
-                $.ajax({
-                    type: "post",
-                    data: JSON.stringify(reqdata),
-                    url: apiURL+"/api/token/refresh",
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                        return apiToken.AccessToken;
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Napaka:" + error.toString());
-                        return false;
-                    }
-                });
-            }
-        }
+       
 
         function hideKeyboard() {
             //this set timeout needed for case when hideKeyborad
@@ -329,39 +306,36 @@
 
         $(document).ready(function () {
 
-            // load locale and Get flatpicker localized instance
-            loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
-                .then(function () {
-                    dayjs.locale(navigator.language.slice(0, 2));
-                    loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
-                        .then(function () {
-                            fp = $(".flatpickr").flatpickr({
-                                altInput: true,
-                                locale: dayjs.locale(),
-                                clickOpens: false, allowInput: true,
-                                wrap: true,
-                                altFormat: dayjs.localeData().longDateFormat('l'),
-                                ariaDateFormat: dayjs.localeData().longDateFormat('l'),
-                                dateFormat: dayjs.localeData().longDateFormat('l'),
-                                parseDate: (datestr, format) => {
-                                    var fmt = format;
-                                    if (fmt == 'Y-m-d') { fmt = 'YYYY-MM-DD'; }
-                                    return dayjs(datestr, fmt).toDate();
-                                },
-                                formatDate: (date, format, locale) => {
-                                    if (format != 'F j, Y') {
-                                        return dayjs(date).format(format);
+            if (navigator.language.slice(0, 2) != "en") {
+                // load locale and Get flatpicker localized instance
+                loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
+                    .then(function () {
+                        dayjs.locale(navigator.language.slice(0, 2));
+                        loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
+                            .then(function () {
+                                fp = $(".flatpickr").flatpickr({
+                                    altInput: true,
+                                    locale: dayjs.locale(),
+                                    clickOpens: false, allowInput: true,
+                                    wrap: true,
+                                    altFormat: dayjs.localeData().longDateFormat('l'),
+                                    ariaDateFormat: dayjs.localeData().longDateFormat('l'),
+                                    dateFormat: dayjs.localeData().longDateFormat('l'),
+                                    parseDate: (datestr, format) => {
+                                        var fmt = format;
+                                        if (fmt == 'Y-m-d') { fmt = 'YYYY-MM-DD'; }
+                                        return dayjs(datestr, fmt).toDate();
+                                    },
+                                    formatDate: (date, format, locale) => {
+                                        if (format != 'F j, Y') {
+                                            return dayjs(date).format(format);
+                                        }
                                     }
-                                }
+                                });
                             });
-                        });
-                });
+                    });
 
-
-
-
-
-
+            }
             //bind cboLocations
             $("#cboLocations").off('change').change(function (evt) {
                 Cookies.set('DefaultLocation', $(this).val());

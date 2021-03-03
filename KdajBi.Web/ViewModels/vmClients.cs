@@ -10,4 +10,6 @@ namespace KdajBi.Web.ViewModels
     {
         public string ClientsJson;
     }
+
+    
 }

@@ -12,7 +12,7 @@
     <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
     <link href="~/plugins/bs-stepper/css/bs-stepper.min.css" rel="stylesheet" />
     <style>
-       
+
 
         .tc__rendered {
             list-style-type: none;
@@ -26,13 +26,15 @@
             float: left;
             border-radius: 4px;
         }
-        .tc__choice.active {
-            background-color: #3c8dbc;
-        }
+
+            .tc__choice.active {
+                background-color: #3c8dbc;
+            }
 
         .cCB {
             padding-left: 2rem;
         }
+
         .cCB2 {
             padding-left: 0.7rem;
         }
@@ -43,6 +45,7 @@
             max-height: 300px;
             overflow-y: scroll;
         }
+
         .ccl {
             padding-left: 0.5rem;
         }
@@ -81,65 +84,116 @@
                         </button>
                     </div>
                 </div>
-                <div class="bs-stepper-content">
+                <div class="bs-stepper-content pb-0">
                     <div id="step-nl-1" class="content">
-                        <p id="lblStranke" class="">Stranke</p>
-                        <div id="cblClients" class="col-md-6">
-                            <div id="cblHeader" class="form-control custom-control custom-checkbox cCB h-100">
+                        <div class="row">
+
+                        </div>
+                        <div id="notifyTypeSelect" class="row">
+                            <button type="button" class="btn btn-primary col-12 py-4" onclick="setNotify(0);">Obvestil bom posamezne stranke</button>
+                            <button type="button" class="btn btn-primary col-12  my-2 py-4" onclick="setNotify(1);">Obvestil bom vse stranke izbrane lokacije</button>
+                            <button type="button" class="btn btn-primary col-12 py-4" onclick="setNotify(2);">Obvestil bom vse ženske/moške</button>
+                        </div>
+                        <div class="row">
+                            <div id="cblClients" class="col-md-6" style="display: none">
+                                <p id="lblStranke" class="">Poiščite in označite posamezne stranke ali ...</p>
+                                <div id="cblHeader" class="form-control custom-control custom-checkbox cCB">
+                                    <div class="row">
+                                        <div class="col-0 pl-2">
+                                            <input class="custom-control-input" type="checkbox" id="cbSelectAll"><label for="cbSelectAll" class="custom-control-label"> </label>
+                                        </div>
+                                        <div class="col-md-5 p-0">
+                                            <input id="txtClientSearch" style="border:0" type="text" value="" placeholder="Stranka...">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul id="tagCloud" class="tc__rendered p-0">
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="cblLocations" class="col-md-6" style="display: none">
                                 <div class="row">
-                                    <div class="col-0 pl-2">
-                                        <input class="custom-control-input" type="checkbox" id="cbSelectAll"><label for="cbSelectAll" class="custom-control-label"> </label>
-                                    </div>
-                                    <div class="col-md-5 p-0">
-                                        <input id="txtClientSearch" style="border:0" type="text" value="" placeholder="Stranka...">
-                                    </div>
-                                    <div  class="col-md-6">
-                                        <ul id="tagCloud"  class="tc__rendered p-0">
-                                        </ul>
+                                    <p>...označite posamezne lokacije ali ...</p>
+                                </div>
+                                <div class="row">
+                                    @await Component.InvokeAsync("LocationsCheckboxList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
+                                </div>
+                            </div>
+                            <div id="cblSex" class="col-md-6" style="display: none">
+                                <div class="row">
+                                    <p style="margin-top: 16px;">...izberite:</p>
+                                </div>
+
+                                <div class="row">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-radio ">
+                                            <input class="custom-control-input" type="radio" id="rbSexF" name="rbSex" onclick="ToNextStep(2);">
+                                            <label for="rbSexF" class="custom-control-label ">vse ženske</label>
+                                        </div>
+                                        <div class="custom-control custom-radio ">
+                                            <input class="custom-control-input" type="radio" id="rbSexM" name="rbSex" onclick="ToNextStep(2);">
+                                            <label for="rbSexM" class="custom-control-label ">vse moške</label>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <button class="btn btn-primary" onclick="stepper2.next()">Naprej</button>
+
+
+
+                        <button id="btnNext" class="btn btn-primary" onclick="ToNextStep(2);" style="display: none">Naprej</button>
                     </div>
-                    <div id="step-nl-2" class="content">
-                        <div class="form-group mb-1">
-                            <label id="lblMessage" for="txtMessage">
-                                Sporočilo:
-                            </label>
-                            <textarea rows="5" id="txtMessage" name="txtMessage" class="form-control" maxlength="640"></textarea>
+                </div>
+                <div id="step-nl-2" class="content">
+                    <div class="form-group mb-1">
+                        <label id="lblMessage" for="txtMessage">
+                            Sporočilo:
+                        </label>
+                        <textarea rows="5" id="txtMessage" name="txtMessage" class="form-control" maxlength="640"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="ToNextStep(3);">Naprej</button>
+                </div>
+                <div id="step-nl-3" class="content">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <textarea rows="5" id="lblMsg" name="txtMessage" class="form-control" readonly></textarea>
                         </div>
-                        <button class="btn btn-primary" onclick="stepper2.next()">Naprej</button>
                     </div>
-                    <div id="step-nl-3" class="content">
-                        <div id="test2" class="form-group mb-1 ">
-                            <label for="txtNotificationTime">
-                                Sporočilo pošlji:
-                            </label>
-                            <div class="input-group flatpickr">
-                                <input type="text" id="txtNotificationTime" name="txtNotificationTime" class="form-control col-md-6" aria-describedby="basic-addonY" data-input />
-                                <div class="input-group-append">
-                                    <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
-                                        <i class="fas fa-calendar"></i>
-                                    </div>
+                    <div class="row">
+                        <div id="lblSending" class="col-md-6 font-weight-bold">V pošiljanju...</div>
+                        <div id="lblSmsInfo" class="col-md-6"></div>
+                    </div>
+                    <div id="test2" class="form-group mb-1 ">
+                        <label for="txtNotificationTime">
+                            Sporočila pošlji:
+                        </label>
+                        <div class="input-group flatpickr col-md-6 p-0">
+                            <input type="text" id="txtNotificationTime" name="txtNotificationTime" class="form-control " aria-describedby="basic-addonY" data-input />
+                            <div class="input-group-append">
+                                <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
+                                    <i class="fas fa-calendar"></i>
                                 </div>
                             </div>
-                            <div class="form-group mb-1">
-                                <label for="txtDebug">
-                                    Debug:
-                                </label>
-                                <textarea rows="10" id="txtDebug" name="txtDebug" class="form-control"></textarea>
-                            </div>
                         </div>
-                        <button class="btn btn-primary" onclick="sendMessage()">Pošlji</button>
-                        <button type="button" class="btn btn-default" onclick="test();">TEST</button>
+                        <div class="form-group mb-1" style="display:none">
+                            <label for="txtDebug">
+                                Debug:
+                            </label>
+                            <textarea rows="10" id="txtDebug" name="txtDebug" class="form-control"></textarea>
+                        </div>
                     </div>
+                    <button class="btn btn-primary" onclick="sendMessage()">Pošlji</button>
+                    <button type="button" class="btn btn-default" style="display:none" onclick="test();">TEST</button>
                 </div>
             </div>
         </div>
-
     </div>
-    <br />
+
+</div>
+<br />
 
 
 </div>
@@ -170,30 +224,7 @@
 
     <script type="text/javascript">
 
-        function getAPIToken() {
-            var tnow = (621355968e9 + 10000 + (new Date()).getTime() * 1e4);
-            var reqdata = { Token: apiToken.RefreshToken, UserEmail: apiUser };
-            if (tnow < apiToken.Expiration)
-            { return apiToken.AccessToken; }
-            else {
-                //request new token
-                $.ajax({
-                    type: "post",
-                    data: JSON.stringify(reqdata),
-                    url: apiURL+"/api/token/refresh",
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                        return apiToken.AccessToken;
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Napaka:" + error.toString());
-                        return false;
-                    }
-                });
-            }
-        }
+
 
         function hideKeyboard() {
             //this set timeout needed for case when hideKeyborad
@@ -271,16 +302,17 @@
 
 
         var fp;
+        var notifyType;
 
         var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
 
 
         @await Html.PartialAsync("_ApiAccess")
 
-        var stepper2 = new Stepper(document.querySelector('#stepper2'), {
-            linear: false,
-            animation: true
-        })
+       var stepper2 = new Stepper(document.getElementById('stepper2'), {
+                linear: false,
+                animation: true
+            })
 
         function formatDate(date) {
             var d = new Date(date),
@@ -296,6 +328,7 @@
 
             return [day, month, year, hour,min].join('.');
         }
+
         function test() {
             var tekst = $('#txtDebug').val();
             tekst = 'fp.selectedDates:' + formatDate(fp.selectedDates[0]) + 'utc:' + new Date(dayjs(fp.selectedDates[0]).utc()) + '\n' + tekst;
@@ -303,12 +336,86 @@
             $('#txtDebug').val(tekst)
             return false;
         }
+        function ToNextStep(p_Step) {
+            if (p_Step == 2)
+            {
+                var smsc = getSmscObject();
+                if (smsc.Recipients.length > 0) { stepper2.next(); }
+                else { return false; }
+            }
+            if (p_Step == 3)
+            {
+                if ($('#txtMessage').val().length > 0) { stepper2.next(); }
+                else { return false; }
+            }
+
+        }
+        function getSmscObject() {
+
+            var smsc={};
+            smsc.CampaignType = notifyType;
+            smsc.MsgTxt = $('#txtMessage').val();
+            smsc.SendAfter= new Date(dayjs(fp.selectedDates[0]).utc());
+            switch (notifyType)
+            {
+                case 0:
+                    var Recipients = []
+                    $("#ulClients input:checkbox:checked").each(function () {
+                        Recipients.push($(this).attr("id").substring(3));
+                    });
+                    smsc.Recipients = Recipients;
+                    break;
+                case 1:
+                    var Recipients = []
+                    $("#cblLocations input:checkbox:checked").each(function () {
+                        Recipients.push($(this).val());
+                    });
+                    smsc.Recipients = Recipients;
+                    break;
+                case 2:
+                    var Recipients = [];
+                    if ($("#rbSexF").prop("checked")) { Recipients[0] = "F"; }
+                    if ($("#rbSexM").prop("checked")) { Recipients[0] = "M"; }
+                    smsc.Recipients = Recipients;
+                    break;
+            }
+            return smsc;
+        }
 
         function sendMessage() {
-            var sendMsg = { Message: $('#txtMessage').val(), SendDate: fp.selectedDates[0] }
-            var tekst = $('#txtDebug').val();
-            tekst = 'send:' + JSON.stringify(sendMsg) + '\n' + tekst;
-            $('#txtDebug').val(tekst)
+            Swal.fire({
+                title: 'Pošljem sporočila?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: "post",
+                        data: JSON.stringify(getSmscObject()),
+                        url: apiURL + "/api/Sms/QueueSmsCampaign",
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result == "OK") {
+                                Swal.fire('Sporočila so v pošiljanju.').then((result) => {
+                                    window.location.href = '@Url.Action("Index", "Home")';
+                                    return true;
+                                });
+                            }
+                            else { toastr.error("Napaka pri pošiljanju:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka pri pošiljanju:" + error.toString());
+                            return false;
+                        }
+                    });
+
+                } else { return false; }
+            });
+
+
         }
 
 
@@ -345,6 +452,7 @@
             }
             myUL.style.display = 'block';
         }
+
         function getSelected() {
             return $('.ulClients input:checked').length;
         }
@@ -356,28 +464,54 @@
 
 
         $(document).ready(function () {
-            const maxListItems=1000;
-            $('#txtClientSearch').keyup(function () {
-                delay(this).enqueue(800, function () {
-                    filterClients($('#txtClientSearch').val());
-                });
 
 
-            });
+            document.getElementById('stepper2').addEventListener('shown.bs-stepper', function (event) {
+                if (event.detail.indexStep == 2) {
+                document.getElementById('lblMsg').innerHTML = $('#txtMessage').val();
 
-            $("#cbSelectAll").click(function () {
-                var myUL = document.querySelector('#ulClients');
-                var items = myUL.querySelectorAll('li:not([style*="display:none"]):not([style*="display: none"]) .icb');
-                items[0].parentNode.style.display = 'none';
-                for (i = 0; i < items.length; ++i) {
-                    items[i].checked = this.checked;
-                };
-                items[0].parentNode.style.display = 'block';
-                checkClient(0);
-            });
+                    //show sms limit info
+                     $.ajax({
+                        type: "post",
+                        data: JSON.stringify(getSmscObject()),
+                        url: apiURL+"/api/Sms/SmsInfo",
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                        dataType: "json",
+                         success: function (result) {
+                             var smsInfo = "";
+                             var cssClass = "text-success";
+                             if (result.limit >= result.recipients)
+                             { smsInfo = "Pošljete lahko " + result.limit + " sporočil."; }
+                             else
+                             {
+                                 smsInfo = "Pošljete lahko " + result.limit + " sporočil.";
+                                 smsInfo = (result.recipients - result.limit) + " sporočil ne bo poslanih! Naročite dodatne sms-e!";
+                                 cssClass = "text-warning";
+                             }
+                             if (result.limit == 0) { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger";}
+                             if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
+
+                             $('#lblSending').text("Pripravljenih " + result.recipients+" sporočil.");
+                             $('#lblSmsInfo').removeClass("text-success");
+                             $('#lblSmsInfo').removeClass("text-warning");
+                             $('#lblSmsInfo').removeClass("text-danger");
+                             $('#lblSmsInfo').addClass(cssClass);
+                             $('#lblSmsInfo').text(smsInfo);
+
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka:" + error.toString());
+                            return false;
+                        }
+                    });
+                }
+            })
+
+
             //count message characters
             document.getElementById('txtMessage').onkeyup = function () {
-                document.getElementById('lblMessage').innerHTML = "Sporočilo (" + (640 - this.value.length)+"/640):";
+                document.getElementById('lblMessage').innerHTML = "Sporočilo (" + (640 - this.value.length) + "/640):";
             };
 
             // load locale and Get flatpicker localized instance
@@ -405,7 +539,7 @@
                                     if (fmt == 'H:i:S') { fmt = 'HH:mm'; }
                                     var tekst = $('#txtDebug').val();
                                     tekst = 'parseDate(' + datestr + ',' + fmt + ') return:' + formatDate(dayjs(datestr, fmt).toDate()) + '\n' + tekst;
-                                    $('#txtDebug').val(tekst)
+                                    $('#txtDebug').val(tekst);
                                     return dayjs(datestr, fmt).toDate();
                                 },
                                 formatDate: (date, format, locale) => {
@@ -432,8 +566,56 @@
             toastr.options.preventDuplicates = true;
             toastr.options.timeOut = 1000;
 
+        });
 
-            //create checkboxlist
+        function TagCloud_Change() {
+            filterClients($('#txtClientSearch').val());
+        }
+
+
+
+        function GetClients() {
+
+            //fill client search
+            $.ajax({
+                type: "GET",
+                url:  apiURL + "/api/clients/getclientslist/"+$("#cboLocations").val(),
+                contentType: "application/json; charset=utf-8",
+                headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                dataType: "json",
+                async: true,
+                success: function (msg) {
+                    myClients = msg;
+
+                },
+                error: function () {
+                    toastr.error('Error filling clients')
+                }
+            });
+
+        }
+
+        function CreateSelectClientsUI() {
+            const maxListItems=1000;
+            $('#txtClientSearch').keyup(function () {
+                delay(this).enqueue(800, function () {
+                    filterClients($('#txtClientSearch').val());
+                });
+
+
+            });
+
+            $("#cbSelectAll").click(function () {
+                var myUL = document.querySelector('#ulClients');
+                var items = myUL.querySelectorAll('li:not([style*="display:none"]):not([style*="display: none"]) .icb');
+                items[0].parentNode.style.display = 'none';
+                for (i = 0; i < items.length; ++i) {
+                    items[i].checked = this.checked;
+                };
+                items[0].parentNode.style.display = 'block';
+                checkClient(0);
+            });
+             //create checkboxlist
             var myUL = document.createElement("ul");
             myUL.id = "ulClients";
             myUL.className = "ulClients";
@@ -477,6 +659,7 @@
 
             myUL.appendChild(fragment)
             document.getElementById('cblClients').appendChild(myUL);
+            //create locations list
 
 
             //create tag cloud
@@ -484,7 +667,7 @@
                 type: "get",
                 url: apiURL + "/api/tags/",
                 contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer ' + apiToken.AccessToken },
+                headers: { 'Authorization': 'Bearer ' + getAPIToken() },
                 dataType: "json",
                 async: false,
                 success: function (result) {
@@ -502,55 +685,43 @@
                         //toggle active class
                         $(this).toggleClass("active");
                         TagCloud_Change();
-                        
+
                     });
                 },
                 error: function (xhr, status, error) {
                     toastr.error("Error getting data:" + error);
                 }
             });
+        }
 
+        function setNotify(p_type)
+        {
+            notifyType = p_type;
+            $("#notifyTypeSelect").hide();
+            $("#btnNext").show();
 
-            });
-
-        function TagCloud_Change() {
-            filterClients($('#txtClientSearch').val());
+            switch (p_type)
+            {
+                case 0:
+                    CreateSelectClientsUI();
+                    $("#cblClients").show();
+                    break;
+                case 1:
+                    $("#cblLocations").show();
+                    break;
+                case 2:
+                    $("#cblSex").show();
+                    break;
+            }
         }
 
 
 
-         function GetClients() {
-
-            //fill client search
-            $.ajax({
-                type: "GET",
-                url:  apiURL + "/api/clients/getclientslist/"+$("#cboLocations").val(),
-                contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
-                dataType: "json",
-                async: true,
-                success: function (msg) {
-                    myClients = msg;
-
-                },
-                error: function () {
-                    toastr.error('Error filling clients')
-                }
-            });
-
-        }
-
-       
-
-     
-
-       
-
-        
 
 
 
-        
+
+
     </script>
 }
 

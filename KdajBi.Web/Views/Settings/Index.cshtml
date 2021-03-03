@@ -1,0 +1,386 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+@model vmLocations
+@{
+    ViewData["Title"] = "Locations";
+}
+
+@section styles{
+    <!-- datatables.net -->
+    <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.css" rel="stylesheet" />"
+    <link href="~/plugins/datatables-buttons/css/buttons.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
+}
+
+
+<!-- page content -->
+<div class="right_col col-md-12" role="main">
+
+
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="dashboard_graph">
+
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <h3>Nastavitve <small>&nbsp;</small></h3>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-12">
+
+
+                        <div class="card card-primary card-outline card-outline-tabs">
+                            <div class="card-header p-0 border-bottom-0">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li class="nav-item"><a class="nav-link active" id="general-tab" data-toggle="pill" href="#general" role="tab" aria-controls="general" aria-selected="true">Splošno</a></li>
+                                    <li class="nav-item"><a class="nav-link" id="sms-tab" data-toggle="pill" href="#sms" role="tab" aria-controls="sms">SMS obveščanje</a></li>
+                                </ul>
+                                <div class="card-body">
+                                    <div class="tab-content" id="custom-tabs-four-tabContent">
+                                        <div id="general" class="tab-pane fade active show" role="tabpanel" aria-labelledby="general-tab">
+                                            <form class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label for="inputName" class="col-sm-2 control-label">Ime</label>
+
+                                                    <div class="col-sm-10">
+                                                        <input type="email" class="form-control" id="inputName" placeholder="Ime" value="">
+                                                    </div>
+                                                </div>
+
+
+                                                <div class="form-group">
+                                                    <div class="col-sm-offset-2 col-sm-10">
+                                                        <button type="submit" class="btn btn-danger">Shrani</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <!-- /.tab-pane sms -->
+                                        <div class="tab-pane" id="sms" role="tabpanel" aria-labelledby="sms-tab">
+                                            <form class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label for="SMS_SenderName" class="col-sm-2 control-label">Ime pošiljatelja</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="text" class="form-control" id="SMS_SenderName" placeholder="2929" value="">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
+                                                    <div class="form-check">
+                                                        <input type="checkbox" class="form-check-input" id="SMS_genRDsms" onclick="$('#SMS_RD_Props').toggle(1000);">
+                                                        <label class="form-check-label" for="SMS_genRDsms">Generiraj sporočila za rojstni dan stranke</label>
+                                                    </div>
+                                                </div>
+                                                <div id="SMS_RD_Props" style="display: none;" class="ml-4">
+                                                    <div class="form-group">
+                                                        <label for="SMS_RD_Time" class="col-sm-2 control-label">Ob:</label>
+                                                        <div class="col-sm-10">
+                                                            <input type="text" class="form-control" id="SMS_RD_Time" placeholder="8:00" value="">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label id="lblMessage" for="SMS_RD_Msg" class="col-sm-2 control-label">Sporočilo:</label>
+                                                        <div class="col-sm-10">
+                                                            <textarea rows="2" id="SMS_RD_Msg" name="SMS_RD_Msg" class="form-control" placeholder="Voščilo..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="col-sm-offset-2 col-sm-10">
+                                                        <button type="button" class="btn btn-danger" onclick="saveSMS()">Shrani</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <!-- /.tab-pane sms-->
+
+
+                                    </div>
+                                    <!-- /.tab-content -->
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+            </div>
+        </div>
+
+    </div>
+    <br />
+
+
+</div>
+<!-- /page content -->
+<!-- modal content-->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Locations</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="dataform" class="dataform" name="dataform">
+                    <div class="form-group">
+                        <label for="txtEmail">
+                            name:
+                        </label>
+                        <input type="text" id="txtName" name="txtName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="cbActive" value="true" checked="">
+                            <span class="custom-control-label">Active</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="cmdDelete">
+                    Delete
+                </button>
+                <button type="button" class="btn btn-primary" id="cmdSave">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+
+@section scripts{
+    <!-- datables.net -->
+    <script src="~/plugins/datatables/jquery.dataTables.js"></script>
+    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+    <script src="~/plugins/toastr/toastr.min.js"></script>
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+
+    <script type="text/javascript">
+
+        var myTable;
+        @await Html.PartialAsync("_ApiAccess")
+
+            $(document).ready(function () {
+                //init toastr
+                toastr.options.preventDuplicates = true;
+                toastr.options.timeOut = 1000;
+
+                loadSMS();
+
+                //count message characters
+                document.getElementById('SMS_RD_Msg').onkeyup = function () {
+                    document.getElementById('lblMessage').innerHTML = "Sporočilo (" + (640 - this.value.length)+"/640):";
+                };
+
+                $('#dataform').validate({
+                    rules: {
+                        txtName: {
+                            minlength: 3,
+                            maxlength: 50,
+                            required: true
+                        }
+                    },
+                    messages: {
+                        txtName: "Invalid name!"
+                    },
+                    highlight: function (element) {
+                        $(element).closest('.form-control').addClass('is-invalid');
+                    },
+                    unhighlight: function (element) {
+                        $(element).closest('.form-control').removeClass('is-invalid');
+                    },
+                    errorElement: 'span',
+                    errorClass: 'invalid-feedback',
+                    errorPlacement: function (error, element) {
+                        if (element.parent('.input-group').length) {
+                            error.insertAfter(element.parent());
+                        } else { error.insertAfter(element); }
+                    }
+                });
+            });
+
+
+
+        function CancelModal() {
+            $('#dataform').validate().resetForm();
+            //remove higlight ( reset form does not do this!)
+            $("#dataform input, #dataform label").each(function (key, value) {
+                $(this).closest('.form-group').removeClass('has-error');
+            });
+        }
+
+
+
+        function cmdAdd_Click() {
+            setForm(0);
+            $('#cmdDelete').addClass('invisible')
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveRecord(0) != false) {
+                    $("#myModal").modal("hide");
+                    GetTable();
+                }
+            });
+
+
+        }
+
+        function setForm(p_ID) {
+            if (p_ID == 0) {
+                //clear form
+                $("#txtName").val('');
+                $("#cbActive").prop('checked', true);
+            }
+            else {
+                //fill form
+                $.ajax({
+                    type: "get",
+                    url: apiURL+"/api/Locations/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    dataType: "json",
+                    async: true,
+                    success: function (result) {
+                        $("#txtName").val(result.name);
+                        $("#cbActive").prop('checked', result.active);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error:" + error);
+                    }
+                });
+            }
+
+        }
+
+        function showDetail(p_ID) {
+            setForm(p_ID);
+            $('#cmdDelete').removeClass('invisible');
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveRecord(p_ID) != false) { $("#myModal").modal("hide"); }
+            });
+            $("#cmdDelete").off('click').click(function (evt) {
+                if (DeleteRecord(p_ID) != false) { $("#myModal").modal("hide"); }
+            });
+
+        }
+
+        function DeleteRecord(p_ID) {
+            if (confirm("Delete location?") == true) {
+                $.ajax({
+                    type: "DELETE",
+                    url: apiURL+"/api/locations/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { GetTable(); return true; }
+                        else { alert(result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error deleting:" + error.toString());
+                        return false;
+                    }
+                });
+
+            } else { return false; }
+
+        }
+
+        function SaveRecord(p_ID) {
+            if ($('#dataform').valid()) {
+                var company={};
+                company.id = p_ID;
+                company.Name = $('#txtName').val();
+                company.Active = $("#cbActive").prop('checked');
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(company),
+                    url: apiURL+"/api/location/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    dataType: "json",
+                    success: function (result) {
+                         if (result == "OK") { GetTable(); return true; }
+                        else { alert(result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error saving:" + error.toString());
+                        return false;
+                    }
+                });
+            } else { return false; }
+        }
+
+
+         function saveSMS() {
+             var settings = new Object();
+             
+             settings["SMS_SenderName"] = $("#SMS_SenderName").val();
+             settings["SMS_genRDsms"] = $("#SMS_genRDsms").prop("checked");
+             settings["SMS_RD_Time"] =$("#SMS_RD_Time").val();
+             settings["SMS_RD_Msg"] = $("#SMS_RD_Msg").val();
+             $.ajax({
+                type: "post",
+                data: JSON.stringify(settings),
+                url: apiURL+"/api/Settings/Save",
+                contentType: "application/json; charset=utf-8",
+                headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                dataType: "json",
+                success: function (result) {
+                        if (result == "OK") { toastr.success("Shranjeno"); return true; }
+                    else { toastr.error("Napaka:"+result); return false; }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("Napaka:" + error.toString());
+                    return false;
+                }
+            });
+        }
+        function loadSMS() {
+            var settings = new Object();
+             settings["SMS_SenderName"] =$("#SMS_SenderName").val();
+             settings["SMS_genRDsms"] = $("#SMS_genRDsms").prop("checked");
+             settings["SMS_RD_Time"] =$("#SMS_RD_Time").val();
+             settings["SMS_RD_Msg"] = $("#SMS_RD_Msg").val();
+             $.ajax({
+                type: "post",
+                data: JSON.stringify(settings),
+                url: apiURL+"/api/Settings/Load",
+                contentType: "application/json; charset=utf-8",
+                headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                dataType: "json",
+                 success: function (result) {
+                    $("#SMS_SenderName").val(result["SMS_SenderName"]);
+                     if (result["SMS_genRDsms"] == 'true')
+                    {
+                        $("#SMS_genRDsms").prop("checked", true);
+                        $("#SMS_RD_Props").show();
+                     } else {
+                         $("#SMS_genRDsms").prop("checked", false);
+                         $("#SMS_RD_Props").hide();
+                    }
+                    $("#SMS_RD_Time").val(result["SMS_RD_Time"]);
+                    $("#SMS_RD_Msg").val(result["SMS_RD_Msg"]);
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("Napaka:" + error.toString());
+                    return false;
+                }
+            });
+        }
+
+    </script>
+}
+

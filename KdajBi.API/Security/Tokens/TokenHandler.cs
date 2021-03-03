@@ -89,7 +89,8 @@ namespace KdajBi.Security.Tokens
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim("UserId", user.Id.ToString()),
-                new Claim("CompanyId", user.CompanyId.ToString())
+                new Claim("CompanyId", user.CompanyId.ToString()),
+                new Claim("CompanyTaxId", user.Company.Davcna.ToString())
             };
 
             if (user.UserRoles != null)

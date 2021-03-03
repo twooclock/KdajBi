@@ -57,6 +57,24 @@
     <Compile Remove="Migrations\20201214104525_addClientTags.Designer.cs" />
     <Compile Remove="Migrations\20201216062637_addUniqueTag.cs" />
     <Compile Remove="Migrations\20201216062637_addUniqueTag.Designer.cs" />
+    <Compile Remove="Migrations\20210226033640_addSMS.cs" />
+    <Compile Remove="Migrations\20210226033640_addSMS.Designer.cs" />
+    <Compile Remove="Migrations\20210226040618_addSMS.cs" />
+    <Compile Remove="Migrations\20210226040618_addSMS.Designer.cs" />
+    <Compile Remove="Migrations\20210226040952_addSMS.cs" />
+    <Compile Remove="Migrations\20210226040952_addSMS.Designer.cs" />
+    <Compile Remove="Migrations\20210226042259_addSMS.cs" />
+    <Compile Remove="Migrations\20210226042259_addSMS.Designer.cs" />
+    <Compile Remove="Migrations\20210226043934_addSMS.cs" />
+    <Compile Remove="Migrations\20210226043934_addSMS.Designer.cs" />
+    <Compile Remove="Migrations\20210226050511_addSMS.cs" />
+    <Compile Remove="Migrations\20210226050511_addSMS.Designer.cs" />
+    <Compile Remove="Migrations\20210226064857_addSMS.cs" />
+    <Compile Remove="Migrations\20210226064857_addSMS.Designer.cs" />
+    <Compile Remove="Migrations\20210226070916_addSMS.cs" />
+    <Compile Remove="Migrations\20210226070916_addSMS.Designer.cs" />
+    <Compile Remove="Migrations\20210301104201_addSettings.cs" />
+    <Compile Remove="Migrations\20210301104201_addSettings.Designer.cs" />
     <Compile Remove="Models\UserCompany.cs" />
   </ItemGroup>
 

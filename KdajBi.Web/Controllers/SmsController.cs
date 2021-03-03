@@ -14,33 +14,17 @@ namespace KdajBi.Web.Controllers
 {
     //[Authorize(Roles = "Super,Admin")]
     [Controller]
-    public class ClientsController : _BaseController
+    public class SmsController : _BaseController
     {
 
-        public ClientsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider)
+        public SmsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider)
             : base(context, userManager, signInManager, logger, emailSender, apiTokenProvider)
         {
         }
 
 
-
-
-        [Route("/Clients")]
-        public IActionResult Index()
-        {
-            if (LocationIsMine(DefaultLocationId()))
-            {
-                vmClient myVM = new vmClient();
-                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o=>o.FirstName).ThenBy(o=>o.LastName).Select(p => new { value = p.Id, label = p.FullName }).ToList()).Replace(@"\", @"\\");
-                myVM.Token = _GetToken();
-                return View(myVM);
-            }
-            return NotFound();
-        }
-
-
-        [Route("/Clients/Index3")]
-        public IActionResult Index3()
+        [Route("/sms/Campaigns")]
+        public IActionResult Campaigns()
         {
             if (LocationIsMine(DefaultLocationId()))
             {
@@ -52,7 +36,7 @@ namespace KdajBi.Web.Controllers
             return NotFound();
         }
 
-        [Route("/Clients/Notification")]
+        [Route("/sms/Notification")]
         public IActionResult Notification()
         {
             if (LocationIsMine(DefaultLocationId()))
