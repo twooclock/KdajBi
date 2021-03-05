@@ -471,7 +471,15 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
+                    "beforeSend": function (xhr, settings) {
+                        getAPIToken().then((result) => {
+                            $.ajax($.extend(settings, {
+                                headers: { "Authorization": "Bearer " +result.AccessToken },
+                                beforeSend: $.noop
+                            }));
+                        });
+                        return false;
+                    }
 
                 },
                 'columns': [
@@ -522,11 +530,12 @@
             }
             else {
                 //fill form
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
                     url: apiURL+"/api/myappuser/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer '+result.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -538,6 +547,7 @@
                     error: function (xhr, status, error) {
                         toastr.error("Napaka:" + error.toString());
                     }
+                });
                 });
             }
 
@@ -564,11 +574,12 @@
                 denyButtonText: 'Ne',
             }).then((result) => {
                 if (result.isConfirmed) {
+                    getAPIToken().then((result) => {
                     $.ajax({
                         type: "DELETE",
                         url: apiURL + "/api/myappuser/" + p_ID,
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") { toastr.success("Zbrisano"); GetEmployeesTable(); return true; }
@@ -578,6 +589,7 @@
                             toastr.error("Napaka:" + error.toString());
                             return false;
                         }
+                    });
                     });
 
                 } else { return false; }
@@ -592,12 +604,13 @@
                 user.LastName = $('#txtLastName').val();
                 user.UserName = $('#txtEmail').val();
                 user.EMail = $('#txtEmail').val();
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(user),
                     url: apiURL+"/api/myappuser",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { toastr.success("Shranjeno"); GetEmployeesTable(); return true; }
@@ -607,6 +620,7 @@
                         toastr.error("Napaka:" + error.toString());
                         return false;
                     }
+                });
                 });
             } else { return false; }
         }
@@ -632,7 +646,15 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
+                    "beforeSend": function (xhr, settings) {
+                        getAPIToken().then((result) => {
+                            $.ajax($.extend(settings, {
+                                headers: { "Authorization": "Bearer " +result.AccessToken },
+                                beforeSend: $.noop
+                            }));
+                        });
+                        return false;
+                    }
 
                 },
                 'columns': [
@@ -683,11 +705,12 @@
             }
             else {
                 //fill form
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
                     url: apiURL+"/api/location/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -699,6 +722,7 @@
                     error: function (xhr, status, error) {
                         toastr.error("Napaka:" + error.toString());
                     }
+                });
                 });
             }
 
@@ -725,11 +749,12 @@
                 denyButtonText: 'Ne',
             }).then((result) => {
                 if (result.isConfirmed) {
+                    getAPIToken().then((result) => {
                     $.ajax({
                         type: "DELETE",
                         url: apiURL + "/api/location/" + p_ID,
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") { toastr.success("Zbrisano"); GetLocationsTable(); return true; }
@@ -739,6 +764,7 @@
                             toastr.error("Napaka:" + error.toString());
                             return false;
                         }
+                    });
                     });
 
                 } else { return false; }
@@ -751,13 +777,13 @@
                 location.id = p_ID;
                 location.Name = $('#txtName').val();
                 location.Tel = $('#txtTel').val();
-
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(location),
                     url: apiURL+"/api/location",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { toastr.success("Shranjeno"); GetLocationsTable(); return true; }
@@ -767,6 +793,7 @@
                         toastr.error("Napaka:" + error.toString());
                         return false;
                     }
+                });
                 });
             } else { return false; }
         }
@@ -793,7 +820,15 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
+                    "beforeSend": function (xhr, settings) {
+                        getAPIToken().then((result) => {
+                            $.ajax($.extend(settings, {
+                                headers: { "Authorization": "Bearer " +result.AccessToken },
+                                beforeSend: $.noop
+                            }));
+                        });
+                        return false;
+                    }
 
                 },
                 'columns': [
@@ -840,11 +875,12 @@
             }
             else {
                 //fill form
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
                     url: apiURL+"/api/tag/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -853,6 +889,7 @@
                     error: function (xhr, status, error) {
                         toastr.error("Error getting data:" + error);
                     }
+                });
                 });
             }
 
@@ -880,11 +917,12 @@
                 denyButtonText: 'Ne',
             }).then((result) => {
                 if (result.isConfirmed) {
+                    getAPIToken().then((result) => {
                     $.ajax({
                         type: "DELETE",
                         url: apiURL + "/api/tag/" + p_ID,
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") { toastr.success("Zbrisano"); GetTagsTable(); return true; }
@@ -894,6 +932,7 @@
                             toastr.error("Napaka:" + error.toString());
                             return false;
                         }
+                    });
                     });
 
                 } else { return false; }
@@ -906,13 +945,13 @@
                 var tag={};
                 tag.id = p_ID;
                 tag.Title = $('#txtTag').val();
-
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(tag),
                     url: apiURL+"/api/tag",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { toastr.success("Shranjeno");GetTagsTable(); return true; }
@@ -922,6 +961,7 @@
                         toastr.error("Napaka:" + error.toString());
                         return false;
                     }
+                });
                 });
             } else { return false; }
         }

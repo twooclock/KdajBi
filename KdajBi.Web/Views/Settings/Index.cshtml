@@ -244,11 +244,12 @@
             }
             else {
                 //fill form
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
                     url: apiURL+"/api/Locations/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer '+result.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -258,6 +259,7 @@
                     error: function (xhr, status, error) {
                         alert("Error:" + error);
                     }
+                });
                 });
             }
 
@@ -278,11 +280,12 @@
 
         function DeleteRecord(p_ID) {
             if (confirm("Delete location?") == true) {
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "DELETE",
                     url: apiURL+"/api/locations/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                         if (result == "OK") { GetTable(); return true; }
@@ -292,6 +295,7 @@
                         alert("Error deleting:" + error.toString());
                         return false;
                     }
+                });
                 });
 
             } else { return false; }
@@ -304,12 +308,13 @@
                 company.id = p_ID;
                 company.Name = $('#txtName').val();
                 company.Active = $("#cbActive").prop('checked');
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(company),
                     url: apiURL+"/api/location/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { GetTable(); return true; }
@@ -319,6 +324,7 @@
                         alert("Error saving:" + error.toString());
                         return false;
                     }
+                });
                 });
             } else { return false; }
         }
@@ -331,12 +337,13 @@
              settings["SMS_genRDsms"] = $("#SMS_genRDsms").prop("checked");
              settings["SMS_RD_Time"] =$("#SMS_RD_Time").val();
              settings["SMS_RD_Msg"] = $("#SMS_RD_Msg").val();
-             $.ajax({
+             getAPIToken().then((result) => {
+                 $.ajax({
                 type: "post",
                 data: JSON.stringify(settings),
                 url: apiURL+"/api/Settings/Save",
-                contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                 contentType: "application/json; charset=utf-8",
+                 headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                 dataType: "json",
                 success: function (result) {
                         if (result == "OK") { toastr.success("Shranjeno"); return true; }
@@ -347,6 +354,7 @@
                     return false;
                 }
             });
+            });
         }
         function loadSMS() {
             var settings = new Object();
@@ -354,12 +362,13 @@
              settings["SMS_genRDsms"] = $("#SMS_genRDsms").prop("checked");
              settings["SMS_RD_Time"] =$("#SMS_RD_Time").val();
              settings["SMS_RD_Msg"] = $("#SMS_RD_Msg").val();
-             $.ajax({
+            getAPIToken().then((result) => {
+            $.ajax({
                 type: "post",
                 data: JSON.stringify(settings),
                 url: apiURL+"/api/Settings/Load",
                 contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                 dataType: "json",
                  success: function (result) {
                     $("#SMS_SenderName").val(result["SMS_SenderName"]);
@@ -378,6 +387,7 @@
                     toastr.error("Napaka:" + error.toString());
                     return false;
                 }
+            });
             });
         }
 

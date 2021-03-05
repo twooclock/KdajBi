@@ -7,11 +7,12 @@ var apiURL="@Html.Raw(apiTP.Settings().BaseAddress)"
 var apiToken=JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.Token))')
 var apiUser='@Html.Raw(@UserManager.GetUserName(User))';
 
- function getAPIToken() {
+ async function getAPIToken() {
+    return new Promise(function(resolve, reject) {
             var tnow = (621355968e9 + 10000 + (new Date()).getTime() * 1e4);
             var reqdata = { Token: apiToken.RefreshToken, UserEmail: apiUser };
             if (tnow < apiToken.Expiration)
-            { return apiToken.AccessToken; }
+            { resolve(apiToken); }
             else {
                 //request new token
                 $.ajax({
@@ -19,15 +20,18 @@ var apiUser='@Html.Raw(@UserManager.GetUserName(User))';
                     data: JSON.stringify(reqdata),
                     url: apiURL+"/api/token/refresh",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+apiToken.AccessToken },
                     dataType: "json",
                     success: function (result) {
-                        return apiToken.AccessToken;
+                        apiToken.RefreshToken=result.refreshToken;
+                        apiToken.AccessToken=result.accessToken;
+                        apiToken.Expiration=result.expiration;
+                        resolve(apiToken);
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Napaka:" + error.toString());
-                        return false;
+                        reject(error);
                     }
                 });
             }
+    });
         }

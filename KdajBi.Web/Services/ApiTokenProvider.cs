@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -34,10 +35,12 @@ namespace KdajBi.Web.Services
     public class ApiTokenProvider : IApiTokenProvider
     {
         public readonly ApiSettings _apiSettings;
+        protected readonly ILogger _logger;
         private Dictionary<string, JwtToken> myToken;
-        public ApiTokenProvider(IOptions<ApiSettings> apiSettings)
+        public ApiTokenProvider(IOptions<ApiSettings> apiSettings, ILogger<ApiTokenProvider> logger)
         {
             _apiSettings = apiSettings.Value;
+            _logger = logger;
             myToken = new Dictionary<string, JwtToken>();
         }
 
@@ -74,13 +77,14 @@ namespace KdajBi.Web.Services
 
         private JwtToken RefreshToken(string email)
         {
+            JwtToken fals = new JwtToken();
             try
             {
                 HttpClient client = new HttpClient();
                 client.BaseAddress = new Uri(_apiSettings.BaseAddress);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + myToken[email].AccessToken);
-                string stringData = "{\"UserEmail\":\"" + _apiSettings.UserName + "\",\"Token\":\"" + myToken[email].RefreshToken + "\"}";
+                string stringData = "{\"UserEmail\":\"" + email + "\",\"Token\":\"" + myToken[email].RefreshToken + "\"}";
                 var contentData = new StringContent(stringData, System.Text.Encoding.UTF8, "application/json");
                 HttpResponseMessage response = client.PostAsync(_apiSettings.RefreshAddress, contentData).Result;
                 string jsonstringJWT = response.Content.ReadAsStringAsync().Result;
@@ -93,19 +97,26 @@ namespace KdajBi.Web.Services
                     if (jsonstringJWT.StartsWith("\"Expired"))
                     { myToken[email] = RequestToken(email); }
                     else
-                    { myToken[email] = new JwtToken(); }
+                    {
+                        _logger.LogWarning("RefreshToken BadRequest not expired:"+ jsonstringJWT);
+                        fals.AccessToken = "RefreshToken BadRequest not expired";
+                        myToken[email] = fals;
+                    }
                 }
 
             }
             catch (Exception ex)
             {
-                myToken[email] = new JwtToken();
+                _logger.LogError(ex, "RefreshToken("+email+")");
+                fals.AccessToken = "RefreshToken Exception";
+                myToken[email] = fals;
             }
             return myToken[email];
         }
 
         private JwtToken RequestToken(string email)
         {
+            JwtToken fals = new JwtToken();
             try
             {
                 HttpClient client = new HttpClient();
@@ -121,12 +132,16 @@ namespace KdajBi.Web.Services
 
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    myToken[email] = new JwtToken();
+                    _logger.LogWarning("RequestToken BadRequest");
+                    fals.AccessToken= "RequestToken BadRequest";
+                     myToken[email] = fals;
                 }
             }
             catch (Exception ex)
             {
-                myToken[email] = new JwtToken();
+                _logger.LogError(ex, "RequestToken(" + email + ")");
+                fals.AccessToken = "Exception";
+                myToken[email] = fals;
             }
             return myToken[email];
         }

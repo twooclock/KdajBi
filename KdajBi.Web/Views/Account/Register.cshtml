@@ -190,12 +190,13 @@
                 company.id = p_ID;
                 company.Name = $('#txtName').val();
                 company.Active = $("#cbActive").prop('checked');
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(company),
                     url: apiURL + "/api/company/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer ' + getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                         if (result == "OK") { GetTable(); return true; }
@@ -205,6 +206,7 @@
                         alert("Error saving:" + error.toString());
                         return false;
                     }
+                });
                 });
             } else { return false; }
         }

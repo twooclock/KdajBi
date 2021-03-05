@@ -189,7 +189,15 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
+                    "beforeSend": function (xhr, settings) {
+                        getAPIToken().then((result) => {
+                            $.ajax($.extend(settings, {
+                                headers: { "Authorization": "Bearer " +result.AccessToken },
+                                beforeSend: $.noop
+                            }));
+                        });
+                        return false;
+                    }
                     
                 },
                 'columns': [
@@ -229,12 +237,12 @@
             }
             else {
                 //fill form
-
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
                     url: apiURL+"/api/appusers/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -253,6 +261,7 @@
                     error: function (xhr, status, error) {
                         alert("Error:" + error);
                     }
+                });
                 });
             }
 
@@ -273,11 +282,12 @@
 
         function DeleteRecord(p_ID) {
             if (confirm("Delete user?") == true) {
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "DELETE",
                     url: apiURL+"/api/appusers/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                         if (result == "OK") { GetTable(); return true; }
@@ -287,6 +297,7 @@
                         alert("Error deleting:" + error.toString());
                         return false;
                     }
+                });
                 });
 
             } else { return false; }
@@ -298,12 +309,13 @@
                 myUser.id = p_ID;
                 myUser.Email = $('#txtName').val();
                 myUser.Active = $("#cbActive").prop('checked');
-                $.ajax({
+                getAPIToken().then((result) => {
+                    $.ajax({
                     type: "post",
                     data: JSON.stringify(myUser),
                     url: apiURL+"/api/appuser/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { GetTable(); return true; }
@@ -314,16 +326,18 @@
                         return false;
                     }
                 });
+                });
             } else { return false; }
         }
 
 
         function GetMyCompanies() {
-            $.ajax({
+            getAPIToken().then((result) => {
+                $.ajax({
                 type: 'GET', dataType: 'json',
                 url: apiURL + "/api/companies",
                 contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                 async: false,
                 dataType: "json",
                 data: "",
@@ -344,6 +358,7 @@
                 error: function () {
                     alert("Error loading Companies");
                 }
+            });
             });
         }
 

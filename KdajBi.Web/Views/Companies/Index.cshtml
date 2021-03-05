@@ -171,7 +171,15 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
+                    "beforeSend": function (xhr, settings) {
+                        getAPIToken().then((result) => {
+                            $.ajax($.extend(settings, {
+                                headers: { "Authorization": "Bearer " +result.AccessToken },
+                                beforeSend: $.noop
+                            }));
+                        });
+                        return false;
+                    }
                     
                 },
                 'columns': [
@@ -218,11 +226,12 @@
             }
             else {
                 //fill form
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
                     url: apiURL+"/api/companies/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -232,6 +241,7 @@
                     error: function (xhr, status, error) {
                         alert("Error:" + error);
                     }
+                });
                 });
             }
 
@@ -252,11 +262,12 @@
 
         function DeleteRecord(p_ID) {
             if (confirm("Delete company?") == true) {
-                $.ajax({
+                getAPIToken().then((result) => {
+                    $.ajax({
                     type: "DELETE",
                     url: apiURL+"/api/Companies/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                         if (result == "OK") { GetTable(); return true; }
@@ -266,6 +277,7 @@
                         alert("Error deleting:" + error.toString());
                         return false;
                     }
+                });
                 });
 
             } else { return false; }
@@ -278,12 +290,13 @@
                 company.id = p_ID;
                 company.Name = $('#txtName').val();
                 company.Active = $("#cbActive").prop('checked');
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(company),
                     url: apiURL+"/api/company/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { GetTable(); return true; }
@@ -293,6 +306,7 @@
                         alert("Error saving:" + error.toString());
                         return false;
                     }
+                });
                 });
             } else { return false; }
         }

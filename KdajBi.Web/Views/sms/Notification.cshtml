@@ -390,12 +390,13 @@
                 denyButtonText: 'Ne',
             }).then((result) => {
                 if (result.isConfirmed) {
+                    getAPIToken().then((result) => {
                     $.ajax({
                         type: "post",
                         data: JSON.stringify(getSmscObject()),
                         url: apiURL + "/api/Sms/QueueSmsCampaign",
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") {
@@ -410,6 +411,7 @@
                             toastr.error("Napaka pri pošiljanju:" + error.toString());
                             return false;
                         }
+                    });
                     });
 
                 } else { return false; }
@@ -471,12 +473,13 @@
                 document.getElementById('lblMsg').innerHTML = $('#txtMessage').val();
 
                     //show sms limit info
+                    getAPIToken().then((result) => {
                      $.ajax({
                         type: "post",
                         data: JSON.stringify(getSmscObject()),
                         url: apiURL+"/api/Sms/SmsInfo",
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                        headers: { 'Authorization': 'Bearer '+result.AccessToken },
                         dataType: "json",
                          success: function (result) {
                              var smsInfo = "";
@@ -504,7 +507,8 @@
                             toastr.error("Napaka:" + error.toString());
                             return false;
                         }
-                    });
+                     });
+                        });
                 }
             })
 
@@ -577,11 +581,12 @@
         function GetClients() {
 
             //fill client search
+            getAPIToken().then((result) => {
             $.ajax({
                 type: "GET",
                 url:  apiURL + "/api/clients/getclientslist/"+$("#cboLocations").val(),
                 contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                 dataType: "json",
                 async: true,
                 success: function (msg) {
@@ -591,6 +596,7 @@
                 error: function () {
                     toastr.error('Error filling clients')
                 }
+            });
             });
 
         }
@@ -663,11 +669,12 @@
 
 
             //create tag cloud
+            getAPIToken().then((result) => {
             $.ajax({
                 type: "get",
                 url: apiURL + "/api/tags/",
                 contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer ' + getAPIToken() },
+                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                 dataType: "json",
                 async: false,
                 success: function (result) {
@@ -691,6 +698,7 @@
                 error: function (xhr, status, error) {
                     toastr.error("Error getting data:" + error);
                 }
+            });
             });
         }
 

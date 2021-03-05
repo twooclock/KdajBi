@@ -399,32 +399,34 @@
          function GetClients() {
 
             //fill client search
-            $.ajax({
-                type: "GET",
-                url:  apiURL + "/api/clients/getclientslist/"+$("#cboLocations").val(),
-                contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+getAPIToken() },
-                dataType: "json",
-                async: true,
-                success: function (msg) {
-                    myClients = msg;
-                    $( "#clientsearch" ).autocomplete({
-                        minlength:3,
-                        delay:200,
-                        source: myClients,
-                        select: function (event, ui) {
-                            $("#clientsearch").val(ui.item.label);
-                            SelectedClientID = ui.item.value;
-                            setClientForm(SelectedClientID);
-                            return false;
-                        },
-                        focus:function (event, ui) {event.preventDefault(); return false;}
-                    });
-                },
-                error: function () {
-                    toastr.error('Error filling clients')
-                }
-            });
+             getAPIToken().then((result) => {
+                 $.ajax({
+                     type: "GET",
+                     url: apiURL + "/api/clients/getclientslist/" + $("#cboLocations").val(),
+                     contentType: "application/json; charset=utf-8",
+                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                     dataType: "json",
+                     async: true,
+                     success: function (msg) {
+                         myClients = msg;
+                         $("#clientsearch").autocomplete({
+                             minlength: 3,
+                             delay: 200,
+                             source: myClients,
+                             select: function (event, ui) {
+                                 $("#clientsearch").val(ui.item.label);
+                                 SelectedClientID = ui.item.value;
+                                 setClientForm(SelectedClientID);
+                                 return false;
+                             },
+                             focus: function (event, ui) { event.preventDefault(); return false; }
+                         });
+                     },
+                     error: function () {
+                         toastr.error('Error filling clients')
+                     }
+                 });
+             });
 
         }
 
@@ -440,7 +442,7 @@
 
         }
 
-        function setClientForm(p_ID) {
+        async function setClientForm(p_ID) {
             if (p_ID == 0) {
                 //clear form
                 $("#txtClientFirstName").val('');
@@ -457,33 +459,38 @@
             }
             else {
                 //fill form
-                $.ajax({
-                    type: "get",
-                    url: apiURL+"/api/client/"+p_ID,
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
-                    dataType: "json",
-                    async: true,
-                    success: function (result) {
-                        $("#txtClientFirstName").val(result.firstName);
-                        $("#txtClientLastName").val(result.lastName);
-                        $("#txtClientMobile").val(result.mobile);
-                        $("#txtClientEmail").val(result.email);
-                        $("#cbClientSMS").prop('checked', result.allowsSMS);
-                        $("#cbClientEmail").prop('checked', result.allowsEmail);
-                        fp.clear();
-                        if (result.birthday != null) {
-                            fp.setDate(new Date(result.birthday));
+                getAPIToken().then((result) => {
+                    $.ajax({
+                        type: "get",
+                        url: apiURL + "/api/client/" + p_ID,
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "json",
+                        async: true,
+                        success: function (result) {
+                            $("#txtClientFirstName").val(result.firstName);
+                            $("#txtClientLastName").val(result.lastName);
+                            $("#txtClientMobile").val(result.mobile);
+                            $("#txtClientEmail").val(result.email);
+                            $("#cbClientSMS").prop('checked', result.allowsSMS);
+                            $("#cbClientEmail").prop('checked', result.allowsEmail);
+                            fp.clear();
+                            if (result.birthday != null) {
+                                fp.setDate(new Date(result.birthday));
+                            }
+                            $("#txtClientAddress").val(result.address);
+                            $("#txtClientZip").val(result.zip);
+                            $("#txtClientNotes").val(result.notes);
+                            $("#txtTags").val(result.tags.map(a => a.id)).trigger('change');
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Error getting client data:" + error);
                         }
-                        $("#txtClientAddress").val(result.address);
-                        $("#txtClientZip").val(result.zip);
-                        $("#txtClientNotes").val(result.notes);
-                        $("#txtTags").val(result.tags.map(a => a.id)).trigger('change');
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Error getting client data:" + error);
-                    }
-                });
+                    });
+                },
+                    function (error) { toastr.error("Error getting token:" + error); }
+                );
+                
             }
 
         }
@@ -508,22 +515,23 @@
                 denyButtonText: 'Ne',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.ajax({
-                        type: "DELETE",
-                        url: apiURL + "/api/client/" + p_ID,
-                        contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
-                        dataType: "json",
-                        success: function (result) {
-                            if (result == "OK") { toastr.success("Stranka zbrisana"); GetClients(); return true; }
-                            else { toastr.error("Napaka:" + result); return false; }
-                        },
-                        error: function (xhr, status, error) {
-                            toastr.error("Napaka:" + error.toString());
-                            return false;
-                        }
+                    getAPIToken().then((result) => {
+                        $.ajax({
+                            type: "DELETE",
+                            url: apiURL + "/api/client/" + p_ID,
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (result) {
+                                if (result == "OK") { toastr.success("Stranka zbrisana"); GetClients(); return true; }
+                                else { toastr.error("Napaka:" + result); return false; }
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka:" + error.toString());
+                                return false;
+                            }
+                        });
                     });
-
                 } else { return false; }
             });
         }
@@ -574,21 +582,23 @@
                     return value;
                 }
 
-                $.ajax({
-                    type: "post",
-                    data: JSON.stringify(client,replacer),
-                    url: apiURL+"/api/client/",
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
-                    dataType: "json",
-                    success: function (result) {
-                        if (result == "OK") { toastr.success("Shranjeno"); GetClients(); return true; }
-                        else { toastr.error("Napaka:"+result); return false; }
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Napaka:" + error.toString());
-                        return false;
-                    }
+                getAPIToken().then((result) => {
+                    $.ajax({
+                        type: "post",
+                        data: JSON.stringify(client, replacer),
+                        url: apiURL + "/api/client/",
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result == "OK") { toastr.success("Shranjeno"); GetClients(); return true; }
+                            else { toastr.error("Napaka:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka:" + error.toString());
+                            return false;
+                        }
+                    });
                 });
             } else { return false; }
         }
@@ -601,25 +611,26 @@
 
             //get tags
             var myTags= [];
-
-            $.ajax({
+            getAPIToken().then((result) => {
+                $.ajax({
                     type: "get",
-                    url: apiURL+"/api/tags/",
+                    url: apiURL + "/api/tags/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     async: false,
                     success: function (result) {
                         var retval = [];
-                        result.forEach(function(item) {
+                        result.forEach(function (item) {
                             retval.push({ id: item.id, text: item.title })
-                            });
-                        myTags= retval;
+                        });
+                        myTags = retval;
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Error getting data:" + error);
                     }
                 });
+            });
 
             $("#txtTags").select2({
                 multiple: true,

@@ -92,6 +92,7 @@
 
         var GetSmsTable = function () {
 
+            getAPIToken().then((result) => {
             var table = $('#dataTable').DataTable({
                 destroy: true,
                 responsive: true,
@@ -108,7 +109,15 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
+                    "beforeSend": function (xhr, settings) {
+                        getAPIToken().then((result) => {
+                            $.ajax($.extend(settings, {
+                                headers: { "Authorization": "Bearer " +result.AccessToken },
+                                beforeSend: $.noop
+                            }));
+                        });
+                        return false;
+                    }
 
                 },
                 'columns': [
@@ -134,6 +143,7 @@
                         }
                     },
                 ]
+            });
             });
 
         }

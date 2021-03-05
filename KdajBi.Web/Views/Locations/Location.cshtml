@@ -367,12 +367,13 @@
                 location.id = @Model.Location.Id;
                 location.name = $('#inputName').val();
                 location.tel = $('#inputTel').val();
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(location),
                     url: apiURL+"/api/Location",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer '+result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { return true; }
@@ -382,6 +383,7 @@
                         toastr.error("Napaka:" + error.toString());
                         return false;
                     }
+                });
                 });
             } else { return false; }
         }
@@ -410,12 +412,13 @@
                 schedule.SaturdayEnd = getUTCDate( $('#Sa_to').val());
                 schedule.SundayStart = getUTCDate($('#Su_from').val());
                 schedule.SundayEnd = getUTCDate($('#Su_to').val());
-                $.ajax({
+                getAPIToken().then((result) => {
+                    $.ajax({
                     type: "post",
                     data: JSON.stringify(schedule),
                     url: apiURL+"/api/schedule/@Model.Location.Schedule.Id",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { return true; }
@@ -426,13 +429,14 @@
                         return false;
                     }
                 });
+                });
             } else { return false; }
         }
         //#endregion
 
         //#region Workplaces
          function GetTable() {
-
+             getAPIToken().then((result) => {
             var table = $('#dtWorkplaces').DataTable({
                 destroy: true,
                 responsive: true,
@@ -449,7 +453,15 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
+                    "beforeSend": function (xhr, settings) {
+                        getAPIToken().then((result) => {
+                            $.ajax($.extend(settings, {
+                                headers: { "Authorization": "Bearer " +result.AccessToken },
+                                beforeSend: $.noop
+                            }));
+                        });
+                        return false;
+                    }
 
                 },
                 'columns': [
@@ -472,6 +484,7 @@
                         }
                     }
                 ]
+            });
             });
 
         }
@@ -510,11 +523,12 @@
             }
             else {
                 //fill form
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
                     url: apiURL+"/api/workplace/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -526,6 +540,7 @@
                     error: function (xhr, status, error) {
                         toastr.error("Napaka:" + error.toString());
                     }
+                });
                 });
             }
 
@@ -552,11 +567,12 @@
                 denyButtonText: 'Ne',
             }).then((result) => {
                 if (result.isConfirmed) {
+                    getAPIToken().then((result) => {
                     $.ajax({
                         type: "DELETE",
                         url: apiURL + "/api/workplace/" + p_ID,
                         contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + getAPIToken() },
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") {toastr.success("Zbrisano");  GetTable(); return true; }
@@ -566,6 +582,7 @@
                             toastr.error("Napaka:" + error.toString());
                             return false;
                         }
+                    });
                     });
 
                 } else { return false; }
@@ -580,12 +597,13 @@
                 workplace.name = $('#txtName').val();
                 workplace.googleCalendarId = $('#txtGooCal').val();
                 workplace.active = $("#cbActive").prop('checked');
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(workplace),
                     url: apiURL+"/api/workplace/@Model.Location.Id",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { GetTable(); return true; }
@@ -595,6 +613,7 @@
                         toastr.error("Napaka:" + error.toString());
                         return false;
                     }
+                });
                 });
             } else { return false; }
         }

@@ -12,6 +12,7 @@
     <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
 }
 
 
@@ -173,6 +174,7 @@
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/plugins/toastr/toastr.min.js"></script>
     <script type="text/javascript">
 
         var SelectedClientID;
@@ -186,11 +188,12 @@
             GetClientsTable();
 
             //fill client search
+            getAPIToken().then((result) => {
             $.ajax({
                 type: "GET",
                 url:  apiURL + "/api/clients/"+$("#cboLocations").val(),
                 contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                headers: { 'Authorization': 'Bearer '+result.AccessToken },
                 dataType: "json",
                 async: true,
                 success: function (msg) {
@@ -210,6 +213,7 @@
                 error: function () {
                     alert("Error filling clients");
                 }
+            });
             });
 
 
@@ -255,6 +259,7 @@
 
         var GetClientsTable = function () {
 
+            
             var table = $('#dataTable').DataTable({
                 destroy: true,
                 responsive: true,
@@ -264,7 +269,7 @@
                 'processing': true,
                 'serverSide': true,
                 'ajax': {
-                    'url':  apiURL + "/api/clientstable/"+$("#cboLocations").val(),
+                    'url': apiURL + "/api/clientstable/" + $("#cboLocations").val(),
                     type: 'POST', dataType: 'json',
                     data: function (dtParms) {
                         // I send it as a string to reduce the chance of an error before it reaches the server.
@@ -272,7 +277,15 @@
                     },
                     'contentType': 'application/json; charset=utf-8',
                     "crossDomain": true,
-                    "beforeSend": function (xhr) { xhr.setRequestHeader("Authorization", "Bearer " + getAPIToken());}
+                    "beforeSend": function (xhr, settings) {
+                        getAPIToken().then((result) => {
+                            $.ajax($.extend(settings, {
+                                headers: { "Authorization": "Bearer " +result.AccessToken },
+                                beforeSend: $.noop
+                            }));
+                        });
+                        return false;
+                    }
 
                 },
                 'columns': [
@@ -294,6 +307,7 @@
                     }
                 ]
             });
+            
 
         }
 
@@ -328,11 +342,12 @@
             }
             else {
                 //fill form
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
                     url: apiURL+"/api/client/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
@@ -353,6 +368,7 @@
                         alert("Error:" + error);
                     }
                 });
+                });
             }
 
         }
@@ -372,11 +388,12 @@
 
         function DeleteClient(p_ID) {
             if (confirm("Delete client?") == true) {
-                $.ajax({
+                getAPIToken().then((result) => {
+                    $.ajax({
                     type: "DELETE",
                     url: apiURL+"/api/client/"+p_ID,
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                         if (result == "OK") { GetClientsTable(); return true; }
@@ -386,6 +403,7 @@
                         alert("Error deleting:" + error.toString());
                         return false;
                     }
+                });
                 });
 
             } else { return false; }
@@ -408,12 +426,13 @@
                 client.Zip =$("#txtClientZip").val();
                 client.Notes =$("#txtClientNotes").val();
                 client.Active = $("#cbActive").prop('checked');
+                getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(client),
                     url: apiURL+"/api/client/",
                     contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer '+getAPIToken() },
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { GetClientsTable(); return true; }
@@ -423,6 +442,7 @@
                         alert("Error saving:" + error.toString());
                         return false;
                     }
+                });
                 });
             } else { return false; }
         }
