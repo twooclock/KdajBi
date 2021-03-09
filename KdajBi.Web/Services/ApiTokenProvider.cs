@@ -56,7 +56,7 @@ namespace KdajBi.Web.Services
                 }
                 else
                 {
-                    if (new DateTime(myToken[email].Expiration, DateTimeKind.Utc) <= DateTime.UtcNow)
+                    if (DateTime.UtcNow.Ticks > myToken[email].Expiration)
                     {
                         //refresh token if expired
                         myToken[email] = RefreshToken(email);

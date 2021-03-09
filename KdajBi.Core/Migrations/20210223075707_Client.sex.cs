@@ -10,7 +10,7 @@ namespace KdajBi.Core.Migrations
                 name: "Sex",
                 table: "Clients",
                 maxLength: 1,
-                nullable: false, defaultValueSql: "'F'");
+                nullable: true, defaultValueSql: "'F'");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

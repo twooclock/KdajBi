@@ -44,7 +44,8 @@ namespace KdajBi.Core.Models
 
         public long RecipientsCount { get { return Recipients.Count(); } private set { } }
 
-
+        public long SentOk { get; set; }
+        public long SentError { get; set; }
 
         public SmsCampaign() {
             Company = new Company();

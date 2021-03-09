@@ -40,7 +40,7 @@ namespace KdajBi.API.Controllers
             int recordsTotal = 0;
 
             var v = from a in _context.SmsCampaigns select a;
-            v = v.Where(w => w.Company.Id== _CurrentUserCompanyID());
+            v = v.Where(w => w.Company.Id == _CurrentUserCompanyID());
             v = v.Include(w => w.Recipients);
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
@@ -57,7 +57,7 @@ namespace KdajBi.API.Controllers
 
 
 
-        
+
         [HttpPost("/api/Sms/QueueSmsCampaign")]
         public async Task<ActionResult<dtoSmsCampaigin>> PostQueueSmsCampaign(dtoSmsCampaigin p_SmsCampaigin)
         {
@@ -68,7 +68,7 @@ namespace KdajBi.API.Controllers
                 _context.Attach(newSmsCampaign.Company);
                 _context.Attach(newSmsCampaign.AppUser);
                 _context.SmsCampaigns.Add(newSmsCampaign);
-                 string AppBaseUrl = Request.Scheme+@"://"+Request.Host+Request.PathBase;
+                string AppBaseUrl = Request.Scheme + @"://" + Request.Host + Request.PathBase;
                 string myWhen = "";
                 if (newSmsCampaign.SendAfter.HasValue == true)
                 {
@@ -123,8 +123,8 @@ namespace KdajBi.API.Controllers
                     //_logger.LogInformation("kampanija shranjena, sedaj pa še pošljem mail na naslov " + _CurrentUserEmail());
                     //notify user
                     string myMail = "<p>Pozdravljeni! <br />SMS sporočila zahtevajo vašo pozornost.<br />";
-                    myMail+="Če potrdite, bo "+myWhen+" poslanih " + newSmsCampaign.RecipientsCount.ToString() + " sporočil:<br />";
-                    myMail += "<pre>"+newSmsCampaign.MsgTxt + "</pre>";
+                    myMail += "Če potrdite, bo " + myWhen + " poslanih " + newSmsCampaign.RecipientsCount.ToString() + " sporočil:<br />";
+                    myMail += "<pre>" + newSmsCampaign.MsgTxt + "</pre>";
                     myMail += @"Prosimo, <a href=""" + AppBaseUrl + @"/api/Sms?guid=" + newSmsCampaign.Guid.ToString() + @"&action=approve"" target=""_blank"">POTRDITE</a> ";
                     myMail += @"    ali    ";
                     myMail += @"<a href=""" + AppBaseUrl + @"/api/Sms?guid=" + newSmsCampaign.Guid.ToString() + @"&action=cancel"" target=""_blank"">PREKLIČITE</a> ";
@@ -154,12 +154,12 @@ namespace KdajBi.API.Controllers
             {
                 SmsCampaign newSmsCampaign = GetSmsCampaignFromSmsc(p_SmsCampaigin);
                 //get sms limit info
-                ClientSmsLimit=_smsInfo.SmsLimitInfo("KB" + _CurrentUserID().ToString(), _CurrentUserCompanyTaxID());
+                ClientSmsLimit = _smsInfo.SmsLimitInfo("KB" + _CurrentUserCompanyID().ToString(), _CurrentUserCompanyTaxID());
                 recipientsCount = newSmsCampaign.RecipientsCount;
 
             }
 
-            return Json(new {limit=ClientSmsLimit, recipients=recipientsCount });
+            return Json(new { limit = ClientSmsLimit, recipients = recipientsCount });
 
         }
 
@@ -170,18 +170,19 @@ namespace KdajBi.API.Controllers
         [Route("api/[controller]")]
         public async Task<IActionResult> GetDecide(string guid, string action)
         {
-            var myCampaign = _context.SmsCampaigns.Where(c => c.Guid.ToString() == guid ).FirstOrDefault();
-            if (myCampaign != null && guid.Length>0)
+            var myCampaign = _context.SmsCampaigns.Where(c => c.Guid.ToString() == guid).FirstOrDefault();
+            if (myCampaign != null && guid.Length > 0)
             {
                 string AppBaseUrl = Request.Scheme + @"://" + Request.Host + Request.PathBase;
                 string myHTML = @"<html><head><meta http-equiv=""refresh"" content=""5;url='https://kdajbi.si'"" />";
-                
+
 
                 switch (action.ToUpper())
                 {
                     case "APPROVE":
                         myCampaign.ApprovedAt = DateTime.Now;
                         _context.Entry(myCampaign).State = EntityState.Modified;
+                        _context.Entry(myCampaign).Property(p => p.RecipientsCount).IsModified = false; 
                         await _context.SaveChangesAsync();
                         myHTML += "<title>Pošiljanje potrjeno</title></head>";
                         myHTML += "<body><h1>Potrjeno! <br />Sporočila bodo poslana.</h1></body></html>";
@@ -190,6 +191,7 @@ namespace KdajBi.API.Controllers
                     case "CANCEL":
                         myCampaign.CanceledAt = DateTime.Now;
                         _context.Entry(myCampaign).State = EntityState.Modified;
+                        _context.Entry(myCampaign).Property(p => p.RecipientsCount).IsModified = false;
                         await _context.SaveChangesAsync();
                         myHTML += "<title>Pošiljanje preklicano</title></head>";
                         myHTML += "<body><h1>Preklicano! <br />Sporočila ne bodo poslana.</h1></body></html>";
@@ -198,7 +200,7 @@ namespace KdajBi.API.Controllers
                         return Content("<html><h1>Brezveze.</h1></html>", "text/html", Encoding.UTF8);
                         break;
                 }
-                
+
             }
             else
             { return NotFound(); }
@@ -218,10 +220,10 @@ namespace KdajBi.API.Controllers
                 case 0: //individual recipients (ClientIDs)
                     foreach (string item in p_SmsCampaigin.Recipients)
                     {
-                        Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == long.Parse(item) && a.Mobile!= null && a.AllowsSMS == true).SingleOrDefault();
+                        Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == long.Parse(item) && a.Mobile != null && a.AllowsSMS == true).SingleOrDefault();
                         if (client != null)
                         {
-                             newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile)); 
+                            newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile));
                         }
                     }
                     break;

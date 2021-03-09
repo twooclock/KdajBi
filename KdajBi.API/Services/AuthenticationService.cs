@@ -101,7 +101,15 @@ namespace KdajBi.API.Services
             {
                 return new TokenResponse(false, "Invalid refresh token user.", null);
             }
-
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Count > 0)
+            {
+                user.UserRoles = new List<AppRole>();
+                foreach (var item in roles)
+                {
+                    user.UserRoles.Add(new AppRole(item));
+                }
+            }
             var accessToken = _tokenHandler.CreateAccessToken(user);
             return new TokenResponse(true, null, accessToken);
         }

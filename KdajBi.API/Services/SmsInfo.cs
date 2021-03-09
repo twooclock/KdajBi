@@ -20,7 +20,7 @@ namespace KdajBi
             smsInfoWS = p_SmsInfoWS;
         }
 
-        public int SmsLimitInfo(string p_ClientID, string p_TaxID)
+        public int SmsLimitInfo(string p_CompanyID, string p_TaxID)
         {
             int limit = 0;
             int kupljenih = 0;
@@ -31,7 +31,7 @@ namespace KdajBi
                 client.BaseAddress = new Uri(smsInfoWS);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 string myXML = @"<?xml version=""1.0"" encoding=""UTF-8""?>";
-                myXML = myXML + @"<ServiceRequest Sender=""" + p_ClientID + @""" Davcna=""" + p_TaxID + @""" RequestID=""" + DateTime.Now.ToString("yyyymmddhhMMss") + @""">";
+                myXML = myXML + @"<ServiceRequest Sender=""" + p_CompanyID + @""" Davcna=""" + p_TaxID + @""" RequestID=""" + DateTime.Now.ToString("yyyymmddhhMMss") + @""">";
                 myXML = myXML + @"   <ServiceData ServiceName=""vrniStanjeSMS""></ServiceData>";
                 myXML = myXML + @"</ServiceRequest>";
                 var contentData = new StringContent(myXML, System.Text.Encoding.UTF8, "application/json");

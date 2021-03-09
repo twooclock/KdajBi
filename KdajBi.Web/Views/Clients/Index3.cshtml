@@ -306,7 +306,7 @@
 
         $(document).ready(function () {
 
-            if (navigator.language.slice(0, 2) != "en") {
+            //if (navigator.language.slice(0, 2) != "en") {
                 // load locale and Get flatpicker localized instance
                 loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
                     .then(function () {
@@ -335,7 +335,7 @@
                             });
                     });
 
-            }
+            //}
             //bind cboLocations
             $("#cboLocations").off('change').change(function (evt) {
                 Cookies.set('DefaultLocation', $(this).val());
@@ -554,6 +554,7 @@
                 client.Address = $("#txtClientAddress").val();
                 client.Zip =$("#txtClientZip").val();
                 client.Notes = $("#txtClientNotes").val();
+                client.Sex = "F";
 
                 var myTags = [];
                 $('#txtTags').select2('data').forEach(function (item) {

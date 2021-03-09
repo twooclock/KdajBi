@@ -41,6 +41,7 @@ namespace KdajBi.API.Controllers
                 if (settingIndb == null)
                 {
                     Setting newSetting = new Setting();
+                    newSetting.UserId = _CurrentUserID();
                     newSetting.CreatedUserID = _CurrentUserID();
                     newSetting.CompanyId = _CurrentUserCompanyID();
                     newSetting.Key = item.Key;
@@ -49,7 +50,9 @@ namespace KdajBi.API.Controllers
                 }
                 else
                 {
+                    settingIndb.UserId = _CurrentUserID();
                     settingIndb.UpdatedUserID = _CurrentUserID();
+                    settingIndb.CompanyId = _CurrentUserCompanyID();
                     settingIndb.UpdatedDate = DateTime.Now;
                     settingIndb.Value = item.Value;
                     _context.Entry(settingIndb).State = EntityState.Modified;

@@ -334,8 +334,10 @@
              var settings = new Object();
              
              settings["SMS_SenderName"] = $("#SMS_SenderName").val();
-             settings["SMS_genRDsms"] = $("#SMS_genRDsms").prop("checked");
-             settings["SMS_RD_Time"] =$("#SMS_RD_Time").val();
+             if ($("#SMS_genRDsms").prop("checked") == false)
+             { settings["SMS_RD_Time"] = ''; }
+             else
+             { settings["SMS_RD_Time"] = $("#SMS_RD_Time").val(); }
              settings["SMS_RD_Msg"] = $("#SMS_RD_Msg").val();
              getAPIToken().then((result) => {
                  $.ajax({
@@ -359,7 +361,7 @@
         function loadSMS() {
             var settings = new Object();
              settings["SMS_SenderName"] =$("#SMS_SenderName").val();
-             settings["SMS_genRDsms"] = $("#SMS_genRDsms").prop("checked");
+             //settings["SMS_genRDsms"] = $("#SMS_genRDsms").prop("checked");
              settings["SMS_RD_Time"] =$("#SMS_RD_Time").val();
              settings["SMS_RD_Msg"] = $("#SMS_RD_Msg").val();
             getAPIToken().then((result) => {
@@ -372,7 +374,7 @@
                 dataType: "json",
                  success: function (result) {
                     $("#SMS_SenderName").val(result["SMS_SenderName"]);
-                     if (result["SMS_genRDsms"] == 'true')
+                     if (result["SMS_RD_Time"] != '')
                     {
                         $("#SMS_genRDsms").prop("checked", true);
                         $("#SMS_RD_Props").show();
