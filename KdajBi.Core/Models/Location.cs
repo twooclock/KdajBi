@@ -24,7 +24,12 @@ namespace KdajBi.Core.Models
         [ForeignKey("ScheduleId"), Required]
         public virtual Schedule Schedule { get; set; }
 
-        public Location() { Active = true; Schedule = new Schedule(); }
+        public ICollection<Workplace> Workplaces { get; set; }
+
+        public Location() { Active = true; Schedule = new Schedule(); Workplaces = new List<Workplace>(); }
+
+        
+
 
     }
 }

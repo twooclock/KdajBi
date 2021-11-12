@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "smsTestApp", "Sms\smsTestAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KdajBiObvestiRD", "Sms\KdajBiObvestiRD\KdajBiObvestiRD.csproj", "{74EE967E-086E-4A6E-9839-A5414792BF89}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KdajBi.GoogleHelper", "KdajBi.GoogleHelper\KdajBi.GoogleHelper.csproj", "{82A71B44-683A-4173-B54F-828C066F2DD7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{74EE967E-086E-4A6E-9839-A5414792BF89}.Release|x64.Build.0 = Release|Any CPU
 		{74EE967E-086E-4A6E-9839-A5414792BF89}.Release|x86.ActiveCfg = Release|Any CPU
 		{74EE967E-086E-4A6E-9839-A5414792BF89}.Release|x86.Build.0 = Release|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Debug|x64.Build.0 = Debug|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Debug|x86.Build.0 = Debug|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Release|x64.ActiveCfg = Release|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Release|x64.Build.0 = Release|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Release|x86.ActiveCfg = Release|Any CPU
+		{82A71B44-683A-4173-B54F-828C066F2DD7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

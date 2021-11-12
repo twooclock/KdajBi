@@ -365,6 +365,9 @@ namespace KdajBi.Core.Migrations
                     b.Property<int?>("CreatedUserID")
                         .HasColumnType("int");
 
+                    b.Property<string>("EventsJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("FridayEnd")
                         .HasColumnType("datetime2");
 
@@ -420,6 +423,47 @@ namespace KdajBi.Core.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Schedules");
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.Service", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool?>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit");
+
+                    b.Property<long>("CompanyId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedUserID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Minutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(150)")
+                        .HasMaxLength(150);
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedUserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("KdajBi.Core.Models.Setting", b =>
@@ -546,7 +590,7 @@ namespace KdajBi.Core.Migrations
                         .HasColumnType("nvarchar(15)")
                         .HasMaxLength(15);
 
-                    b.Property<long?>("SmsCampaignId")
+                    b.Property<long>("SmsCampaignId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -642,7 +686,73 @@ namespace KdajBi.Core.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LocationId");
+
                     b.ToTable("Workplaces");
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.WorkplaceSchedule", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("ScheduleId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WorkplaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScheduleId");
+
+                    b.HasIndex("WorkplaceId", "ScheduleId")
+                        .IsUnique();
+
+                    b.ToTable("WorkplaceSchedules");
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.WorkplaceScheduleException", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool?>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedUserID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EventsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedUserID")
+                        .HasColumnType("int");
+
+                    b.Property<long>("WorkplaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkplaceId");
+
+                    b.ToTable("WorkplaceScheduleExceptions");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -811,7 +921,42 @@ namespace KdajBi.Core.Migrations
                 {
                     b.HasOne("KdajBi.Core.Models.SmsCampaign", null)
                         .WithMany("Recipients")
-                        .HasForeignKey("SmsCampaignId");
+                        .HasForeignKey("SmsCampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.Workplace", b =>
+                {
+                    b.HasOne("KdajBi.Core.Models.Location", null)
+                        .WithMany("Workplaces")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.WorkplaceSchedule", b =>
+                {
+                    b.HasOne("KdajBi.Core.Models.Schedule", "Schedule")
+                        .WithMany()
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KdajBi.Core.Models.Workplace", "Workplace")
+                        .WithMany("WorkplaceSchedules")
+                        .HasForeignKey("WorkplaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.WorkplaceScheduleException", b =>
+                {
+                    b.HasOne("KdajBi.Core.Models.Workplace", "Workplace")
+                        .WithMany()
+                        .HasForeignKey("WorkplaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

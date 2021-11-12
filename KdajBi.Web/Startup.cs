@@ -53,7 +53,6 @@ namespace KdajBi
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
-
             services.AddAuthentication(options =>
             {
                 //authorize with redirect to google
@@ -67,6 +66,9 @@ namespace KdajBi
                    opts.ClientSecret = Configuration.GetSection("GoogleSettings")["ClientSecret"];
                    opts.SignInScheme = IdentityConstants.ExternalScheme;
                    opts.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
+                   opts.Scope.Add("https://www.googleapis.com/auth/calendar");
+                   opts.AccessType = "offline";
+                   opts.SaveTokens=true;
                });
 
 

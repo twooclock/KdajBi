@@ -49,13 +49,13 @@
                     <div class="col-md-6">
                         <div class="input-group mb-2 mt-2">
                             <div class="input-group-prepend">
-                                <div class="input-group-text" onclick="$('#clientsearch').select();">
+                                <div class="input-group-text" onclick="$('#clientsearch').select();$('#clientsearch').autocomplete('search')">
                                     <span class="fas fa-user"></span>
                                 </div>
                             </div>
-                            <input id="clientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#clientsearch').select();">
+                            <input id="clientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#clientsearch').select(); $('#clientsearch').autocomplete('search')">
                             <div class="input-group-append">
-                                <button class="" type="button" onclick="$('#txtClientFirstName').focus(); SelectedClientID = 0; $('#clientsearch').val(''); setClientForm(0);"><i class="fas fa-plus"></i></button>
+                                <button class="" type="button" onclick="cmdClientAdd_Click();"><i class="fas fa-plus"></i></button>
                             </div>
 
                         </div>
@@ -102,7 +102,7 @@
                                                     Mobi:
                                                 </label>
                                                 <div class="input-group">
-                                                    <input type="text" id="txtClientMobile" name="txtClientMobile" class="form-control" />
+                                                    <input type="tel" id="txtClientMobile" name="txtClientMobile" class="form-control" onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" />
                                                     <div class="input-group-append">
                                                         <div class="input-group-text text-sm">
                                                             <div class="custom-control custom-checkbox">
@@ -176,7 +176,8 @@
 
                                     </form>
                                     <div class="form-group">
-                                        <button class="btn btn-default" onclick="SaveClient(SelectedClientID);">Shrani</button>
+                                        <button id="cmdClientDelete" class="btn btn-danger" onclick="DeleteClient(SelectedClientID);" disabled>Zbriši</button>
+                                        <button id="cmdClientSave" class="btn btn-primary" onclick="SaveClient(SelectedClientID);">Shrani</button>
                                     </div>
                                 </div>
                             </div>
@@ -339,7 +340,7 @@
             //bind cboLocations
             $("#cboLocations").off('change').change(function (evt) {
                 Cookies.set('DefaultLocation', $(this).val());
-                setClientForm(0);
+                showClientDetail(0);
                 GetClients();
             });
 
@@ -354,10 +355,11 @@
                 source: myClients,
                 select: function (event, ui) {
                     hideKeyboard();
-                    $("#clientsearch").val(ui.item.label);
+                    //$("#clientsearch").val(ui.item.label);
                     SelectedClientID = ui.item.value;
-                    setClientForm(SelectedClientID);
+                    showClientDetail(SelectedClientID);
                     $("#clientsearch").blur();
+                    event.preventDefault();
                     return false;
                 },
                 focus: function (event, ui) { event.preventDefault(); return false; }
@@ -416,7 +418,7 @@
                              select: function (event, ui) {
                                  $("#clientsearch").val(ui.item.label);
                                  SelectedClientID = ui.item.value;
-                                 setClientForm(SelectedClientID);
+                                 showClientDetail(SelectedClientID);
                                  return false;
                              },
                              focus: function (event, ui) { event.preventDefault(); return false; }
@@ -431,18 +433,22 @@
         }
 
         function cmdClientAdd_Click() {
+            $('#txtClientFirstName').focus();
+            SelectedClientID = 0;
+            $('#clientsearch').val(''); 
             setClientForm(0);
-            $('#cmdClientDelete').addClass('invisible')
-            $("#cmdClientSave").off('click').click(function (evt) {
+            //$('#cmdClientDelete').addClass('invisible');
+            $('#cmdClientDelete').prop('disabled', true);
+            /*$("#cmdClientSave").off('click').click(function (evt) {
                 if (SaveClient(0) != false) {
 
                 }
             });
-
+            */
 
         }
 
-        async function setClientForm(p_ID) {
+        function setClientForm(p_ID) {
             if (p_ID == 0) {
                 //clear form
                 $("#txtClientFirstName").val('');
@@ -497,19 +503,27 @@
 
         function showClientDetail(p_ID) {
             setClientForm(p_ID);
-            $('#cmdClientDelete').removeClass('invisible');
-            $("#cmdClientSave").off('click').click(function (evt) {
-                if (SaveClient(p_ID) != false) {  }
-            });
-            $("#cmdClientDelete").off('click').click(function (evt) {
-                if (DeleteClient(p_ID) != false) { }
-            });
-
+            if (p_ID != 0) {
+                //$('#cmdClientDelete').removeClass('invisible');
+                $('#cmdClientDelete').prop('disabled', false);
+                /*$("#cmdClientSave").off('click').click(function (evt) {
+                    if (SaveClient(p_ID) != false) { }
+                });
+                
+                $("#cmdClientDelete").off('click').click(function (evt) {
+                    if (DeleteClient(p_ID) != false) { }
+                });
+                */
+            }
+            else {
+                //$('#cmdClientDelete').addClass('invisible');
+                $('#cmdClientDelete').prop('disabled', true);
+            }
         }
 
         function DeleteClient(p_ID) {
             Swal.fire({
-                title: 'Zbrišem stranko?',
+                title: 'Zbrišem stranko \n'+$('#txtClientFirstName').val()+' '+$('#txtClientLastName').val()+'?',
                 showDenyButton: true,
                 confirmButtonText: 'Da',
                 denyButtonText: 'Ne',
@@ -523,7 +537,7 @@
                             headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                             dataType: "json",
                             success: function (result) {
-                                if (result == "OK") { toastr.success("Stranka zbrisana"); GetClients(); return true; }
+                                if (result == "OK") { toastr.success("Stranka zbrisana"); GetClients(); cmdClientAdd_Click(); return true; }
                                 else { toastr.error("Napaka:" + result); return false; }
                             },
                             error: function (xhr, status, error) {
@@ -536,6 +550,7 @@
             });
         }
 
+        
         function SaveClient(p_ID) {
             if ($('#dataform').valid()) {
                 var client={};
@@ -626,6 +641,30 @@
                             retval.push({ id: item.id, text: item.title })
                         });
                         myTags = retval;
+
+                        $("#txtTags").select2({
+                            multiple: true,
+                            tags: true,
+                            placeholder: "",
+                            tokenSeparators: [","],
+
+                            data: myTags,
+
+                            createTag: function (params) {
+                                var term = $.trim(params.term);
+                                if (term === '') { return null; }
+                                //var text = term + (lastResults.some(function (r) { return r.text == term }) ? "" : " (nova oznaka)");
+                                return {
+                                    id: lastResults.length,
+                                    text: term, added: true, tagId: 0
+                                };
+                            },
+                            insertTag: function (data, tag) {
+                                // Insert the tag at the end of the results
+                                data.push(tag);
+                              }
+                        });
+
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Error getting data:" + error);
@@ -633,28 +672,7 @@
                 });
             });
 
-            $("#txtTags").select2({
-                multiple: true,
-                tags: true,
-                placeholder: "",
-                tokenSeparators: [","],
-
-                data: myTags,
-
-                createTag: function (params) {
-                    var term = $.trim(params.term);
-                    if (term === '') { return null; }
-                    //var text = term + (lastResults.some(function (r) { return r.text == term }) ? "" : " (nova oznaka)");
-                    return {
-                        id: lastResults.length,
-                        text: term, added: true, tagId: 0
-                    };
-                },
-                insertTag: function (data, tag) {
-                    // Insert the tag at the end of the results
-                    data.push(tag);
-                  }
-            });
+            
 
 
             $('#txtTags').on("select2:select", function (e) {

@@ -69,6 +69,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KdajBi.Core\KdajBi.Core.csproj" />
+    <ProjectReference Include="..\KdajBi.GoogleHelper\KdajBi.GoogleHelper.csproj" />
   </ItemGroup>
 
   <ItemGroup>

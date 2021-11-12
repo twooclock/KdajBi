@@ -1,6 +1,7 @@
 ﻿using KdajBi.Core;
 using KdajBi.Core.dtoModels;
 using KdajBi.Core.Models;
+using KdajBi.GoogleHelper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -50,6 +51,23 @@ namespace KdajBi.API.Controllers
             recordsTotal = v.Count();
             var data = v.Skip(param.start).Take(param.length).ToList();
 
+            //add google clendar names
+            var gt = _CurrentUserGooToken();
+            if (gt != null)
+            {
+                using (GoogleService service = new GoogleService(gt))
+                {
+                    foreach (var gooCalendar in service.getCalendars().Items)
+                    {
+                        foreach (var item in data)
+                        {
+                            if (gooCalendar.Id == item.GoogleCalendarID)
+                            { item.GoogleCalendarSummary = gooCalendar.Summary; }
+                        }
+                    }
+                }
+            }
+            
             return Json(new { draw = param.draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
         }
 
@@ -133,7 +151,7 @@ namespace KdajBi.API.Controllers
 
                 workplaceindb.UpdatedUserID = _CurrentUserID();
                 workplaceindb.UpdatedDate = DateTime.Now;
-                workplaceindb.Active  = workplace.Active;
+                workplaceindb.Active = workplace.Active;
                 workplaceindb.GoogleCalendarID = workplace.GoogleCalendarID;
                 workplaceindb.Name = workplace.Name;
                 workplaceindb.SortPosition = workplace.SortPosition;

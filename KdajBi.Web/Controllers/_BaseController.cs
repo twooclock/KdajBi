@@ -1,5 +1,6 @@
 ﻿using KdajBi.Core;
 using KdajBi.Core.Models;
+using KdajBi.GoogleHelper;
 using KdajBi.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +42,20 @@ namespace KdajBi.Web.Controllers
         protected long _CurrentUserCompanyID()
         {
             return long.Parse(User.FindFirst("CompanyId").Value);
+        }
+
+        protected GoogleAuthToken _CurrentUserGooToken()
+        {
+            try
+            {
+                //TODO: check expiration and renew
+                return JsonConvert.DeserializeObject<GoogleAuthToken>(User.FindFirst("GooToken").Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "_CurrentUserGooToken error");
+                return null;
+            }
         }
 
         protected JwtToken _GetToken()

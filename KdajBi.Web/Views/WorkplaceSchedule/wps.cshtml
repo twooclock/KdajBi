@@ -1,0 +1,977 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web;
+@using KdajBi.Web.ViewModels;
+@using System.Globalization; 
+@model vmWorkplace
+@{
+    ViewData["Title"] = "Urnik";
+}
+
+@section styles{
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+    <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/plugins/bootstrap-tokenfield/css/tokenfield-typeahead.min.css" rel="stylesheet" />
+    <link href="~/plugins/bootstrap-tokenfield/css/bootstrap-tokenfield.min.css" rel="stylesheet" />
+    <link href="~/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
+    <link href='~/lib/fullcalendar-scheduler-5.9.0/lib/main.min.css' rel='stylesheet' />
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+
+        #calendar {
+            max-width: 1100px;
+        }
+
+        ::backdrop {
+            background-color: white;
+        }
+
+
+        :fullscreen {
+            overflow-y: scroll;
+        }
+
+        :-ms-fullscreen {
+            overflow-y: scroll;
+        }
+
+        :-webkit-full-screen {
+            overflow-y: scroll;
+        }
+
+        :-moz-full-screen {
+            overflow-y: scroll;
+        }
+
+        div.token{
+            font-size: 13px;
+        }
+        /*sticky header*/
+        .fc-toolbar.fc-header-toolbar {
+            position: sticky;
+            top: 200px;
+            z-index: 10;
+        }
+
+        .fc-head-container.fc-widget-header {
+            position: sticky;
+            top: 308px;
+            z-index: 10;
+            background: red;
+        }
+
+        .fc-timeline .fc-body .fc-scroller {
+            height: 400px !important;
+        }
+        .fc .fc-toolbar.fc-header-toolbar {
+            margin-bottom: 1.5em;
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 100;
+        }
+
+        .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
+            top: 34px;
+        }
+        .fc-header-toolbar {
+            padding: 0px !important;
+        }
+    </style>
+}
+
+<!-- page content -->
+<div class="right_col col-md-12" role="main">
+    <div id="fs">
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary card-outline card-outline-tabs">
+                    <div class="card-header p-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">@Html.Raw(Model.Workplace.Name)</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="timetable-tab" data-toggle="tab" href="#days" role="tab" aria-controls="days" aria-selected="false">Urnik po dnevih</a>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="custom-tabs-four-tabContent">
+                            <div class="tab-pane fade active show" id="general" role="tabpanel" aria-labelledby="general-tab">
+                                <div id='wcalendar'></div>
+                            </div>
+
+                            <div class="tab-pane fade" id="days" role="tabpanel" aria-labelledby="days-tab">
+                                <div id='dcalendar'></div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- /.card -->
+                </div>
+
+
+
+
+            </div>
+        </div>
+
+
+    
+    <!-- Timetable modal content-->
+<div id="myModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Urnik</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body ui-front">
+                <form id="formEvent" class="formEvent" name="formEvent">
+                    
+                    <div class="form-row">
+                        <div class="form-group pr-2 col-9 ">
+                            <label for="txtStartTime">
+                                Od (ura):
+                            </label>
+                            <input type="text" id="txtStartTime" name="txtStartTime" class="form-control " />
+                        </div>
+                        <div class="form-group col-3 ">
+                            <label for="txtEndTime">
+                                Do (ura):
+                            </label>
+                            <div class="input-group  p-0">
+                                <input type="text" id="txtEndTime" name="txtEndTime" class="form-control " />
+                            </div>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="cmdDelete">
+                    Zbriši
+                </button>
+                <button type="button" class="btn btn-primary" id="cmdSave">
+                    Shrani
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+    </div>
+</div>
+<!-- /page content -->
+
+
+
+@section scripts{
+    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+    <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <!-- cookies needed for changing location -->
+    <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
+    <script src="~/plugins/toastr/toastr.min.js"></script>
+    <script src="~/plugins/bootstrap-tokenfield/bootstrap-tokenfield.min.js"></script>
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+
+
+    <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
+    <script src="~/plugins/flatpickr/plugins/confirmDate/confirmDate.js"></script>
+    <script src="~/plugins/dayjs/dayjs.min.js"></script>
+    <script src="~/plugins/dayjs/plugin/utc.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_utc)</script>
+    <script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localizedFormat);</script>
+    <script src="~/plugins/dayjs/plugin/localeData.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
+    <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
+
+    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/main.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/rrule.min.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/main.global.min.js'></script>
+
+
+    <script type="text/javascript">
+        @await Html.PartialAsync("_ApiAccess")
+
+
+        function hideKeyboard() {
+            //this set timeout needed for case when hideKeyborad
+            //is called inside of 'onfocus' event handler
+            setTimeout(function () {
+
+                //creating temp field
+                var field = document.createElement('input');
+                field.setAttribute('type', 'text');
+                //hiding temp field from peoples eyes
+                //-webkit-user-modify is nessesary for Android 4.x
+                field.setAttribute('style', 'position:absolute; top: 0px; opacity: 0; -webkit-user-modify: read-write-plaintext-only; left:0px;');
+                document.body.appendChild(field);
+
+                //adding onfocus event handler for out temp field
+                field.onfocus = function () {
+                    //this timeout of 200ms is nessasary for Android 2.3.x
+                    setTimeout(function () {
+
+                        field.setAttribute('style', 'display:none;');
+                        setTimeout(function () {
+                            document.body.removeChild(field);
+                            document.body.focus();
+                        }, 14);
+
+                    }, 200);
+                };
+                //focusing it
+                field.focus();
+
+            }, 50);
+        }
+
+
+        function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                const s = document.createElement('script');
+                let r = false;
+                s.type = 'text/javascript';
+                s.src = src;
+                s.async = true;
+                s.onerror = function (err) {
+                    reject(err, s);
+                };
+                s.onload = s.onreadystatechange = function () {
+                    // console.log(this.readyState); // uncomment this line to see which ready states are called.
+                    if (!r && (!this.readyState || this.readyState == 'complete')) {
+                        r = true;
+                        resolve();
+                    }
+                };
+                const t = document.getElementsByTagName('script')[0];
+                t.parentElement.insertBefore(s, t);
+            });
+        }
+
+
+        var wcalendar;
+        var dcalendar;
+        
+        var weekdays=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.WeekDays));
+        var exMonths = [];
+
+        var isFullScreen = false;
+        function goFullScreen(p_ElementId) {
+
+            var elem = document.getElementById(p_ElementId);
+
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            isFullScreen = true;
+        }
+        function exitFullScreen(){
+
+            if(document.exitFullscreen){ document.exitFullscreen(); }
+            else if(document.mozCancelFullScreen){ document.mozCancelFullScreen(); }
+            else if(document.webkitExitFullscreen){ document.webkitExitFullscreen();}
+            else if(document.msExitFullscreen){ document.msExitFullscreen();}
+            isFullScreen = false;
+        }
+
+        $.validator.addMethod( "time", function( value, element ) {
+	        return  /^([01]\d|2[0-3]|[0-9])(:[0-5]\d){1,2}$/.test( value );
+        }, "Vnesite veljaven čas npr. 8:30 ali 17:45" );
+
+        $.validator.addMethod("greaterThan",
+        function (value, element, param) {
+            var startElement = dayjs(new Date()).format("l")+" " + $(param).val();
+            var endElement = dayjs(new Date()).format("l")+" " + value;
+            return (dayjs(startElement).toDate()  < dayjs(endElement).toDate());
+            }, "Konec mora biti večji od začetka.");
+
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            loadScript("/lib/fullcalendar-scheduler-5.9.0/lib/locales/" + navigator.language.slice(0, 2) + ".js")
+                .then(function () {
+                    wcalendar = new FullCalendar.Calendar(document.getElementById('wcalendar'), {
+                        locale: navigator.language.slice(0, 2), eventResizableFromStart: true,
+                        eventDisplay: 'block',
+                        eventOverlap: false,
+                        selectOverlap: false,
+                        headerToolbar: {
+                            left: '',
+                            center: '',
+                            right: 'save fullscreen'
+                        },
+                        viewDidMount: function (view, element) {
+
+                        @{
+                            string myCbo = @"`<div><select id=""cboScheduleType"" name=""cboScheduleType"" class=""selectpicker custom-select custom-select-sm form-control"">
+                                                        <option value=""0"" selected>Splošni urnik</option>
+                                                        <option value=""1"" >Lihi urnik</option>
+                                                        <option value=""2"" >Sodi urnik</option>
+                                                </select></div>`";
+                        }
+                            $("#wcalendar").find('.fc-toolbar > .fc-toolbar-chunk:first').empty().append(@Html.Raw(myCbo));
+                            var myType = sessionStorage.getItem('cboScheduleType');
+                            if (myType === null) { myType = "0";}
+                            $("#cboScheduleType").val(myType);
+                        },
+                        themeSystem: 'bootstrap',
+                        stickyFooterScrollbar: true,
+                        initialView: 'resourceTimeGridDay',
+                        //initialDate: 'today',
+                        slotMinTime: "@Html.Raw(Model.Location.Schedule.minTime())", //"7:00:00",
+                        slotMaxTime: "@Html.Raw(Model.Location.Schedule.maxTime())", //"21:00:00",
+                        slotDuration: '00:30:00',
+                        allDaySlot: false,
+                        //scrollTime: getScrollTime(), //"8:00:00",
+                        slotLabelFormat: {
+                            hour: 'numeric',
+                            hour12: false,
+                            minute: '2-digit',
+                            omitZeroMinute: true,
+                            meridiem: false
+                        },
+                        slotLabelInterval: "00:30",
+                        expandRows: true,
+                        editable: true,
+                        selectable: true,
+                        dayMaxEvents: true, // allow "more" link when too many events
+                        //dayMinWidth: 200,
+                        customButtons: {
+                            fullscreen: {
+                                text: '[]',
+                                click: function () {
+                                    if (isFullScreen) { exitFullScreen(); } else { goFullScreen('fs'); }
+                                }
+                            },
+                            save: {
+                                text: 'Shrani',
+                                click: function () {
+                                    SaveWeeklySchedule(@Html.Raw(Model.Workplace.Id), @Html.Raw(Model.ScheduleId));
+                                }
+                            }
+                        },
+                        resourceOrder: 'order',
+                        resources: [
+
+                            @for (int j = 1; j < 8; j++)
+                            {
+                                var i = j % 7;
+                                FullCalendar.Resource myResource = new FullCalendar.Resource(i.ToString(),j.ToString(),CultureInfo.CurrentCulture.DateTimeFormat.DayNames[i],"blue");
+                                FullCalendar.businessHours myBH;
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.SundayStart.ToString("HH:mm"), Model.Location.Schedule.SundayEnd.ToString("HH:mm"), new int[]{0});
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.MondayStart.ToString("HH:mm"), Model.Location.Schedule.MondayEnd.ToString("HH:mm"), new int[]{1});
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.TuesdayStart.ToString("HH:mm"), Model.Location.Schedule.TuesdayEnd.ToString("HH:mm"), new int[]{2});
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.WednesdayStart.ToString("HH:mm"), Model.Location.Schedule.WednesdayEnd.ToString("HH:mm"), new int[]{3});
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.ThursdayStart.ToString("HH:mm"), Model.Location.Schedule.ThursdayEnd.ToString("HH:mm"), new int[]{4});
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.FridayStart.ToString("HH:mm"), Model.Location.Schedule.FridayEnd.ToString("HH:mm"), new int[]{5});
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.SaturdayStart.ToString("HH:mm"), Model.Location.Schedule.SaturdayEnd.ToString("HH:mm"), new int[]{6});
+                                myResource.businessHours.Add(myBH);
+
+                                @Html.Raw(myResource.ToJson()+",");
+                            }
+
+                        ],
+                        events:@Html.Raw(Model.calWEvents),
+                        eventTimeFormat: {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false
+                        },
+                        eventClick: function (info) {
+                            showEvent(info);
+                        },
+                        eventDrop: function (info) {
+                            //prevent drag/drop between "resources" (weekdays)
+                            if (info.newResource != null) {
+                                info.revert();
+                            }
+
+                        },
+
+                        select: function (arg) {
+                            if (typeof arg.resource === "undefined") {
+                                //switch view
+                                wcalendar.changeView("resourceTimeGridDay", arg.start);
+                            } else {
+                                //show new Event modal
+                                newEvent(wcalendar, arg);
+                            }
+
+
+                        }
+                    });
+                    wcalendar.render();
+
+                    dcalendar = new FullCalendar.Calendar(document.getElementById('dcalendar'), {
+                        locale: navigator.language.slice(0, 2), eventResizableFromStart: true,
+                        eventDisplay: 'block',
+                        eventOverlap: false,
+                        selectOverlap: false,
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'timeGridWeek,dayGridMonth fullscreen'
+                        },
+                        views: {
+                            timeGridWeek: { // name of view
+                                dayHeaderDidMount: (args) => {
+                                    var a2 = document.createElement('a');
+                                    a2.setAttribute('href','#');
+                                    a2.innerHTML = 'Ponastavi';
+                                    a2.onclick = function () { ResetDay(args.date); };
+                                    return $(args.el)[0].children[0].append(a2);
+                                }
+                            }
+                        },
+                        themeSystem: 'bootstrap',
+                        stickyFooterScrollbar: true,
+                        initialView: 'timeGridWeek',
+                        //initialDate: 'today',
+                        slotMinTime: "@Html.Raw(Model.Location.Schedule.minTime())", //"7:00:00",
+                        slotMaxTime: "@Html.Raw(Model.Location.Schedule.maxTime())", //"21:00:00",
+                        slotDuration: '00:30:00',
+                        allDaySlot: false,
+                        //scrollTime: getScrollTime(), //"8:00:00",
+                        slotLabelFormat: {
+                            hour: 'numeric',
+                            hour12: false,
+                            minute: '2-digit',
+                            omitZeroMinute: true,
+                            meridiem: false
+                        },
+                        slotLabelInterval: "00:30",
+                        expandRows: true,
+                        editable: true,
+                        selectable: true,
+                        dayMaxEvents: true, // allow "more" link when too many events
+                        //dayMinWidth: 200,
+                        customButtons: {
+                            fullscreen: {
+                                text: '[]',
+                                click: function () {
+                                    if (isFullScreen) { exitFullScreen(); } else { goFullScreen('fs'); }
+                                }
+                            }
+                        },
+                        events:@Html.Raw(Model.calBGEvents),
+                        eventTimeFormat: {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false
+                        },
+                        eventClick: function (info) {
+                            showDayEvent(info);
+                        },
+                        eventDrop: function (info) {
+                            //prevent drag/drop between "resources" (weekdays)
+                            if (info.oldEvent.start.toDateString() != info.event.start.toDateString()) {
+                                info.revert();
+                            }
+                            else { saveDaySchedule(info.event.start); }
+                        },
+                        eventResize: function (event, dayDelta, minuteDelta) {
+                            console.info("eventResize: ", event);
+                            saveDaySchedule(event.event.start);
+                        },
+                        select: function (arg) {
+                            if (dcalendar.view.type!="timeGridWeek") {
+                                //switch view
+                                dcalendar.changeView("timeGridWeek", arg.start);
+                            } else {
+                                //show new Event modal
+                                newDayEvent(dcalendar, arg);
+                            }
+                        },
+                        dateClick: function(info) {
+                            //switch view
+                            if (dcalendar.view.type != "timeGridWeek") {
+                                dcalendar.changeView("timeGridWeek", info.date);
+                            }
+                        },
+                        datesSet: function (dateInfo) {
+                            console.info("date changes to:", dateInfo.start,"list of events:");
+                            FetchRenderExceptions(dcalendar, dateInfo.start).then(result => { FetchRenderExceptions(dcalendar, dateInfo.end) });
+
+                        }
+                    });
+
+                    $("#cboScheduleType").off('change').change(function (evt) {
+                        sessionStorage.setItem("cboScheduleType", $("#cboScheduleType").val());
+                        window.location.replace('@Url.Content("~/wps/"+Model.Workplace.Id.ToString())' + "/" + $("#cboScheduleType").val());
+                    });
+                });
+
+
+
+
+
+
+            $('#formEvent').validate({
+                rules: {
+                    txtStartTime: { time: true },
+                    txtEndTime: { time: true, greaterThan: "#txtStartTime" },
+                },
+                messages: {
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-control').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-control').removeClass('is-invalid');
+                },
+                errorElement: 'span',
+                errorClass: 'invalid-feedback',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.insertAfter(element.parent());
+                    } else { error.insertAfter(element); }
+                }
+            });
+
+            $("#myModal").on('shown.bs.modal', function(){
+                $(this).find('#txtStartTime').focus();
+
+            });
+
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                if (e.target.id = "general-tab") {wcalendar.render(); }
+                if (e.target.id = "day-tab") {dcalendar.render(); }
+                
+            });
+
+        });
+
+
+
+
+
+        function CancelModal() {
+            $('#formEvent').validate().resetForm();
+            //remove higlight ( reset form does not do this!)
+            $("#formEvent input, #formEvent label").each(function (key, value) {
+                $(this).closest('.form-group').removeClass('has-error');
+            });
+        }
+
+    //#region weekly Events (wcalendar)
+
+        function newEvent(p_calendar, arg) {
+            //clear form
+            var cHour = arg.start.getHours();
+            var cMinuts = arg.start.getMinutes();
+            var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtStartTime").val(outStr);
+            cHour = arg.end.getHours();
+            cMinuts = arg.end.getMinutes();
+            outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtEndTime").val(outStr);
+            $('#cmdDelete').addClass('invisible');
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveNewEvent(p_calendar, arg.resource.id) != false) { $("#myModal").modal("hide"); }
+            });
+            $("#txtStartTime").focus();
+
+
+        }
+
+        function showEvent(info) {
+            //show urnik info
+            var cHour = info.event.start.getHours();
+            var cMinuts = info.event.start.getMinutes();
+            var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtStartTime").val(outStr);
+            cHour = info.event.end.getHours();
+            cMinuts = info.event.end.getMinutes();
+            outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtEndTime").val(outStr);
+            $('#cmdDelete').removeClass('invisible');
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveEvent(info) != false) { $("#myModal").modal("hide"); }
+            });
+            $("#cmdDelete").off('click').click(function (evt) {
+                if (DeleteEvent(info) != false) { $("#myModal").modal("hide"); }
+            });
+        }
+
+        function DeleteEvent(info) {
+            Swal.fire({
+                title: 'Zbrišem urnik?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log("Deleted event: %s", info.event.id);
+                    if (info.event.display == "background") { HideBackgroundEvents(info.event.start); }
+                    else { info.event.remove();  }
+                    return true;
+                } else { return false; }
+            });
+        }
+
+        function SaveNewEvent(p_calendar, resId) {
+            if ($('#formEvent').valid()) {
+                //create new event
+                console.log("Created event on calendar " + p_calendar.name);
+                var startElement = dayjs(new Date()).format("l") + " " + $("#txtStartTime").val();
+                var endElement = dayjs(new Date()).format("l") + " " + $("#txtEndTime").val();
+                p_calendar.addEvent({
+                    //id: event.id,
+                    title: "",
+                    start: dayjs(startElement).toDate(),
+                    end: dayjs(endElement).toDate(),
+                    resourceId: resId
+                });
+            } else { return false; }
+        }
+
+        function SaveEvent(p_event) {
+            if ($('#formEvent').valid()) {
+                //save client (if changed)
+                var startElement = dayjs(new Date()).format("l") + " " + $("#txtStartTime").val();
+                var endElement = dayjs(new Date()).format("l") + " " + $("#txtEndTime").val();
+                p_event.event.setStart(dayjs(startElement).toDate());
+                p_event.event.setEnd(dayjs(endElement).toDate());
+
+            } else { return false; }
+        }
+
+        function SaveWeeklySchedule(p_Wid, p_Sid) {
+            //save workplace schedule
+            var myEvents=[];
+            const visibleEvents = wcalendar.getEvents().filter(event => {
+                const s = wcalendar.view.activeStart, e = wcalendar.view.activeEnd
+                if (event.start > e || event.end < s) return false
+                return true
+            });
+            for (var j = 0; j < visibleEvents.length; j++) {
+                var myEvent = {};
+                myEvent.startTime =  dayjs(visibleEvents[j].start).format("HH:mm");
+                myEvent.endTime = dayjs(visibleEvents[j].end).format("HH:mm");
+                myEvent.resourceId = visibleEvents[j].getResources()[0].id;
+                myEvents.push(myEvent);
+            }
+
+            var wps = {};
+            wps.WorkplaceId = p_Wid;
+            wps.ScheduleId = p_Sid;
+            wps.Type = $("#cboScheduleType").val();
+            wps.calEvents = JSON.stringify(myEvents);
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(wps),
+                    url: apiURL + "/api/WorplaceSchedule/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Shranil..."); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+
+        }
+
+        //#endregion
+
+        //#region daily Events (dcalendar)
+        function isInArray(array, value) {
+            return (array.find(item => {return item == value}) || []).length > 0;
+        }
+
+        function ResetDay(p_date) {
+            let events = dcalendar.getEvents()
+            //remove all events for a specified day
+            for (let i = 0; i < events.length; i++) {
+                let event = events[i]
+                if (dayjs(p_date).format("YYYYMMDD") == dayjs(event.start).format("YYYYMMDD")) {
+                    event.remove();
+                }
+            }
+
+            var idx = p_date.getDay();
+            weekdays[idx].exDates = weekdays[idx].exDates.filter(function (e) { return e !== dayjs(p_date).format("YYYYMMDD") })
+            weekdays[idx].changed = true;
+            RenderBackgroundEvents(dcalendar);
+            
+            resetDaySchedule(p_date);
+
+        }
+
+        function getEventStart(p_rruleString) {
+            //parse start time from rrule
+            //rrule example: DTSTART:20210101T070000\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO
+            var retval = p_rruleString.split(':')[1];
+            retval = retval.split('\n')[0];
+            retval = retval.split('T')[1];
+            return "T"+retval;
+
+        }
+
+        function HideBackgroundEvents(p_date) {
+            weekdays[p_date.getDay()].exDates.push(dayjs(p_date).format("YYYYMMDD"));
+            weekdays[p_date.getDay()].changed = true;
+            RenderBackgroundEvents(dcalendar);
+        }
+
+        function RenderBackgroundEvents(p_calendar) {
+            console.info("RenderBackgroundEvents");
+
+            weekdays.forEach(function (arrayItem,idx) {
+                if (arrayItem.changed == true) {
+                    var dantedna = p_calendar.getEventById(idx.toString());
+                    while (dantedna != null) {
+                        dantedna.remove();
+                        dantedna = p_calendar.getEventById(idx.toString());
+                    }
+
+                    //re-set background events (rrule events for a given weekday with exceptions set)
+                    for (var k = 0; k < weekdays[idx].calEvents.length; k++) {
+                        var caleventbase = weekdays[idx].calEvents[k];
+                        var oldrrule = caleventbase.rrule;
+                        var eventstart = getEventStart(oldrrule);
+                        for (var j = 0; j < weekdays[idx].exDates.length; j++) {
+                            caleventbase.rrule = caleventbase.rrule + "\nEXDATE:" + dayjs(weekdays[idx].exDates[j]).format('YYYYMMDD') + eventstart;
+                        }
+                        console.info("add:", caleventbase.rrule.replace(/(\r\n|\n|\r)/gm, " "));
+                        p_calendar.addEvent(weekdays[idx].calEvents[k]);
+                        caleventbase.rrule = oldrrule;
+                    }
+
+                    arrayItem.changed = false;
+                }
+            });
+
+        }
+
+        function newDayEvent(p_calendar, arg) {
+            //clear form
+            var cHour = arg.start.getHours();
+            var cMinuts = arg.start.getMinutes();
+            var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtStartTime").val(outStr);
+            cHour = arg.end.getHours();
+            cMinuts = arg.end.getMinutes();
+            outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtEndTime").val(outStr);
+            $('#cmdDelete').addClass('invisible');
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveNewDayEvent(p_calendar, arg) != false) { $("#myModal").modal("hide"); }
+            });
+            $("#txtStartTime").focus();
+        }
+
+        function SaveDayEvent(p_event) {
+            if ($('#formEvent').valid()) {
+                //save client (if changed)
+                var startElement = dayjs(p_event.event.start).format("l") + " " + $("#txtStartTime").val();
+                var endElement = dayjs(p_event.event.start).format("l") + " " + $("#txtEndTime").val();
+                p_event.event.setStart(dayjs(startElement).toDate());
+                p_event.event.setEnd(dayjs(endElement).toDate());
+                saveDaySchedule(p_event.event.start);
+            } else { return false; }
+        }
+
+        function showDayEvent(info) {
+            //show event
+            var cHour = info.event.start.getHours();
+            var cMinuts = info.event.start.getMinutes();
+            var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtStartTime").val(outStr);
+            cHour = info.event.end.getHours();
+            cMinuts = info.event.end.getMinutes();
+            outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtEndTime").val(outStr);
+            $('#cmdDelete').removeClass('invisible');
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (info.event.display != "background") { if (SaveDayEvent(info) != false) { $("#myModal").modal("hide"); } }
+                else { if (SaveNewDayEvent(dcalendar,info.event) != false) { $("#myModal").modal("hide"); } }
+            });
+            $("#cmdDelete").off('click').click(function (evt) {
+                if (DeleteDayEvent(info) != false) { $("#myModal").modal("hide"); }
+            });
+        }
+
+        function SaveNewDayEvent(p_calendar, arg) {
+            if ($('#formEvent').valid()) {
+                //create new event
+                console.log("Created daily event ");
+                var startElement = dayjs(arg.start).format("l") + " " + $("#txtStartTime").val();
+                var endElement = dayjs(arg.start).format("l") + " " + $("#txtEndTime").val();
+                var startday = dayjs(startElement).toDate();
+                p_calendar.addEvent({
+                    title: "",
+                    start: startday,
+                    end: dayjs(endElement).toDate()
+                });
+                HideBackgroundEvents(startday);
+                saveDaySchedule(startday);
+            } else { return false; }
+        }
+
+        function DeleteDayEvent(info) {
+            Swal.fire({
+                title: 'Zbrišem popravek urnika?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log("Deleted event: %s", info.event.id);
+                    if (info.event.display == "background") { HideBackgroundEvents(info.event.start); }
+                    else { info.event.remove(); }
+                    saveDaySchedule( info.event.start);
+                    return true;
+                } else { return false; }
+            });
+        }
+
+        function saveDaySchedule(p_date) {
+            console.info("save day exceptions:", p_date.toString());
+
+            var myEvents=[];
+            const visibleEvents = dcalendar.getEvents().filter(event => {
+                const s = p_date.setHours(0,0,0,0), e = p_date.setHours(23,59,59,0);
+                if (event.start > e || event.end < s) return false
+                return true
+            });
+            for (var j = 0; j < visibleEvents.length; j++) {
+                if (visibleEvents[j].display != "background") {
+                    var myEvent = {};
+                    myEvent.start = dayjs(visibleEvents[j].start);
+                    myEvent.end = dayjs(visibleEvents[j].end);
+                    //myEvent.resourceId = visibleEvents[j].getResources()[0].id;
+                    myEvents.push(myEvent);
+                }
+            }
+
+            var wps = {};
+            wps.WorkplaceId = @Html.Raw(Model.Workplace.Id);
+            //wps.ScheduleId = p_Sid;
+            wps.Type = 0;
+            wps.calEvents = JSON.stringify(myEvents);
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(wps),
+                    url: apiURL + "/api/SaveWorplaceScheduleExceptions/"+dayjs(p_date).format("YYYYMMDD"),
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Shranil..."); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+        }
+
+        function resetDaySchedule(p_date) {
+            console.info("reset day exceptions:", p_date.toString());
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: "",
+                    url: apiURL + "/api/ResetWorplaceScheduleExceptions/@Html.Raw(Model.Workplace.Id)/"+dayjs(p_date).format("YYYYMMDD"),
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Shranil..."); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+        }
+        //#endregion
+
+        async function FetchRenderExceptions(p_calendar, p_date) {
+            return new Promise(function (resolve, reject) {
+                console.info("FetchRenderExceptions:", p_date);
+                if (isInArray(exMonths, dayjs(p_date).format("YYYYMM")) == false) {
+                    console.info("asking for exceptions for ", dayjs(p_date).format("YYYY-MM"));
+                    getAPIToken().then((result) => {
+                        $.ajax({
+                            type: "post",
+                            data: "",
+                            url: apiURL + "/api/GetWorplaceScheduleExceptions/@Html.Raw(Model.Workplace.Id)/" + dayjs(p_date).format("YYYYMMDD"),
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (result) {
+                                result.forEach(function (arrayItem) {
+                                    //add to exDates
+                                    var dantedna = new Date(arrayItem.date).getDay();
+                                    weekdays[dantedna].exDates.push(dayjs(arrayItem.date).format("YYYYMMDD"));
+                                    weekdays[dantedna].changed = true;
+                                    JSON.parse(arrayItem.eventsJson).forEach(function (eventItem) {
+                                        p_calendar.addEvent(eventItem);
+                                    });
+
+                                });
+                                RenderBackgroundEvents(dcalendar);
+
+                                exMonths.push(dayjs(p_date).format("YYYYMM"));
+                                resolve(true);
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka:" + error.toString());
+                                reject(false);
+                            }
+                        });
+                    });
+
+                }
+                else { resolve(true); }
+            });
+
+        }
+    </script>
+}

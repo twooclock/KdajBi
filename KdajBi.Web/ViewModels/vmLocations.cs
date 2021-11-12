@@ -14,5 +14,6 @@ namespace KdajBi.Web.ViewModels
     public class vmLocation : _BaseViewModel
     {
         public Location Location;
+        public Dictionary<string,string> GoogleCalendars = new Dictionary<string, string>();
     }
 }

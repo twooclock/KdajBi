@@ -34,16 +34,22 @@
                                         Datum
                                     </th>
                                     <th>
-                                        Prejemnikov
+                                        Sporočilo
                                     </th>
                                     <th>
-                                        Poslano
+                                        Pošlji
                                     </th>
                                     <th>
                                         Potrjeno
                                     </th>
                                     <th>
                                         Preklicano
+                                    </th>
+                                    <th>
+                                        Poslano
+                                    </th>
+                                    <th>
+                                        Status pošiljanja
                                     </th>
                                     <th></th>
                                 </tr>
@@ -73,21 +79,62 @@
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
-    <script type="text/javascript">
+    <!-- dayjs -->
+    <script src="~/plugins/dayjs/dayjs.min.js"></script>
+    <script src="~/plugins/dayjs/plugin/utc.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_utc)</script>
+    <script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localizedFormat);</script>
+    <script src="~/plugins/dayjs/plugin/localeData.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
 
+    <script type="text/javascript">
+    
         var SelectedClientID;
         @await Html.PartialAsync("_ApiAccess")
 
+         function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                const s = document.createElement('script');
+                let r = false;
+                s.type = 'text/javascript';
+                s.src = src;
+                s.async = true;
+                s.onerror = function (err) {
+                    reject(err, s);
+                };
+                s.onload = s.onreadystatechange = function () {
+                    // console.log(this.readyState); // uncomment this line to see which ready states are called.
+                    if (!r && (!this.readyState || this.readyState == 'complete')) {
+                        r = true;
+                        resolve();
+                    }
+                };
+                const t = document.getElementsByTagName('script')[0];
+                t.parentElement.insertBefore(s, t);
+            });
+        }
+
         $(document).ready(function () {
             //bind cboLocations
-            
+            loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
+                .then(function () {
+                    dayjs.locale(navigator.language.slice(0, 2));
+                });
+
             GetSmsTable();
 
 
         });
 
 
-
+        function truncate( str, n, useWordBoundary ){
+          if (str.length <= n) { return str; }
+          const subString = str.substr(0, n-1); // the original check
+          return (useWordBoundary 
+            ? subString.substr(0, subString.lastIndexOf(" ")) 
+            : subString) + '<a href="#" data-toggle="popover" data-content="'+str+'">&hellip;</a>';
+        };
         
 
         var GetSmsTable = function () {
@@ -121,9 +168,18 @@
 
                 },
                 'columns': [
-                    { 'data': 'date' },
-                    { 'data': 'recipientsCount' },
-                    { 'data': 'sentAt' },
+                    { 'data': 'date',
+                        render: function (data, type, row, meta) {
+                            return dayjs(row.date).format('L') ;
+                        } },
+                    { 'data': 'msgTxt',
+                        render: function (data, type, row, meta) {
+                            return truncate(row.msgTxt,50,true) ;
+                        } },
+                    { 'data': 'sendAfter',
+                        render: function (data, type, row, meta) {
+                            return dayjs(row.sendAfter).format('L LT') ;
+                        }  },
                     {
                         'data': 'approvedAt', className: 'text-center',
                         render: function (data, type, row, meta) {
@@ -142,8 +198,28 @@
                             { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" ><label class="custom-control-label"></label></div>'; }
                         }
                     },
+                    { 'data': 'sentAt',
+                        render: function (data, type, row, meta) {
+                            if (row.sentAt != null) { return dayjs(row.sentAt).format('L LT'); }
+                            else { return "";}
+                        }  },
+                    {
+                        'data': 'recipientsCount', className: 'text-center',
+                        render: function (data, type, row, meta) {
+                            if (row.recipientsCount > 1)
+                            { return "<a href='/sms/campaign/" + row.id + "'>" + row.recipientsCount + "/<p class='text-success d-inline' >" + row.sentOk + "</p>/<p class='text-danger d-inline'>" + row.sentError + "</p></a>"; }
+                            else {
+                                if (row.sentOk == 1) { return "<p class='text-success d-inline' >" + row.recipients[0].recipient + "</p>"; }
+                                else { return "<p class='text-danger d-inline' >" + row.recipients[0].recipient +(row.recipients[0].apiResponse?" / "+row.recipients[0].apiResponse:'')+ "</p>"; }
+                            }
+                        }
+                    }
                 ]
             });
+
+                table.on('draw.dt', function () {
+                    $('[data-toggle="popover"]').popover({trigger: "click hover" })
+                });
             });
 
         }

@@ -26,14 +26,18 @@ namespace KdajBi.Web.Controllers
         [Route("/sms/Campaigns")]
         public IActionResult Campaigns()
         {
-            if (LocationIsMine(DefaultLocationId()))
-            {
-                vmClient myVM = new vmClient();
-                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName }).ToList()).Replace(@"\", @"\\");
-                myVM.Token = _GetToken();
-                return View(myVM);
-            }
-            return NotFound();
+            _BaseViewModel vmModel = new _BaseViewModel();
+            vmModel.Token = _GetToken();
+            return View(vmModel);
+        }
+
+        [Route("/sms/Campaign/{id}")]
+        public IActionResult Campaign(long Id)
+        {
+            _BaseViewModel vmModel = new _BaseViewModel();
+            vmModel.Token = _GetToken();
+            vmModel.Id = Id;
+            return View(vmModel);
         }
 
         [Route("/sms/Notification")]

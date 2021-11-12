@@ -2,12 +2,14 @@
 using KdajBi.Core;
 using KdajBi.Core.dtoModels;
 using KdajBi.Core.Models;
+using KdajBi.GoogleHelper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -24,10 +26,11 @@ namespace KdajBi.API.Controllers
     public class SettingsController : _BaseController
     {
         private IMapper _mapper;
-        public SettingsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<ClientsController> logger, IEmailSender emailSender, IMapper mapper)
+        private IConfiguration _config;
+        public SettingsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<ClientsController> logger, IEmailSender emailSender, IMapper mapper, IConfiguration config)
             : base(context, userManager, signInManager, logger, emailSender)
         {
-            _mapper = mapper;
+            _mapper = mapper; _config = config;
         }
 
 
@@ -67,8 +70,24 @@ namespace KdajBi.API.Controllers
                 _logger.LogError(ex, "Error in /api/Settings/Save");
                 throw;
             }
+            if (p_settings.ContainsKey("SMS_GOO_Cals") == true)
+            {
+                //ensure google service user has appropriate permissions to read calendars set
+                var gt = _CurrentUserGooToken();
+                if (gt != null)
+                {
+                    using (GoogleService service = new GoogleService(gt))
+                    {
+                        if (service.EnsureReadPermissionsForService(p_settings["SMS_GOO_Cals"], _config.GetSection("GoogleSettings")["GooServiceAccount"]) == false)
+                        {return Json("Not all calendar access permissions were set!"); }
+                    }
+                }
+
+            }
             return Json("OK");
         }
+
+
 
         [HttpPost]
         [Route("/api/Settings/Load")]

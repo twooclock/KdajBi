@@ -63,6 +63,9 @@ namespace KdajBi.Core.Models
     {
         public long Id { get; set; }
 
+        [ForeignKey("SmsCampaign"), Required]
+        public long SmsCampaignId { get; set; }
+
         [MaxLength(15),Required]
         public string Recipient { get; set; }
 

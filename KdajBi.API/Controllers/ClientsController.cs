@@ -122,6 +122,7 @@ namespace KdajBi.API.Controllers
         [HttpPost("/api/Client")]
         public async Task<ActionResult<dtoClient>> PostClient(dtoClient p_Client)
         {
+            long retval = 0;
             if (p_Client.Id == 0)
             {
                 if (ModelState.IsValid)
@@ -135,6 +136,7 @@ namespace KdajBi.API.Controllers
                     try
                     {
                         await _context.SaveChangesAsync();
+                        retval = Client.Id;
                     }
                     catch (Exception ex)
                     {
@@ -223,6 +225,7 @@ namespace KdajBi.API.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
+                    retval = Clientindb.Id;
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
@@ -237,7 +240,7 @@ namespace KdajBi.API.Controllers
                 }
 
             }
-            return Json("OK");
+            return Json(new { result="OK", id=retval });
 
         }
 

@@ -61,6 +61,7 @@
 
         <div class="col-md-12 mt-1">
             <h2>Obveščanje strank</h2>
+            <h3 id="limitinfo">Pošljete lahko </h3>
             <div id="stepper2" class="bs-stepper">
                 <div class="bs-stepper-header">
                     <div class="step" data-target="#step-nl-1">
@@ -166,7 +167,7 @@
                         <div id="lblSending" class="col-md-6 font-weight-bold">V pošiljanju...</div>
                         <div id="lblSmsInfo" class="col-md-6"></div>
                     </div>
-                    <div id="test2" class="form-group mb-1 ">
+                    <div  class="form-group mb-1 ">
                         <label for="txtNotificationTime">
                             Sporočila pošlji:
                         </label>
@@ -196,7 +197,6 @@
 <br />
 
 
-</div>
 <!-- /page content -->
 <!-- modal new client content-->
 <!-- /modal content-->
@@ -355,7 +355,10 @@
             var smsc={};
             smsc.CampaignType = notifyType;
             smsc.MsgTxt = $('#txtMessage').val();
-            smsc.SendAfter= new Date(dayjs(fp.selectedDates[0]).utc());
+            if (fp!=undefined)
+            { smsc.SendAfter = new Date(dayjs(fp.selectedDates[0]).utc()); }
+            else
+            { smsc.SendAfter = new Date();  smsc.Recipients = [];}
             switch (notifyType)
             {
                 case 0:
@@ -463,10 +466,48 @@
             console.info(new Date(),'checkClient',id);
             document.getElementById('lblStranke').innerHTML = 'Stranke ' + getSelected() + '/' + myClients.length + ':';
         }
-
+        function SporocilZBesedo(p_Number) {
+            //if (p_Number > 100) { p_Number = p_Number % 10 };
+            if (p_Number.toString().substr(-2) == '00' ) { return "sporočil"; }
+            if (p_Number.toString().substr(-2) == '01' ||p_Number==1 ) { return "sporočilo";}
+            if (p_Number.toString().substr(-2) == '02' ||p_Number==2 ) { return "sporočili";}
+            if (p_Number.toString().substr(-2) == '03' ||p_Number==3 ) { return "sporočila";}
+            if (p_Number.toString().substr(-2) == '04' ||p_Number==4 ) { return "sporočila";}
+            if (p_Number > 4) { return "sporočil";}
+        }
 
         $(document).ready(function () {
+            //show sms limit info
+            getAPIToken().then((result) => {
+                        $.ajax({
+                            type: "post",
+                            data: JSON.stringify(getSmscObject()),
+                            url: apiURL + "/api/Sms/SmsInfo",
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (result) {
+                                var smsInfo = "";
+                                var cssClass = "text-success";
+                                if (result.limit > 0)
+                                    { smsInfo = "Pošljete lahko " + result.limit + " "+SporocilZBesedo(result.limit)+"."; }
+                                else
+                                { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
+                                if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
 
+                                $('#limitinfo').removeClass("text-success");
+                                $('#limitinfo').removeClass("text-warning");
+                                $('#limitinfo').removeClass("text-danger");
+                                $('#limitinfo').addClass(cssClass);
+                                $('#limitinfo').text(smsInfo);
+
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka:" + error.toString());
+                                return false;
+                            }
+                        });
+                    });
 
             document.getElementById('stepper2').addEventListener('shown.bs-stepper', function (event) {
                 if (event.detail.indexStep == 2) {
@@ -474,41 +515,39 @@
 
                     //show sms limit info
                     getAPIToken().then((result) => {
-                     $.ajax({
-                        type: "post",
-                        data: JSON.stringify(getSmscObject()),
-                        url: apiURL+"/api/Sms/SmsInfo",
-                        contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer '+result.AccessToken },
-                        dataType: "json",
-                         success: function (result) {
-                             var smsInfo = "";
-                             var cssClass = "text-success";
-                             if (result.limit >= result.recipients)
-                             { smsInfo = "Pošljete lahko " + result.limit + " sporočil."; }
-                             else
-                             {
-                                 smsInfo = "Pošljete lahko " + result.limit + " sporočil.";
-                                 smsInfo = (result.recipients - result.limit) + " sporočil ne bo poslanih! Naročite dodatne sms-e!";
-                                 cssClass = "text-warning";
-                             }
-                             if (result.limit == 0) { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger";}
-                             if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
+                        $.ajax({
+                            type: "post",
+                            data: JSON.stringify(getSmscObject()),
+                            url: apiURL + "/api/Sms/SmsInfo",
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (result) {
+                                var smsInfo = "";
+                                var cssClass = "text-success";
+                                if (result.limit >= result.recipients) { smsInfo = "Pošljete lahko " + result.limit + " " + SporocilZBesedo(result.limit) + "." }
+                                else {
+                                    smsInfo = "Pošljete lahko " + result.limit + " "+SporocilZBesedo(result.limit)+"."
+                                    smsInfo = (result.recipients - result.limit) + " "+SporocilZBesedo(result.recipients - result.limit)+" ne bo poslanih! Naročite dodatne sms-e!";
+                                    cssClass = "text-warning";
+                                }
+                                if (result.limit == 0) { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
+                                if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
 
-                             $('#lblSending').text("Pripravljenih " + result.recipients+" sporočil.");
-                             $('#lblSmsInfo').removeClass("text-success");
-                             $('#lblSmsInfo').removeClass("text-warning");
-                             $('#lblSmsInfo').removeClass("text-danger");
-                             $('#lblSmsInfo').addClass(cssClass);
-                             $('#lblSmsInfo').text(smsInfo);
+                                $('#lblSending').text("Pripravljenih sporočil: " + result.recipients);
+                                $('#lblSmsInfo').removeClass("text-success");
+                                $('#lblSmsInfo').removeClass("text-warning");
+                                $('#lblSmsInfo').removeClass("text-danger");
+                                $('#lblSmsInfo').addClass(cssClass);
+                                $('#lblSmsInfo').text(smsInfo);
 
-                        },
-                        error: function (xhr, status, error) {
-                            toastr.error("Napaka:" + error.toString());
-                            return false;
-                        }
-                     });
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka:" + error.toString());
+                                return false;
+                            }
                         });
+                    });
                 }
             })
 

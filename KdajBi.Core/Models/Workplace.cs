@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace KdajBi.Core.Models
 {
@@ -23,7 +24,38 @@ namespace KdajBi.Core.Models
 
         [MaxLength(150)]
         public string GoogleCalendarID { get; set; }
-        public Workplace() { }
+
+        [NotMapped]
+        public string GoogleCalendarSummary { get; set; }
+        [NotMapped]
+        public string GoogleCalendarColor { get; set; }
+
+        [JsonIgnore]
+        public ICollection<WorkplaceSchedule> WorkplaceSchedules { get; set; }
+
+        [NotMapped]
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+        public ICollection<Schedule> Schedules
+        {
+            get => WorkplaceSchedules.Select(r => r.Schedule).ToList();
+            set => WorkplaceSchedules = value.Select(v => new WorkplaceSchedule() { ScheduleId = v.Id }).ToList();
+        }
+        public Schedule ScheduleByType(long p_ScheduleType)
+        {
+            Schedule retval;
+            try
+            {
+                retval = Schedules.First(s => s.Type == p_ScheduleType);
+            }
+            catch (Exception)
+            {
+
+                return null; ;
+            }
+            
+            return retval;
+        }
+        public Workplace() { WorkplaceSchedules = new List<WorkplaceSchedule>(); }
 
     }
 }

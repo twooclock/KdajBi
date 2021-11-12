@@ -11,6 +11,10 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using KdajBi.Web.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Google.Apis.Calendar.v3;
+using Microsoft.AspNetCore.Authentication;
+using Newtonsoft.Json;
+using KdajBi.GoogleHelper;
 
 namespace KdajBi.Web.Controllers
 {
@@ -47,6 +51,19 @@ namespace KdajBi.Web.Controllers
 
                 if (myVM.Location != null)
                 {
+                    //fill google calendars
+                    
+                    var gt = _CurrentUserGooToken();
+                    if (gt != null)
+                    {
+                        using (GoogleService service = new GoogleService(gt))
+                        {
+                            foreach (var item in service.getCalendars().Items)
+                            {
+                                myVM.GoogleCalendars.Add(item.Id, item.Summary);
+                            }
+                        }
+                    }
                     myVM.Token = _GetToken();
                     return View(myVM);
                 }

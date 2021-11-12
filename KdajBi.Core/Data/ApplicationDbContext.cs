@@ -15,7 +15,7 @@ namespace KdajBi.Core
         }
 
         public DbSet<Company> Companies { get; set; }
-        //public DbSet<UserCompany> UserCompanies { get; set; }
+        public DbSet<Service> Services { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<Workplace> Workplaces { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
@@ -26,6 +26,8 @@ namespace KdajBi.Core
         public DbSet<SmsCampaign> SmsCampaigns { get; set; }
         public DbSet<SmsMsg> SmsMsgs { get; set; }
         public DbSet<Setting> Settings { get; set; }
+        public DbSet<WorkplaceSchedule> WorkplaceSchedules { get; set; }
+        public DbSet<WorkplaceScheduleException> WorkplaceScheduleExceptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -52,6 +54,7 @@ namespace KdajBi.Core
 
             builder.Entity<ClientTag>().HasIndex(p => new { p.ClientId, p.TagId }).IsUnique(true);
             builder.Entity<Tag>().HasIndex(p => new { p.Title }).IsUnique(true);
+            builder.Entity<WorkplaceSchedule>().HasIndex(p => new { p.WorkplaceId, p.ScheduleId }).IsUnique(true);
 
         }
     }

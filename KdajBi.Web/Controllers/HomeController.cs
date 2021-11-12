@@ -1,23 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using KdajBi.Core;
+using KdajBi.Core.Models;
+using KdajBi.Web.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using KdajBi.Web.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using KdajBi.Models;
-using Microsoft.AspNetCore.Authorization;
+using System.Diagnostics;
+using KdajBi.GoogleHelper;
+using Google.Apis.Calendar.v3.Data;
+using System.Globalization;
+using Newtonsoft.Json;
 
-namespace KdajBi.Controllers
+namespace KdajBi.Web.Controllers
 {
-    
-    public class HomeController : Controller
+    [Controller]
+    public class HomeController : _BaseController
     {
-        private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider)
+            : base(context, userManager, signInManager, logger, emailSender, apiTokenProvider)
         {
-            _logger = logger;
         }
 
         [AllowAnonymous]
@@ -26,7 +35,14 @@ namespace KdajBi.Controllers
             try
             {
                 if (User.Identity.IsAuthenticated)
-                { return View(); }
+                {
+                    if (LocationIsMine(DefaultLocationId()))
+                    {
+                        return View();
+                    }
+                    else
+                    { return NotFound(); }
+                }
                 else
                 { return Redirect("~/LandingPage/index.html"); }
             }
@@ -35,10 +51,11 @@ namespace KdajBi.Controllers
 
                 return Redirect("~/LandingPage/index.html");
             }
-            
-            
+
+
         }
 
+        
         public IActionResult Privacy()
         {
             return View();

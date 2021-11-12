@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
@@ -51,7 +52,8 @@ namespace KdajBi.Web.Controllers
         public IActionResult GoogleLogin()
         {
             string redirectUrl = Url.Action("GoogleResponse", "Account");
-            var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            AuthenticationProperties properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            
             return new ChallengeResult("Google", properties);
         }
 
@@ -80,30 +82,37 @@ namespace KdajBi.Web.Controllers
                 //returning user
                 var claimsPrincipal = await signInManager.CreateUserPrincipalAsync(appUser);
 
-                Claim myClaim = new Claim("picture", "");
-
-                if (claimsPrincipal.FindFirst("picture") == null)
+                Claim myClaim = new Claim("picture", info.Principal.FindFirst("urn:google:picture").Value);
+                Claim existingClaim = claimsPrincipal.Claims.FirstOrDefault(r => r.Type == "picture");
+                if (existingClaim == null)
                 {
                     //add picture to claims  (not into db)
-                    foreach (Claim c in info.Principal.Claims)
-                    {
-                        if (c.Type == "urn:google:picture")
-                        {
-                            myClaim = new Claim("picture", info.Principal.FindFirst("urn:google:picture").Value);
-                        }
-                    }
                     await userManager.AddClaimAsync(appUser, myClaim);
                 }
+                else
+                { await userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim); }
 
-                if (claimsPrincipal.FindFirst("CompanyId") == null)
+                myClaim = new Claim("CompanyId", appUser.CompanyId.ToString());
+                existingClaim = claimsPrincipal.Claims.FirstOrDefault(r => r.Type == "CompanyId");
+                if (existingClaim == null)
                 {
                     //add CompanyId to claims
-                    myClaim = new Claim("CompanyId", appUser.CompanyId.ToString());
                     await userManager.AddClaimAsync(appUser, myClaim);
                 }
+                else
+                { await userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim); }
 
-
-
+                myClaim = new Claim("GooToken", JsonSerializer.Serialize(info.AuthenticationTokens.ToDictionary(x => x.Name, y => y.Value)));
+                existingClaim = claimsPrincipal.Claims.FirstOrDefault(r => r.Type == "GooToken");
+                if (existingClaim == null)
+                {
+                    //add Google token to claims
+                    await userManager.AddClaimAsync(appUser, myClaim);
+                }
+                else
+                {
+                    await userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim);
+                }
 
                 var authProperties = new AuthenticationProperties { IsPersistent = false };
                 await signInManager.SignInAsync(appUser, authProperties);

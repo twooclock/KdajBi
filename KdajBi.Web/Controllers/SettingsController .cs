@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using KdajBi.Web.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using KdajBi.GoogleHelper;
 
 namespace KdajBi.Web.Controllers
 {
@@ -25,15 +26,19 @@ namespace KdajBi.Web.Controllers
         [Route("/settings/")]
         public IActionResult Index()
         {
-            long curruserCompanyId = _CurrentUserCompanyID();
-            //show current user locations
-            List<Location> currUserLocations = new List<Location>();
-            var v = from a in _context.Locations select a;
-            //v = v.Include(c => c.Company);
-            v = v.Where(c => c.CompanyId == curruserCompanyId);
-            currUserLocations = v.ToList();
-            vmLocations myVM = new vmLocations();
-            myVM.Locations = currUserLocations;
+            vmLocation myVM = new vmLocation();
+
+            var gt = _CurrentUserGooToken();
+            if (gt != null)
+            {
+                using (GoogleService service = new GoogleService(gt))
+                {
+                    foreach (var item in service.getCalendars().Items)
+                    {
+                        myVM.GoogleCalendars.Add(item.Id, item.Summary);
+                    }
+                }
+            }
             myVM.Token = _GetToken();
             return View(myVM);
         }

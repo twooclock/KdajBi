@@ -23,11 +23,14 @@ namespace KdajBi.API.Controllers
     [ApiController]
     public class SmsController : _BaseController
     {
+
+        private readonly ILogger<SmsController> _logger;
         private IMapper _mapper;
         private ISmsInfo _smsInfo;
-        public SmsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<ClientsController> logger, IEmailSender emailSender, IMapper mapper, ISmsInfo smsInfo)
+        public SmsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<SmsController> logger, IEmailSender emailSender, IMapper mapper, ISmsInfo smsInfo)
             : base(context, userManager, signInManager, logger, emailSender)
         {
+            _logger = logger;
             _mapper = mapper;
             _smsInfo = smsInfo;
         }
@@ -55,7 +58,25 @@ namespace KdajBi.API.Controllers
         }
 
 
+        [HttpPost]
+        [Route("/api/Sms/SmsMsgTable/{id}")]
+        public JsonResult SmsMsgTable(long Id, [FromBody] DataTableAjaxPostModel param)
+        {
+            //TODO:check is mine campaign
+            int recordsTotal = 0;
+            var v = from a in _context.SmsMsgs select a;
+            v = v.Where(w => w.SmsCampaignId == Id);
+            //SORT
+            if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
+            {
+                v = v.OrderBy(param.columns[param.order[0].column].data + " " + param.order[0].dir);
+            }
 
+            recordsTotal = v.Count();
+            var data = v.Skip(param.start).Take(param.length).ToList();
+
+            return Json(new { draw = param.draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
+        }
 
 
         [HttpPost("/api/Sms/QueueSmsCampaign")]
@@ -170,24 +191,23 @@ namespace KdajBi.API.Controllers
         [Route("api/[controller]")]
         public async Task<IActionResult> GetDecide(string guid, string action)
         {
-            var myCampaign = _context.SmsCampaigns.Where(c => c.Guid.ToString() == guid).FirstOrDefault();
+            List<SmsCampaign> myCampaigns;
+            var myCampaign = _context.SmsCampaigns.Include(s => s.Company).Where(c => c.Guid.ToString() == guid).FirstOrDefault();
             if (myCampaign != null && guid.Length > 0)
             {
                 string AppBaseUrl = Request.Scheme + @"://" + Request.Host + Request.PathBase;
                 string myHTML = @"<html><head><meta http-equiv=""refresh"" content=""5;url='https://kdajbi.si'"" />";
-
 
                 switch (action.ToUpper())
                 {
                     case "APPROVE":
                         myCampaign.ApprovedAt = DateTime.Now;
                         _context.Entry(myCampaign).State = EntityState.Modified;
-                        _context.Entry(myCampaign).Property(p => p.RecipientsCount).IsModified = false; 
+                        _context.Entry(myCampaign).Property(p => p.RecipientsCount).IsModified = false;
                         await _context.SaveChangesAsync();
                         myHTML += "<title>Pošiljanje potrjeno</title></head>";
                         myHTML += "<body><h1>Potrjeno! <br />Sporočila bodo poslana.</h1></body></html>";
                         return Content(myHTML, "text/html", Encoding.UTF8);
-                        break;
                     case "CANCEL":
                         myCampaign.CanceledAt = DateTime.Now;
                         _context.Entry(myCampaign).State = EntityState.Modified;
@@ -196,9 +216,39 @@ namespace KdajBi.API.Controllers
                         myHTML += "<title>Pošiljanje preklicano</title></head>";
                         myHTML += "<body><h1>Preklicano! <br />Sporočila ne bodo poslana.</h1></body></html>";
                         return Content(myHTML, "text/html", Encoding.UTF8);
+                    case "APPROVEALL":
+                        //get all GOO campaigns for companyid and date
+                        //except ones that were individualy approved/canceled
+                        myCampaigns = _context.SmsCampaigns.Where(c => c.Name == "GOO" && c.Company.Id == myCampaign.Company.Id && c.Date.Value.Date == myCampaign.Date.Value.Date && c.CanceledAt == null && c.ApprovedAt == null).ToList();
+                        _logger.LogInformation("APPROVEALL " + myCampaigns.Count.ToString() + " GOO sms campaigns for " + myCampaign.Company.Name + " on " + myCampaign.Date.Value.Date.ToString("dd.MM.yyyy"));
+                        foreach (var item in myCampaigns)
+                        {
+                            item.ApprovedAt = DateTime.Now;
+                            _context.Entry(item).State = EntityState.Modified;
+                            _context.Entry(item).Property(p => p.RecipientsCount).IsModified = false;
+                        }
+                        await _context.SaveChangesAsync();
+
+                        myHTML += "<title>Pošiljanje vseh potrjeno</title></head>";
+                        myHTML += "<body><h1>Potrjeno! <br />Vsa sporočila bodo poslana.</h1></body></html>";
+                        return Content(myHTML, "text/html", Encoding.UTF8);
+                    case "CANCELALL":
+                        //get all GOO campaigns for companyid and date
+                        //except ones that were individualy approved/canceled
+                        myCampaigns = _context.SmsCampaigns.Where(c => c.Name == "GOO" && c.Company.Id == myCampaign.Company.Id && c.Date.Value.Date == myCampaign.Date.Value.Date && c.CanceledAt==null && c.ApprovedAt==null).ToList();
+                        _logger.LogInformation("CANCELALL " + myCampaigns.Count.ToString() + " GOO sms campaigns for " + myCampaign.Company.Name + " on " + myCampaign.Date.Value.Date.ToString("dd.MM.yyyy"));
+                        foreach (var item in myCampaigns)
+                        {
+                            item.CanceledAt = DateTime.Now;
+                            _context.Entry(item).State = EntityState.Modified;
+                            _context.Entry(item).Property(p => p.RecipientsCount).IsModified = false;
+                        }
+                        await _context.SaveChangesAsync();
+                        myHTML += "<title>Pošiljanje vseh preklicano</title></head>";
+                        myHTML += "<body><h1>Preklicano! <br />Sporočila ne bodo poslana.</h1></body></html>";
+                        return Content(myHTML, "text/html", Encoding.UTF8);
                     default:
                         return Content("<html><h1>Brezveze.</h1></html>", "text/html", Encoding.UTF8);
-                        break;
                 }
 
             }

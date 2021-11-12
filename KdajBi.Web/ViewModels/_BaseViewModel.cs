@@ -9,7 +9,7 @@ namespace KdajBi.Web.ViewModels
     public class _BaseViewModel
     {
         public JwtToken Token;
-
+        public long Id;
         public _BaseViewModel() { }
 
     }

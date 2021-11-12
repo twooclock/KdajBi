@@ -12,7 +12,9 @@
     <link href="~/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
-<link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
 }
 
 
@@ -27,6 +29,7 @@
                 <div class="row x_title">
                     <div class="col-md-6">
                         <h3>@Html.Raw(@Model.Location.Name)</h3>
+                        
                     </div>
 
                 </div>
@@ -81,8 +84,8 @@
                                                         <tbody>
                                                             <tr>
                                                                 <td>Ponedeljek</td>
-                                                                <td><input id="Mo_from" name="Mo_from" class="form-control" placeholder="8:00" value="@Html.Raw(@Model.Location.Schedule.MondayStart.ToString("HH:mm"))" value="@Html.Raw(@Model.Location.Schedule.MondayStart.ToString("HH:mm"))"></td>
-                                                                <td><input id="Mo_to" name="Mo_to" class="form-control" placeholder="20:00" value="@Html.Raw(@Model.Location.Schedule.MondayEnd.ToString("HH:mm"))" value="@Html.Raw(@Model.Location.Schedule.MondayEnd.ToString("HH:mm"))"></td>
+                                                                <td><input id="Mo_from" name="Mo_from" class="form-control" placeholder="8:00" value="@Html.Raw(@Model.Location.Schedule.MondayStart.ToString("HH:mm"))"></td>
+                                                                <td><input id="Mo_to" name="Mo_to" class="form-control" placeholder="20:00" value="@Html.Raw(@Model.Location.Schedule.MondayEnd.ToString("HH:mm"))"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>Torek</td>
@@ -211,10 +214,16 @@
                         <input type="text" id="txtName" name="txtName" class="form-control" />
                     </div>
                     <div class="form-group">
-                        <label for="txtGooCal">
+                        <label for="cboGooCal">
                             Google koledar:
                         </label>
-                        <input type="text" id="txtGooCal" name="txtGooCal" class="form-control" />
+                        <select id="cboGooCal" name="cboGooCal" class="selectpicker custom-select custom-select-sm form-control" >
+                            <option value="0">[Create new calendar]</option>
+                            @foreach (var item in Model.GoogleCalendars)
+                            {
+                                <option value="@item.Key">@Html.Raw(item.Value)</option>
+                            }
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -244,12 +253,17 @@
     <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="~/plugins/toastr/toastr.min.js"></script>
+    <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+<script src="https://apis.google.com/js/api.js"></script>
 
-    <script type="text/javascript">
+<script type="text/javascript">
 
         var myTable;
         @await Html.PartialAsync("_ApiAccess")
+        @await Html.PartialAsync("_GooApiAccess")
 
+        
         $.validator.addMethod( "time", function( value, element ) {
 	        return  /^([01]\d|2[0-3]|[0-9])(:[0-5]\d){1,2}$/.test( value );
         }, "Vnesite veljaven čas npr. 8:30 ali 17:45" );
@@ -260,8 +274,19 @@
               return (new Date("01/01/0001 "+value) > new Date("01/01/0001 "+$otherElement.val()));
         }, "Konec mora biti večji od začetka.");
 
-            $(document).ready(function () {
-                //bind cboLocations
+        $(document).ready(function () {
+            //swal inside modal!
+            $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+
+            gapi.load('client:auth2', function () {
+                gapi.client.load(DISCOVERY_DOCS, 'v3').then(function () {
+                    gapi.auth.setToken({ access_token: gooToken.access_token })
+                    //fill goo calendar combo
+                    //LoadCalendars();
+                })
+            })
+
+            //bind cboLocations
                 $("#cboLocations").val( @Html.Raw(@Model.Location.Id));
                 $("#cboLocations").off('change').change(function (evt) {
                     window.location = "../location/"+$(this).val();
@@ -357,8 +382,31 @@
                     }
                 });
 
+                $('#cboGooCal').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                    var selected = $(e.currentTarget).val();
+                    console.info(selected);
+                    if (selected == 0) { addGooCalendar();}
+                });
+            });
+
+        async function CreateCalendar(p_name) {
+            return new Promise(function (resolve, reject) {
+
+                var request = gapi.client.calendar.calendars.insert({ "summary": p_name })
+                    .execute(function (resp) {
+                    if (typeof resp.error === "undefined") {
+                        $("#cboGooCal").append($("<option />").val(resp.id).text(p_name));
+                        $("#cboGooCal").selectpicker('refresh');
+                        $("#cboGooCal").selectpicker('val',resp.id);
+                        resolve(true);
+
+                    }
+                    else { reject(resp.error.message); }
+                });
 
             });
+        }
+
 
         //#region Location
         function saveGeneral() {
@@ -467,7 +515,7 @@
                 'columns': [
                     { 'data': 'sortPosition' },
                     { 'data': 'name' },
-                    { 'data': 'googleCalendarID' },
+                    { 'data': 'googleCalendarSummary' },
                     {
                         'data': 'active', className: 'text-center',
                         render: function (data, type, row, meta) {
@@ -480,7 +528,7 @@
                     {
                         data: null, 'orderable': false,
                         render: function (data, type, row, meta) {
-                            return '<a class="btn btn-default" onclick="showDetail(' + row.id + ');">Urejanje</a>';
+                            return '<a class="btn btn-default" onclick="showDetail(' + row.id + ');">Urejanje</a><a class="btn btn-default" onclick="showScheduleForWorkplace(' + row.id + ');">Urnik</a>';
                         }
                     }
                 ]
@@ -518,7 +566,7 @@
                 //clear form
                 $("#txtPosition").val('');
                 $("#txtName").val('');
-                $("#txtGooCal").val('');
+                $("#cboGooCal").selectpicker('val', '0');
                 $("#cbActive").prop('checked', true);
             }
             else {
@@ -534,7 +582,7 @@
                     success: function (result) {
                         $("#txtPosition").val(result.sortPosition);
                         $("#txtName").val(result.name);
-                        $("#txtGooCal").val(result.googleCalendarID);
+                        $("#cboGooCal").selectpicker('val',result.googleCalendarID);
                         $("#cbActive").prop('checked', result.active);
                     },
                     error: function (xhr, status, error) {
@@ -595,7 +643,7 @@
                 workplace.id = p_ID;
                 workplace.sortPosition = parseInt($('#txtPosition').val());
                 workplace.name = $('#txtName').val();
-                workplace.googleCalendarId = $('#txtGooCal').val();
+                workplace.googleCalendarId = $('#cboGooCal').val();
                 workplace.active = $("#cbActive").prop('checked');
                 getAPIToken().then((result) => {
                 $.ajax({
@@ -618,9 +666,34 @@
             } else { return false; }
         }
 
+
+    function addGooCalendar() {
+        Swal.fire({
+            html: `<div class="form-group">
+                Name:
+                <p class="">
+                    <input id="gooName" class="form-control" type="text" placeholder="Name">
+                </p>
+            </div>`,
+            confirmButtonText: 'Confirm',
+            showCancelButton: true,
+            preConfirm: function () {
+                return new Promise((resolve, reject) => {
+                    resolve($('input[placeholder="Name"]').val());
+                });
+            }
+        }).then((data) => {
+            if (data.isConfirmed) { CreateCalendar(data.value).catch((result) => { toastr.error(result); }).then(toastr.success("Calendar created")); }
+        });
+    }
+
+        function showScheduleForWorkplace(p_wpid) {
+            //open schedule in new tab
+            window.open('@Url.Content("~/wps/")'+p_wpid+"/0", '_blank').focus();
+        }
         //#endregion
 
 
-    </script>
+</script>
 }
 

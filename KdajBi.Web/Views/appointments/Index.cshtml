@@ -1,0 +1,1090 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web;
+@using KdajBi.Web.ViewModels;
+@using System.Globalization;
+@model vmAppointments
+
+@section styles{
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+    <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/plugins/bootstrap-tokenfield/css/tokenfield-typeahead.min.css" rel="stylesheet" />
+    <link href="~/plugins/bootstrap-tokenfield/css/bootstrap-tokenfield.min.css" rel="stylesheet" />
+    <link href="~/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
+    <link href='~/lib/fullcalendar-scheduler-5.9.0/lib/main.min.css' rel='stylesheet' />
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+
+        #calendar {
+            max-width: 1100px;
+        }
+
+        ::backdrop {
+            background-color: white;
+        }
+
+
+        :fullscreen {
+            overflow-y: scroll;
+        }
+
+        :-ms-fullscreen {
+            overflow-y: scroll;
+        }
+
+        :-webkit-full-screen {
+            overflow-y: scroll;
+        }
+
+        :-moz-full-screen {
+            overflow-y: scroll;
+        }
+
+        div.token {
+            font-size: 13px;
+        }
+        /*sticky header*/
+        .fc-toolbar.fc-header-toolbar {
+            position: sticky;
+            top: 200px;
+            z-index: 10;
+        }
+
+        .fc-head-container.fc-widget-header {
+            position: sticky;
+            top: 308px;
+            z-index: 10;
+            background: red;
+        }
+
+        .fc-timeline .fc-body .fc-scroller {
+            height: 400px !important;
+        }
+
+        .fc .fc-toolbar.fc-header-toolbar {
+            margin-bottom: 1.5em;
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 100;
+        }
+
+        .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
+            top: 34px;
+        }
+
+        .fc-header-toolbar {
+            padding: 0px !important;
+        }
+    </style>
+}
+
+<!-- page content -->
+<div class="right_col col-md-12" role="main">
+    <div id="fs">
+        <div id='calendar'></div>
+        <!-- Workplace modal content-->
+        <div id="myModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel">Naročilo</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body ui-front">
+                        <form id="formEvent" class="formEvent" name="formEvent">
+                            <div class="form-row">
+                                <div class="form-group col-9">
+                                    <label for="txtClientsearch">
+                                        Stranka:
+                                    </label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text" onclick="$('#txtClientsearch').select();$('#txtClientsearch').autocomplete('search')">
+                                                <span class="fas fa-user"></span>
+                                            </div>
+                                        </div>
+                                        <input id="txtClientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#txtClientsearch').select(); $('#txtClientsearch').autocomplete('search')">
+                                    </div>
+                                </div>
+
+                                <div class="form-group col-3">
+                                    <label for="txtClientMobile">
+                                        Mobi:
+                                    </label>
+                                    <input type="text" id="txtClientMobile" name="txtClientMobile" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="txtNotes">
+                                    Naročilo:
+                                </label>
+                                <input type="text" id="txtNotes" name="txtNotes" class="form-control ">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group pr-2 col-9 ">
+                                    <label for="txtStartTime">
+                                        Datum ura:
+                                    </label>
+                                    <div class="input-group flatpickr  p-0">
+                                        <input type="text" id="txtStartTime" name="txtStartTime" class="form-control " aria-describedby="basic-addonY" data-input />
+                                        <div class="input-group-append">
+                                            <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
+                                                <i class="fas fa-calendar"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-3 ">
+                                    <label for="txtEndTime">
+                                        Do (ura):
+                                    </label>
+                                    <div class="input-group  p-0">
+                                        <input type="text" id="txtEndTime" name="txtEndTime" class="form-control " />
+                                    </div>
+                                    <div class="form-group mb-1" style="display:none">
+                                        <label for="txtDebug">
+                                            Debug:
+                                        </label>
+                                        <textarea rows="10" id="txtDebug" name="txtDebug" class="form-control"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cboGooCal">
+                                    Delovno mesto/zaposleni:
+                                </label>
+                                <select id="cboGooCal" name="cboGooCal" class="selectpicker custom-select custom-select-sm form-control">
+                                    @foreach (var item in Model.GoogleCalendars)
+                                    {
+                                        <option value="@item.Key">@Html.Raw(item.Value)</option>
+                                    }
+                                </select>
+                            </div>
+
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" id="cmdDelete">
+                            Zbriši
+                        </button>
+                        <button type="button" class="btn btn-primary" id="cmdSave">
+                            Shrani
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /modal content-->
+    </div>
+</div>
+<!-- /page content -->
+
+
+
+@section scripts{
+    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+    <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <!-- cookies needed for changing location -->
+    <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
+    <script src="~/plugins/toastr/toastr.min.js"></script>
+    <script src="~/plugins/bootstrap-tokenfield/bootstrap-tokenfield.min.js"></script>
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+
+
+    <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
+    <script src="~/plugins/flatpickr/plugins/confirmDate/confirmDate.js"></script>
+    <script src="~/plugins/dayjs/dayjs.min.js"></script>
+    <script src="~/plugins/dayjs/plugin/utc.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_utc)</script>
+    <script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localizedFormat);</script>
+    <script src="~/plugins/dayjs/plugin/localeData.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
+    <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
+
+    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/main.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/rrule.min.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/main.global.min.js'></script>
+
+    <script type="text/javascript">
+        @await Html.PartialAsync("_ApiAccess")
+        @await Html.PartialAsync("_GooApiAccess")
+
+        function hideKeyboard() {
+            //this set timeout needed for case when hideKeyborad
+            //is called inside of 'onfocus' event handler
+            setTimeout(function () {
+
+                //creating temp field
+                var field = document.createElement('input');
+                field.setAttribute('type', 'text');
+                //hiding temp field from peoples eyes
+                //-webkit-user-modify is nessesary for Android 4.x
+                field.setAttribute('style', 'position:absolute; top: 0px; opacity: 0; -webkit-user-modify: read-write-plaintext-only; left:0px;');
+                document.body.appendChild(field);
+
+                //adding onfocus event handler for out temp field
+                field.onfocus = function () {
+                    //this timeout of 200ms is nessasary for Android 2.3.x
+                    setTimeout(function () {
+
+                        field.setAttribute('style', 'display:none;');
+                        setTimeout(function () {
+                            document.body.removeChild(field);
+                            document.body.focus();
+                        }, 14);
+
+                    }, 200);
+                };
+                //focusing it
+                field.focus();
+
+            }, 50);
+        }
+
+        function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                const s = document.createElement('script');
+                let r = false;
+                s.type = 'text/javascript';
+                s.src = src;
+                s.async = true;
+                s.onerror = function (err) {
+                    reject(err, s);
+                };
+                s.onload = s.onreadystatechange = function () {
+                    // console.log(this.readyState); // uncomment this line to see which ready states are called.
+                    if (!r && (!this.readyState || this.readyState == 'complete')) {
+                        r = true;
+                        resolve();
+                    }
+                };
+                const t = document.getElementsByTagName('script')[0];
+                t.parentElement.insertBefore(s, t);
+            });
+        }
+
+        var delay = (function () {
+            var timer = {}
+                , values = {}
+            return function (el) {
+                var id = el.id + '.' + el.name
+                return {
+                    enqueue: function (ms, cb) {
+                        if (values[id] == el.value) return
+                        //if (!el.value) return
+                        var original = values[id] = el.value
+                        clearTimeout(timer[id])
+                        timer[id] = setTimeout(function () {
+                            if (original != el.value) return // solves race condition
+                            cb.apply(el)
+                        }, ms)
+                    }
+                }
+            }
+        }());
+
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear(),
+                hour = d.getHours(),
+                min = d.getMinutes();
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [day, month, year, hour,min].join('.');
+        }
+
+        var calendar;
+        var fp;
+        var SelectedClientID = 0;
+
+    //#region background events
+        @Html.Raw("var resourceswd=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.resourcesWD));
+        @Html.Raw("var exMonths = [];")
+        @{const bool nakaziUrnike = true; }
+        function isInArray(array, value) {
+            return (array.find(item => { return item == value }) || []).length > 0;
+        }
+        function getEventStart(p_rruleString) {
+            //parse start time from rrule
+            //rrule example: DTSTART:20210101T070000\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO
+            var retval = p_rruleString.split(':')[1];
+            retval = retval.split('\n')[0];
+            retval = retval.split('T')[1];
+            return "T" + retval;
+
+        }
+        function RenderBackgroundEvents(p_calendar) {
+            console.info("RenderBackgroundEvents");
+
+            p_calendar.getResources().forEach(function (aResource) {
+                resourceswd.forEach(function (rwd) {
+                    if (rwd.resourceId == aResource.id) {
+                        rwd.WeekDays.forEach(function (arrayItem, idx) {
+                            var reswd = rwd.WeekDays[idx];
+                            if (arrayItem.changed == true) {
+                                //remove enevts by Id
+                                aResource.getEvents().forEach(function (rEvent) {
+                                    if (rEvent.id == idx.toString() && rEvent.display=="background") { rEvent.remove(); }
+                                });
+
+                                //re-set background events (rrule events for a given weekday with exceptions set)
+                                for (var k = 0; k < reswd.calEvents.length; k++) {
+                                    var caleventbase = reswd.calEvents[k];
+                                    var oldrrule = caleventbase.rrule;
+                                    var eventstart = getEventStart(oldrrule);
+                                    for (var j = 0; j < reswd.exDates.length; j++) {
+                                        caleventbase.rrule = caleventbase.rrule + "\nEXDATE:" + dayjs(reswd.exDates[j]).format('YYYYMMDD') + eventstart;
+                                    }
+                                    console.info("add:", caleventbase.rrule.replace(/(\r\n|\n|\r)/gm, " "));
+                                    p_calendar.addEvent(reswd.calEvents[k]);
+                                    caleventbase.rrule = oldrrule;
+                                }
+
+                                arrayItem.changed = false;
+                            }
+                        });
+                    }
+                });
+
+
+            });
+        }
+
+        async function FetchRenderExceptions(p_calendar, p_date) {
+            return new Promise(function (resolve, reject) {
+                console.info("FetchRenderExceptions:", p_date);
+                if (isInArray(exMonths, dayjs(p_date).format("YYYYMM")) == false) {
+                    console.info("asking for exceptions for ", dayjs(p_date).format("YYYY-MM"));
+                    getAPIToken().then((result) => {
+                        $.ajax({
+                            type: "post",
+                            data: "",
+                            url: apiURL + "/api/GetLocationScheduleExceptions/@Html.Raw(Model.Location.Id)/" + dayjs(p_date).format("YYYYMMDD"),
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (result) {
+                                result.forEach(function (aWorkplaces) {
+                                    aWorkplaces.exceptions.forEach(function (aException) {
+                                        //add to exDates
+                                        var dantedna = new Date(aException.date).getDay();
+
+                                        resourceswd.forEach(function (rwd) {
+                                            if (rwd.resourceId == aWorkplaces.id) {
+                                                rwd.WeekDays[dantedna].exDates.push(dayjs(aException.date).format("YYYYMMDD"));
+                                                rwd.WeekDays[dantedna].changed = true;
+                                                JSON.parse(aException.eventsJson).forEach(function (eventItem) {
+                                                    eventItem.resourceId = aWorkplaces.id;
+                                                    eventItem.display = "background";
+                                                    p_calendar.addEvent(eventItem);
+                                                });
+                                            }
+                                        });
+
+
+                                    });
+                                });
+                                RenderBackgroundEvents(p_calendar);
+
+                                exMonths.push(dayjs(p_date).format("YYYYMM"));
+                                resolve(true);
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka:" + error.toString());
+                                reject(false);
+                            }
+                        });
+                    });
+
+                }
+                else { resolve(true); }
+            });
+
+        }
+
+
+    //#endregion
+
+
+
+
+        function getResourceIdByGid(p_gid) {
+            var res = calendar.getResources();
+            for (var i = 0; i < res.length; i++) {
+                if (res[i].extendedProps.gid == p_gid) { return res[i].id; }
+            }
+
+        }
+
+
+        async function SaveDragedEvent(info) {
+            return new Promise(function (resolve, reject) {
+                var res = info.event.getResources();
+                var calid = res[0].extendedProps.gid;
+                var eid = info.event.id;
+                var eventPatch = {
+                    start: { 'dateTime': info.event.start },
+                    end: { 'dateTime': info.event.end }
+                };
+
+                if (info.newResource != null) {
+                    //move event first
+                    calid = info.newResource.extendedProps.gid;
+                    var eventToUpdate = gapi.client.calendar.events.move({
+                        "calendarId": info.oldResource.extendedProps.gid,
+                        "eventId": info.event.id,
+                        "destination": info.newResource.extendedProps.gid
+                    }).execute(function (event) {
+                        console.log("Moved event: %s", event.id);
+                        if (info.delta.milliseconds != 0 || info.delta.days != 0 || info.delta.months != 0 || info.delta.years != 0) {
+                            eid = event.id;
+                            var eventToUpdate = gapi.client.calendar.events.patch({
+                                "calendarId": calid,
+                                "eventId": eid,
+                                "resource": eventPatch
+                            }).execute(function (event) {
+                                console.log("Updated event afer move: %s", event.id);
+                            });
+                        }
+                    });
+
+                } else {
+                    if (info.delta.milliseconds != 0 || info.delta.days != 0 || info.delta.months != 0 || info.delta.years != 0) {
+                        var eventToUpdate = gapi.client.calendar.events.patch({
+                            "calendarId": calid,
+                            "eventId": eid,
+                            "resource": eventPatch
+                        }).execute(function (event) {
+                            console.log("Updated event: %s", event.id);
+                        });
+                    }
+                }
+
+
+                resolve(true);
+            });
+        }
+
+        async function SaveResizedEvent(info) {
+            return new Promise(function (resolve, reject) {
+                var res = info.event.getResources();
+                var calid = res[0].extendedProps.gid;
+                var eid = info.event.id;
+                var eventPatch = {
+                    start: { 'dateTime': info.event.start },
+                    end: { 'dateTime': info.event.end }
+                };
+
+
+                var eventToUpdate = gapi.client.calendar.events.patch({
+                    "calendarId": calid,
+                    "eventId": eid,
+                    "resource": eventPatch
+                }).execute(function (event) {
+                    console.log("Updated resized event: %s", info.event.id);
+                });
+
+
+                resolve(true);
+            });
+        }
+
+        var isFullScreen = false;
+            function goFullScreen(p_ElementId) {
+
+                var elem = document.getElementById(p_ElementId);
+
+                if (elem.requestFullscreen) { elem.requestFullscreen(); }
+                else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+                else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+                isFullScreen = true;
+            }
+            function exitFullScreen(){
+
+                if(document.exitFullscreen){ document.exitFullscreen(); }
+                else if(document.mozCancelFullScreen){ document.mozCancelFullScreen(); }
+                else if(document.webkitExitFullscreen){ document.webkitExitFullscreen();}
+                else if(document.msExitFullscreen){ document.msExitFullscreen();}
+                isFullScreen = false;
+            }
+
+        $.validator.addMethod( "time", function( value, element ) {
+                return  /^([01]\d|2[0-3]|[0-9])(:[0-5]\d){1,2}$/.test( value );
+            }, "Vnesite veljaven čas npr. 8:30 ali 17:45" );
+
+        $.validator.addMethod("greaterThan", function (value, element, param) {
+                var otherElement = dayjs(fp.selectedDates[0]).format("l")+" " + value;
+                return (dayjs(otherElement,"DD.MM.YYYY HH:mm").toDate()  > new Date(fp.selectedDates[0]));
+            }, "Konec mora biti večji od začetka.");
+
+            function getScrollTime()
+            {
+                return "13:30:00";
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                gapi.load('client:auth2', function () {
+                    gapi.client.load(DISCOVERY_DOCS, 'v3').then(function () {
+                        gapi.auth.setToken({ access_token: gooToken.access_token })
+                });
+                });
+
+                var calendarEl = document.getElementById('calendar');
+
+
+
+                loadScript("/lib/fullcalendar-scheduler-5.9.0/lib/locales/" + navigator.language.slice(0, 2) + ".js")
+                    .then(function () {
+                        calendar = new FullCalendar.Calendar(calendarEl, {
+                            locale: navigator.language.slice(0, 2),
+                            eventDisplay: 'block',
+                            themeSystem: 'bootstrap',
+                            stickyFooterScrollbar: true,
+                            initialView: 'resourceTimeGridDay',
+                            //initialDate: 'today',
+                            slotMinTime: "@Html.Raw(Model.Location.Schedule.minTime())", //"7:00:00",
+                            slotMaxTime: "@Html.Raw(Model.Location.Schedule.maxTime())", //"21:00:00",
+                            slotDuration: '00:30:00',
+                            allDaySlot: false,
+                            //scrollTime: getScrollTime(), //"8:00:00",
+                            slotLabelFormat: {
+                                hour: 'numeric',
+                                hour12: false,
+                                minute: '2-digit',
+                                omitZeroMinute: true,
+                                meridiem: false
+                            },
+                            slotLabelInterval: "00:30",
+                            expandRows: true,
+                            editable: true,
+                            selectable: true,
+                            dayMaxEvents: true, // allow "more" link when too many events
+                            //dayMinWidth: 200,
+                            headerToolbar: {
+                                left: 'prev,next today',
+                                center: 'title',
+                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth fullscreen'
+                            },
+                            customButtons: {
+                                fullscreen: {
+                                    text: '[]',
+                                    click: function () {
+                                        if (isFullScreen) { exitFullScreen(); } else { goFullScreen('fs'); }
+
+                                    }
+                                }
+                            },
+                            views: {
+                                resourceTimeGridTwoDay: {
+                                    type: 'resourceTimeGrid',
+                                    duration: { days: 3 },
+                                    buttonText: '3 dni',
+                                }
+                            },
+
+                            resources: [
+                            @foreach (var item in Model.Location.Workplaces)
+                            {
+                                FullCalendar.Resource myResource = new FullCalendar.Resource(@item.Id.ToString(), @item.Id.ToString(), @item.Name, item.GoogleCalendarColor);
+                                myResource.extendedProps.Add("gid", item.GoogleCalendarID);
+                                FullCalendar.businessHours myBH;
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.SundayStart.ToString("HH:mm"), Model.Location.Schedule.SundayEnd.ToString("HH:mm"), new int[] { 0 });
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.MondayStart.ToString("HH:mm"), Model.Location.Schedule.MondayEnd.ToString("HH:mm"), new int[] { 1 });
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.TuesdayStart.ToString("HH:mm"), Model.Location.Schedule.TuesdayEnd.ToString("HH:mm"), new int[] { 2 });
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.WednesdayStart.ToString("HH:mm"), Model.Location.Schedule.WednesdayEnd.ToString("HH:mm"), new int[] { 3 });
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.ThursdayStart.ToString("HH:mm"), Model.Location.Schedule.ThursdayEnd.ToString("HH:mm"), new int[] { 4 });
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.FridayStart.ToString("HH:mm"), Model.Location.Schedule.FridayEnd.ToString("HH:mm"), new int[] { 5 });
+                                myResource.businessHours.Add(myBH);
+                                myBH = new FullCalendar.businessHours(Model.Location.Schedule.SaturdayStart.ToString("HH:mm"), Model.Location.Schedule.SaturdayEnd.ToString("HH:mm"), new int[] { 6 });
+                                myResource.businessHours.Add(myBH);
+                                @Html.Raw(myResource.ToJson() + ",")
+                            }
+                            ],
+                            events:@Html.Raw(Model.calEvents),
+                            eventTimeFormat: {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false
+                            },
+                            eventClick: function (info) {
+                                console.info("eventClick: info:", info);
+
+                                //info.event.setProp("title", "test666");
+
+                                showEvent(info);
+                            },
+                            eventDrop: function (info) {
+                                console.info("eventDrop: info:", info);
+                                SaveDragedEvent(info);
+                            },
+                            eventResize: function (event, dayDelta, minuteDelta) {
+                                console.info("eventResize: ", event);
+                                SaveResizedEvent(event);
+                            },
+                            select: function (arg) {
+                                if (typeof arg.resource === "undefined") {
+                                    //switch view
+                                    calendar.changeView("resourceTimeGridDay", arg.start);
+                                } else {
+                                    //show new Event modal
+                                    newEvent(arg);
+                                }
+                            }
+                            @if (nakaziUrnike == true)
+                            {
+                                <text>
+                                ,datesSet: function (dateInfo) {
+                                console.info("date changes to:", dateInfo.start,"list of events:");
+                                FetchRenderExceptions(calendar, dateInfo.start).then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
+                                }
+                                </text>
+                            }
+
+                            });
+                        calendar.render();
+                //calendar.setOption("height", "1450px");
+
+            });
+
+ //fill client search
+                var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
+
+            $("#txtClientsearch").autocomplete({
+                minlength: 3,
+                delay: 200,
+                source: myClients,
+                select: function (event, ui) {
+                    hideKeyboard();
+                    $("#txtClientsearch").val(ui.item.label);
+                    $("#txtClientMobile").val(ui.item.mobile);
+                    SelectedClientID = ui.item.value;
+                    $("#txtClientsearch").blur();
+                    event.preventDefault();
+                    return false;
+                },
+                response: function (event, ui) {
+                    if (ui.content.length === 0) {
+                        SelectedClientID = 0;
+                    }
+                },
+                focus: function (event, ui) { event.preventDefault(); return false; }
+            });
+
+            // load locale and Get flatpicker localized instance
+                loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
+                            loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
+                .then(function () {
+                dayjs.locale(navigator.language.slice(0, 2));
+                loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
+                    .then(function () {
+                    fp = $(".flatpickr").flatpickr({
+                        altInput: true,
+                                //defaultDate: new Date(),
+                                minDate: new Date(),
+                                locale: dayjs.locale(),
+                                plugins: [new confirmDatePlugin({ showAlways: true })],
+                                enableTime: true, //minTime: "8:00", maxTime: "20:00",
+                                dateFormat: "llll",
+                                clickOpens: true, allowInput: false, wrap: true,
+                                //allowInvalidPreload: true,
+                                altFormat: dayjs.localeData().longDateFormat('llll'),
+                                //ariaDateFormat: dayjs.localeData().longDateFormat('llll'),
+                                dateFormat: dayjs.localeData().longDateFormat('llll'),
+                                parseDate: (datestr, format) => {
+                                    var fmt = format;
+                                    if (fmt == 'Y-m-d\\TH:i:S') { fmt = 'YYYY-MM-DD\\THH:mm'; }
+                                    if (fmt == 'H:i:S') { fmt = 'HH:mm'; }
+                                    var tekst = $('#txtDebug').val();
+                                    tekst = 'parseDate(' + datestr + ',' + fmt + ') return:' + formatDate(dayjs(datestr, fmt).toDate()) + '\n' + tekst;
+                                    $('#txtDebug').val(tekst);
+                                    return dayjs(datestr, fmt).toDate();
+                                },
+                                formatDate: (date, format, locale) => {
+                                    if (format != 'F j, Y') {
+                                        var tekst = $('#txtDebug').val();
+                                        tekst = 'formatDate:' + formatDate(date) + '-' + format + '-' + locale.weekdays.longhand[0] + '\n' + tekst;
+                                        $('#txtDebug').val(tekst)
+                                        return dayjs(date).format(format);
+                                    }
+                                }
+                            });
+                });
+            });
+
+            $('#formEvent').validate({
+                rules: {
+                    txtEndTime: { time: true, greaterThan: "#txtStartTime" },
+                },
+                messages: {
+                    txtClientFirstName: "Neveljavno ime!"
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-control').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-control').removeClass('is-invalid');
+                },
+                errorElement: 'span',
+                errorClass: 'invalid-feedback',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.insertAfter(element.parent());
+                    } else { error.insertAfter(element); }
+                }
+            });
+
+            $("#myModal").on('shown.bs.modal', function(){
+                $(this).find('#txtClientsearch').focus();
+
+            });
+
+            initServicesTags();
+
+            $("#cboLocations").off('change').change(function (evt) {
+                Cookies.set('DefaultLocation', $(this).val());
+                window.location.reload(true);
+            });
+        });
+
+
+
+
+
+
+            //#region Event modal
+
+
+            function CancelModal() {
+            $('#formEvent').validate().resetForm();
+            //remove higlight ( reset form does not do this!)
+            $("#formEvent input, #formEvent label").each(function (key, value) {
+                $(this).closest('.form-group').removeClass('has-error');
+                });
+        }
+
+
+
+
+
+        function newEvent(arg) {
+            //clear form
+            $("#txtClientsearch").val('');
+            $("#txtClientMobile").val('');
+            $("#txtNotes").val('');
+            $("#txtNotes").tokenfield('setTokens', ' ');
+
+                fp.setDate(arg.start);
+                var cHour = arg.end.getHours();
+                var cMinuts = arg.end.getMinutes();
+                var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtEndTime").val(outStr);
+            $("#cboGooCal").selectpicker('val', arg.resource.extendedProps.gid);
+            $('#cmdDelete').addClass('invisible');
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                    if (SaveNewEvent() != false) { $("#myModal").modal("hide"); }
+                });
+            $("#txtClientsearch").focus();
+
+
+        }
+
+        function showEvent(info) {
+                //show Event info
+                if (typeof info.event?.extendedProps?.client === "undefined") {
+                $("#txtClientsearch").val('');
+                $("#txtClientMobile").val('');
+            }
+            else
+            {
+                var client = JSON.parse(info.event.extendedProps.client);
+                $("#txtClientsearch").val(client.label);
+                SelectedClientID = client.value;
+                $("#txtClientMobile").val(client.mobile);
+            }
+            if (typeof info.event?.extendedProps?.notes === "undefined")
+            {
+                $("#txtNotes").val('');
+                $("#txtNotes").tokenfield('setTokens', ' ');
+            }
+            else
+            {
+                try {
+                    $("#txtNotes").tokenfield('setTokens', JSON.parse(info.event.extendedProps.notes));
+                } catch (e) {
+                    $("#txtNotes").tokenfield('setTokens', info.event.extendedProps.notes);
+                }
+            }
+
+            fp.setDate(info.event.start);
+            var cHour = info.event.end.getHours();
+            var cMinuts = info.event.end.getMinutes();
+            var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            $("#txtEndTime").val(outStr);
+            var res = info.event.getResources();
+            $("#cboGooCal").selectpicker('val', res[0].extendedProps.gid);
+            $('#cmdDelete').removeClass('invisible');
+            $("#myModal").modal("show");
+            $("#cmdSave").off('click').click(function (evt) {
+                if (SaveEvent(info) != false) { $("#myModal").modal("hide"); }
+            });
+            $("#cmdDelete").off('click').click(function (evt) {
+                if (DeleteEvent(info) != false) { $("#myModal").modal("hide"); }
+            });
+            }
+
+
+
+            function DeleteEvent(info) {
+                Swal.fire({
+                    title: 'Zbrišem naročilo?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+            if (result.isConfirmed) {
+                var res = info.event.getResources();
+                gapi.client.calendar.events.delete({
+                    "calendarId": res[0].extendedProps.gid,
+                        "eventId": info.event.id
+                    }).execute(function (response) {
+                if (response.error || response == false) {
+                    return false;
+                }
+                else {
+                    console.log("Deleted event: %s", info.event.id);
+                    info.event.remove();
+                    return true;
+                }
+
+            });
+
+                } else { return false; }
+            });
+        }
+
+
+        async function getClientID() {
+                return new Promise(function (resolve, reject) {
+                if (SelectedClientID == 0) {
+                    var client = {};
+                    client.id = 0;
+                    client.LocationId = parseInt($("#cboLocations").val());
+                    client.FirstName = "";
+                    client.LastName = $("#txtClientsearch").val();
+                    client.Mobile = $("#txtClientMobile").val();
+                    client.Email = "";
+                    client.AllowsSMS = true;
+                    client.AllowsEmail = true;
+                    client.Birthday = new Date($("#txtClientBirthday").val());
+                    client.Address = "";
+                    client.Zip = "";
+                    client.Notes = "";
+                    client.Active = true;
+                    client.Sex = "F";
+                    getAPIToken().then((result) => {
+                        $.ajax({
+                        type: "post",
+                            data: JSON.stringify(client),
+                            url: apiURL + "/api/client/",
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (retval) {
+                if (retval.result == "OK") { toastr.info("Saved new client (" + retval.id.toString() + ")"); resolve(retval.id); }
+                else { reject(retval.result); return false; }
+            },
+                            error: function (xhr, status, error) {
+                reject("Error saving client:" + error.toString());
+                return false;
+            }
+                        });
+                    });
+                }
+                else { resolve(SelectedClientID);}
+            });
+        }
+
+        function SaveNewEvent() {
+            if ($('#formEvent').valid()) {
+                //save client
+                getClientID().catch((result) => { toastr.info(result); }).then((result) => {
+                    //create new event
+                    var calid = $('#cboGooCal').val();
+                    var otherElement = dayjs(fp.selectedDates[0]).format("l") + " " + $("#txtEndTime").val();
+                    var eventSummary = $("#txtClientsearch").val();
+                    if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
+                    if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
+                    var newEvent = {
+                        start: { 'dateTime': new Date(fp.selectedDates[0]) },
+                        end: { 'dateTime': dayjs(otherElement, "DD.MM.YYYY HH:mm").toDate() },
+                        summary: eventSummary,
+                        "extendedProperties": {
+                            "private": {
+                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                notes: JSON.stringify($("#txtNotes").val())
+                            }
+                        }
+                    };
+
+
+                    var eventToUpdate = gapi.client.calendar.events.insert({
+                        "calendarId": calid,
+                        "resource": newEvent
+                    }).execute(function (event) {
+                        console.log("Created event: %s", event.id);
+                        //put on calendar
+                        calendar.addEvent({
+                            id: event.id,
+                            title: newEvent.summary,
+                            start: newEvent.start.dateTime,
+                            end: newEvent.end.dateTime,
+                            resourceId: getResourceIdByGid(calid),
+                            extendedProps: {
+                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                notes: JSON.stringify($("#txtNotes").val())
+                            }
+                        });
+                    });
+
+            });
+
+
+            } else { return false; }
+        }
+
+        function SaveEvent(p_event) {
+            if ($('#formEvent').valid()) {
+                //save client (if changed)
+                getClientID().catch((result) => { toastr.info(result); }).then((result) => {
+                    //create new event
+                    var res = p_event.event.getResources();
+                    var calid = $('#cboGooCal').val();
+
+                    var otherElement = dayjs(fp.selectedDates[0]).format("l") + " " + $("#txtEndTime").val();
+                    var eventSummary = $("#txtClientsearch").val();
+                    if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
+                    if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
+                    var newEvent = {
+                        start: { 'dateTime': new Date(fp.selectedDates[0]) },
+                        end: { 'dateTime': dayjs(otherElement, "DD.MM.YYYY HH:mm").toDate() },
+                        summary: eventSummary,
+                        "extendedProperties": {
+                            "private": {
+                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                notes: JSON.stringify($("#txtNotes").val())
+                            }
+                        }
+                    };
+
+
+                    var eventToUpdate = gapi.client.calendar.events.insert({
+                        "calendarId": calid,
+                        "resource": newEvent
+                    }).execute(function (event) {
+                        console.log("Created event: %s", event.id);
+                        //put on calendar
+                        calendar.addEvent({
+                            id: event.id,
+                            title: newEvent.summary,
+                            start: newEvent.start.dateTime,
+                            end: newEvent.end.dateTime,
+                            resourceId: getResourceIdByGid(calid),
+                            extendedProps: {
+                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                notes: JSON.stringify($("#txtNotes").val())
+                            }
+                        });
+                        //delete previous event
+
+                        gapi.client.calendar.events.delete({
+                            "calendarId": res[0].extendedProps.gid,
+                            "eventId": p_event.event.id
+                        }).execute(function (response) {
+                            if (response.error || response == false) {
+                                return false;
+                            }
+                            else {
+                                console.log("Deleted event: %s", p_event.event.id);
+                                p_event.event.remove();
+                                return true;
+                            }
+
+                        });
+                    });
+
+                });
+
+
+            } else { return false; }
+        }
+
+
+        //inti tags for services
+        function initServicesTags() {
+
+            //get tags
+            var myTags = [];
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "get",
+                    url: apiURL + "/api/services/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    async: false,
+                    success: function (result) {
+                        var retval = [];
+                        result.forEach(function (item) {
+                            retval.push(item.name)
+                        });
+                        myTags = retval;
+
+                        $("#txtNotes").tokenfield({
+                            autocomplete: {
+                                source: myTags,
+                                delay: 100
+                            },
+                            showAutocompleteOnFocus: true, createTokensOnBlur: true
+                        })
+
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Error getting data:" + error);
+                    }
+                });
+            });
+        }
+    //#endregion
+
+    </script>
+}

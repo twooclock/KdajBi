@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
@@ -196,6 +197,36 @@ namespace KdajBi.API.Controllers
             return Json("OK");
         }
 
+
+        [HttpPost("/api/GetLocationScheduleExceptions/{locationid}/{date}")]
+        public async Task<ActionResult<Schedule>> GetLocationScheduleExceptions(long locationid, string date)
+        {
+            //get schedule Exceptions
+            if (LocationIsMine(locationid))
+            {
+                DateTime d = DateTime.ParseExact(date, "yyyyMMdd", CultureInfo.InvariantCulture);
+                DateTime firstDayOfMonth = new DateTime(d.Year, d.Month, 1);
+                DateTime lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddTicks(-1);
+
+                var myLocation = _context.Locations.Include(w => w.Workplaces).FirstOrDefault(x => x.Id == locationid);
+                List<dynamic> workplaces = new List<dynamic>();
+                foreach (var wp in myLocation.Workplaces)
+                {
+                    List<dynamic> wpExceptions = new List<dynamic>();
+                    var neki = _context.WorkplaceScheduleExceptions.Where(wse => wse.WorkplaceId == wp.Id && (wse.Date >= firstDayOfMonth && wse.Date <= lastDayOfMonth));
+                    foreach (var item in neki)
+                    {
+                        wpExceptions.Add(new { date = item.Date, eventsJson = item.EventsJson });
+                    }
+                    workplaces.Add(new { id = wp.Id, exceptions = wpExceptions });
+                }
+
+                return Json(workplaces);
+            }
+
+            return Json("[]");
+
+        }
         private bool LocationExists(long id)
         {
             return _context.Locations.Any(e => e.Id == id);

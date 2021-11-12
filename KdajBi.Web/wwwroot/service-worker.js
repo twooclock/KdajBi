@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.eb011741c58c80fc43a82c2b1247918a.js"
+  "/precache-manifest.1c4a87a042a9e70589046fd8770229c1.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "kdajbi"});

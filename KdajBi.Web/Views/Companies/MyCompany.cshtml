@@ -46,6 +46,9 @@
                                         <a class="nav-link" id="employee-tab" data-toggle="pill" href="#employee" role="tab" aria-controls="employee" aria-selected="false">Zaposleni</a>
                                     </li>
                                     <li class="nav-item">
+                                        <a class="nav-link" id="service-tab" data-toggle="pill" href="#services" role="tab" aria-controls="services" aria-selected="false">Storitve</a>
+                                    </li>
+                                    <li class="nav-item">
                                         <a class="nav-link" id="tags-tab" data-toggle="pill" href="#tags" role="tab" aria-controls="tags" aria-selected="false">Oznake pri strankah</a>
                                     </li>
                                 </ul>
@@ -203,6 +206,41 @@
                                             <!-- /.card-body -->
                                         </div>
                                     </div>
+
+                                    <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
+                                        <div class="card">
+                                            <!-- /.card-header -->
+                                            <div class="card-body p-0">
+                                                <div class="col-12">
+                                                    <div class="table-responsive">
+
+                                                        <table id="dtServices" class="table table-striped table-bordered" width="100%">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>
+                                                                        Storitev
+                                                                    </th>
+
+                                                                    <th>
+                                                                    </th>
+
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            </tbody>
+                                                        </table>
+                                                        <button type="button" id="cmdAdd" onclick="cmdAddService_Click();" class="btn btn-primary btn-lg">
+                                                            Dodaj
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <!-- /.card-body -->
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                             <!-- /.card -->
@@ -321,7 +359,7 @@
     </div>
 </div>
 <!-- /modal content-->
-<!-- employee modal content-->
+<!-- clienttags modal content-->
 <div id="myTagModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->
@@ -354,6 +392,39 @@
 </div>
 <!-- /modal content-->
 
+<!-- service modal content-->
+<div id="myServiceModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Storitev</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelServiceModal();"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="dfService" class="dataform" name="dfService">
+                    <div class="form-group">
+                        <label for="txtServiceName">
+                            Naziv:
+                        </label>
+                        <input type="text" id="txtServiceName" name="txtServiceName" class="form-control" />
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="cmdDeleteService">
+                    Zbriši
+                </button>
+                <button type="button" class="btn btn-primary" id="cmdSaveService">
+                    Shrani
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+
 @section scripts{
     <!-- datables.net -->
     <script src="~/plugins/datatables/jquery.dataTables.js"></script>
@@ -369,6 +440,7 @@
                 GetEmployeesTable();
                 GetLocationsTable();
                 GetTagsTable();
+                GetServicesTable();
 
                 $('#dfEmployee').validate({
                     rules: {
@@ -434,6 +506,31 @@
                     },
                     messages: {
                         txtName: "Neveljavna oznaka"
+                    },
+                    highlight: function (element) {
+                        $(element).closest('.form-control').addClass('is-invalid');
+                    },
+                    unhighlight: function (element) {
+                        $(element).closest('.form-control').removeClass('is-invalid');
+                    },
+                    errorElement: 'span',
+                    errorClass: 'invalid-feedback',
+                    errorPlacement: function (error, element) {
+                        if (element.parent('.input-group').length) {
+                            error.insertAfter(element.parent());
+                        } else { error.insertAfter(element); }
+                    }
+                });
+                $('#dfService').validate({
+                    rules: {
+                        txtServiceName: {
+                            minlength: 3,
+                            maxlength: 150,
+                            required: true
+                        }
+                    },
+                    messages: {
+                        txtName: "Neveljavno ime storitve"
                     },
                     highlight: function (element) {
                         $(element).closest('.form-control').addClass('is-invalid');
@@ -955,6 +1052,173 @@
                     dataType: "json",
                     success: function (result) {
                          if (result == "OK") { toastr.success("Shranjeno");GetTagsTable(); return true; }
+                        else { toastr.error("Napaka:"+result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+                });
+            } else { return false; }
+        }
+        //#endregion
+
+        //#region Service
+         var GetServicesTable = function () {
+
+            var table = $('#dtServices').DataTable({
+                destroy: true,
+                responsive: true,
+                'order': [[0, 'desc']],
+                //                dom: '<""top"">rt<""bottom""ilp><""container"">',
+                searching: false,
+                'processing': true,
+                'serverSide': true,
+                'ajax': {
+                    'url': apiURL + "/api/servicestable",
+                    type: 'POST', dataType: 'json',
+                    data: function (dtParms) {
+                        // I send it as a string to reduce the chance of an error before it reaches the server.
+                        return JSON.stringify(dtParms);
+                    },
+                    'contentType': 'application/json; charset=utf-8',
+                    "crossDomain": true,
+                    "beforeSend": function (xhr, settings) {
+                        getAPIToken().then((result) => {
+                            $.ajax($.extend(settings, {
+                                headers: { "Authorization": "Bearer " +result.AccessToken },
+                                beforeSend: $.noop
+                            }));
+                        });
+                        return false;
+                    }
+
+                },
+                'columns': [
+                    { 'data': 'name' },
+                    {
+                        data: null, 'orderable': false,
+                        render: function (data, type, row, meta) {
+                            return '<a class="btn btn-default" onclick="showServiceDetail(' + row.id + ');">Urejanje</a>';
+                        }
+                    }
+                ]
+            });
+
+        }
+
+        function CancelServiceModal() {
+            $('#dfService').validate().resetForm();
+            //remove higlight ( reset form does not do this!)
+            $("#dfService input, #dfService label").each(function (key, value) {
+                $(this).closest('.form-group').removeClass('has-error');
+            });
+        }
+
+
+        function cmdAddService_Click() {
+            setServiceForm(0);
+            $('#cmdDeleteService').addClass('invisible')
+            $("#myServiceModal").modal("show");
+            $("#cmdSaveService").off('click').click(function (evt) {
+                if (SaveService(0) != false) {
+                    $("#myServiceModal").modal("hide");
+                    GetServicesTable();
+                }
+            });
+
+
+        }
+
+        function setServiceForm(p_ID) {
+            if (p_ID == 0) {
+                //clear form
+                $("#txtServiceName").val('');
+
+            }
+            else {
+                //fill form
+                getAPIToken().then((result) => {
+                $.ajax({
+                    type: "get",
+                    url: apiURL+"/api/service/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    async: true,
+                    success: function (result) {
+                        $("#txtServiceName").val(result.name);
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Error getting data:" + error);
+                    }
+                });
+                });
+            }
+
+        }
+
+        function showServiceDetail(p_ID) {
+            setServiceForm(p_ID);
+            $('#cmdDeleteService').removeClass('invisible');
+            $("#myServiceModal").modal("show");
+            $("#cmdSaveService").off('click').click(function (evt) {
+                if (SaveService(p_ID) != false) { $("#myServiceModal").modal("hide"); }
+            });
+            $("#cmdDeleteService").off('click').click(function (evt) {
+                if (DeleteService(p_ID) != false) { $("#myServiceModal").modal("hide"); }
+            });
+
+        }
+
+        function DeleteService(p_ID) {
+
+            Swal.fire({
+                title: 'Zbrišem storitev?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    getAPIToken().then((result) => {
+                    $.ajax({
+                        type: "DELETE",
+                        url: apiURL + "/api/service/" + p_ID,
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result == "OK") { toastr.success("Zbrisano"); GetServicesTable(); return true; }
+                            else { toastr.error("Napaka:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka:" + error.toString());
+                            return false;
+                        }
+                    });
+                    });
+
+                } else { return false; }
+
+            });
+        }
+
+        function SaveService(p_ID) {
+            if ($('#dfService').valid()) {
+                var service={};
+                service.id = p_ID;
+                service.Name = $('#txtServiceName').val();
+                getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(service),
+                    url: apiURL+"/api/service",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                         if (result == "OK") { toastr.success("Shranjeno");GetServicesTable(); return true; }
                         else { toastr.error("Napaka:"+result); return false; }
                     },
                     error: function (xhr, status, error) {

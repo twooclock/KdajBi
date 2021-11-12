@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using KdajBi.Core.Models;
 @using Newtonsoft.Json;
-@inject  KdajBi.Web.Services.IApiTokenProvider apiTP
+@inject KdajBi.Web.Services.IApiTokenProvider apiTP
 @inject UserManager<AppUser> UserManager
 var apiURL="@Html.Raw(apiTP.Settings().BaseAddress)"
 var apiToken=JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.Token))')
@@ -33,5 +33,5 @@ var apiUser='@Html.Raw(@UserManager.GetUserName(User))';
                     }
                 });
             }
-    });
-        }
+        });
+    }

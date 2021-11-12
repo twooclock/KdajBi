@@ -75,6 +75,24 @@
     <Compile Remove="Migrations\20210226070916_addSMS.Designer.cs" />
     <Compile Remove="Migrations\20210301104201_addSettings.cs" />
     <Compile Remove="Migrations\20210301104201_addSettings.Designer.cs" />
+    <Compile Remove="Migrations\20210316073157_test.cs" />
+    <Compile Remove="Migrations\20210316073157_test.Designer.cs" />
+    <Compile Remove="Migrations\20210930133245_testiram.cs" />
+    <Compile Remove="Migrations\20210930133245_testiram.Designer.cs" />
+    <Compile Remove="Migrations\20210930133718_testiram.cs" />
+    <Compile Remove="Migrations\20210930133718_testiram.Designer.cs" />
+    <Compile Remove="Migrations\20211021050446_addServices.cs" />
+    <Compile Remove="Migrations\20211021050446_addServices.Designer.cs" />
+    <Compile Remove="Migrations\20211021051624_addServices.cs" />
+    <Compile Remove="Migrations\20211021051624_addServices.Designer.cs" />
+    <Compile Remove="Migrations\20211026044332_addWorkplaceSchedules.cs" />
+    <Compile Remove="Migrations\20211026044332_addWorkplaceSchedules.Designer.cs" />
+    <Compile Remove="Migrations\20211027044418_addSchedulesEventsJson.cs" />
+    <Compile Remove="Migrations\20211027044418_addSchedulesEventsJson.Designer.cs" />
+    <Compile Remove="Migrations\20211108064750_addWorkplaceScheduleExceptions.cs" />
+    <Compile Remove="Migrations\20211108064750_addWorkplaceScheduleExceptions.Designer.cs" />
+    <Compile Remove="Migrations\20211108065057_addWorkplaceScheduleExceptions.cs" />
+    <Compile Remove="Migrations\20211108065057_addWorkplaceScheduleExceptions.Designer.cs" />
     <Compile Remove="Models\UserCompany.cs" />
   </ItemGroup>
 
@@ -116,7 +134,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.4" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="3.1.1" />
    
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.2" />

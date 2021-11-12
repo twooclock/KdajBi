@@ -1,8 +1,10 @@
 ﻿using KdajBi.Core;
 using KdajBi.Core.Models;
+using KdajBi.GoogleHelper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Linq;
 using System.Security.Claims;
 
@@ -31,16 +33,30 @@ namespace KdajBi.API.Controllers
         }
         protected int _CurrentUserCompanyID()
         {
-            return int.Parse(User.Claims.First(i => i.Type == "CompanyId").Value);
+            return int.Parse(User.FindFirst("CompanyId").Value);
         }
 
         protected string _CurrentUserCompanyTaxID()
         {
-            return User.Claims.First(i => i.Type == "CompanyTaxId").Value;
+            return User.FindFirst("CompanyTaxId").Value;
         }
         protected string _CurrentUserEmail()
         {
             return User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        }
+
+        protected GoogleAuthToken _CurrentUserGooToken()
+        {
+            try
+            {
+                //TODO: check expiration and renew
+                return JsonConvert.DeserializeObject<GoogleAuthToken>(_context.UserClaims.First(i => i.ClaimType == "GooToken" && i.UserId == _CurrentUserID()).ClaimValue);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex, "_CurrentUserGooToken error");
+                return null;
+            }
         }
     }
 }

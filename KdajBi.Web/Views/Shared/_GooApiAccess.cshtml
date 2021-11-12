@@ -1,0 +1,8 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using KdajBi.Core.Models;
+@using Newtonsoft.Json;
+@inject UserManager<AppUser> UserManager
+var gooToken=JSON.parse('@Html.Raw( User.FindFirst("GooToken").Value)')
+var DISCOVERY_DOCS = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
+
+ 
