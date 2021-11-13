@@ -145,10 +145,10 @@ namespace KdajBi.Web.Controllers
                 else
                 { return Redirect("~/LandingPage/index.html"); }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                return Redirect("~/LandingPage/index.html");
+                _logger.LogError(ex, "Error /Appointments/index");
+                return Redirect("~/Home/index");
             }
 
 
@@ -156,98 +156,106 @@ namespace KdajBi.Web.Controllers
 
         private void setBGEvents(vmAppointments p_myVM, long p_WorkplaceId, long p_scheduleType)
         {
-            //edit schedule for a workplace wpid (default scheduleType=0 Alldays)
-            vmWorkplace myVM = new vmWorkplace();
-            myVM.Workplace = _context.Workplaces.Where(w => w.Id == p_WorkplaceId).SingleOrDefault();
-            myVM.Workplace.WorkplaceSchedules = _context.WorkplaceSchedules.Include(s => s.Schedule).Where(wps => wps.WorkplaceId == p_WorkplaceId).ToList();
-            //myVM.Location = _context.Locations.Include(s => s.Schedule).Where(l => l.Id == myVM.Workplace.LocationId).SingleOrDefault();
-
-            var events = new List<FullCalendar.rEventShow>();
-            var events2 = new List<FullCalendar.rEventShow>();
-
-            Schedule mySchedule = myVM.Workplace.ScheduleByType(p_scheduleType);
-            if (mySchedule == null)
+            try
             {
-                //create default events from location schedule
-                events = FullCalendar.getWeekrEventShowFromSchedule(myVM.Location.Schedule);
-            }
-            else
-            {
-                //create events from selected schedule type
-                if (mySchedule.EventsJson == "")
-                {
-                    events = FullCalendar.getWeekrEventShowFromSchedule(mySchedule);
-                }
-                else
-                { events = Newtonsoft.Json.JsonConvert.DeserializeObject<FullCalendar.rEventShow[]>(mySchedule.EventsJson).ToList(); }
-                myVM.ScheduleId = mySchedule.Id;
-            }
+                //edit schedule for a workplace wpid (default scheduleType=0 Alldays)
+                vmWorkplace myVM = new vmWorkplace();
+                myVM.Workplace = _context.Workplaces.Where(w => w.Id == p_WorkplaceId).SingleOrDefault();
+                myVM.Workplace.WorkplaceSchedules = _context.WorkplaceSchedules.Include(s => s.Schedule).Where(wps => wps.WorkplaceId == p_WorkplaceId).ToList();
+                myVM.Location = _context.Locations.Include(s => s.Schedule).Where(l => l.Id == myVM.Workplace.LocationId).SingleOrDefault();
 
-            var devents = new List<FullCalendar.rEvent>();
-            var d2events = new List<FullCalendar.rEvent>();
-            devents = FullCalendar.CreateREventsFromREventShow(p_scheduleType, events, "blue");
+                var events = new List<FullCalendar.rEventShow>();
+                var events2 = new List<FullCalendar.rEventShow>();
 
-            if (p_scheduleType != 0)
-            {
-                //add other schedule (odd,even)
-                long other = ((p_scheduleType == 1) ? 2 : 1);
-                mySchedule = myVM.Workplace.ScheduleByType(other);
+                Schedule mySchedule = myVM.Workplace.ScheduleByType(p_scheduleType);
                 if (mySchedule == null)
                 {
                     //create default events from location schedule
-                    events2 = FullCalendar.getWeekrEventShowFromSchedule(myVM.Location.Schedule);
+                    events = FullCalendar.getWeekrEventShowFromSchedule(myVM.Location.Schedule);
                 }
                 else
                 {
                     //create events from selected schedule type
                     if (mySchedule.EventsJson == "")
                     {
-                        events2 = FullCalendar.getWeekrEventShowFromSchedule(mySchedule);
+                        events = FullCalendar.getWeekrEventShowFromSchedule(mySchedule);
+                    }
+                    else
+                    { events = Newtonsoft.Json.JsonConvert.DeserializeObject<FullCalendar.rEventShow[]>(mySchedule.EventsJson).ToList(); }
+                    myVM.ScheduleId = mySchedule.Id;
+                }
+
+                var devents = new List<FullCalendar.rEvent>();
+                var d2events = new List<FullCalendar.rEvent>();
+                devents = FullCalendar.CreateREventsFromREventShow(p_scheduleType, events, "blue");
+
+                if (p_scheduleType != 0)
+                {
+                    //add other schedule (odd,even)
+                    long other = ((p_scheduleType == 1) ? 2 : 1);
+                    mySchedule = myVM.Workplace.ScheduleByType(other);
+                    if (mySchedule == null)
+                    {
+                        //create default events from location schedule
+                        events2 = FullCalendar.getWeekrEventShowFromSchedule(myVM.Location.Schedule);
                     }
                     else
                     {
-                        events2 = Newtonsoft.Json.JsonConvert.DeserializeObject<FullCalendar.rEventShow[]>(mySchedule.EventsJson).ToList();
+                        //create events from selected schedule type
+                        if (mySchedule.EventsJson == "")
+                        {
+                            events2 = FullCalendar.getWeekrEventShowFromSchedule(mySchedule);
+                        }
+                        else
+                        {
+                            events2 = Newtonsoft.Json.JsonConvert.DeserializeObject<FullCalendar.rEventShow[]>(mySchedule.EventsJson).ToList();
+                        }
+
                     }
-
+                    d2events = FullCalendar.CreateREventsFromREventShow(other, events2, "red");
                 }
-                d2events = FullCalendar.CreateREventsFromREventShow(other, events2, "red");
-            }
 
 
 
-            //events.AddRange(events2);
-            devents.AddRange(d2events);
-            //add resourceId
-            foreach (var item in devents)
-            {
-                item.resourceId = p_WorkplaceId.ToString();
-                item.backgroundColor = "";
-            }
-            p_myVM.calBGEvents = Newtonsoft.Json.JsonConvert.SerializeObject(devents.ToArray());
-            //add revents to weekdays
-            WeekDay myWeekday;
-            foreach (var item in devents)
-            {
-                int idx = int.Parse(item.id);
-                if (myVM.WeekDays[idx] != null)
+                //events.AddRange(events2);
+                devents.AddRange(d2events);
+                //add resourceId
+                foreach (var item in devents)
                 {
-                    myWeekday = myVM.WeekDays[idx];
-                    myWeekday.calEvents.Add(item);
-                    myVM.WeekDays[idx] = myWeekday;
+                    item.resourceId = p_WorkplaceId.ToString();
+                    item.backgroundColor = "";
                 }
-                else
+                p_myVM.calBGEvents = Newtonsoft.Json.JsonConvert.SerializeObject(devents.ToArray());
+                //add revents to weekdays
+                WeekDay myWeekday;
+                foreach (var item in devents)
                 {
-                    myWeekday = new WeekDay();
-                    myWeekday.calEvents.Add(item);
-                    myVM.WeekDays[idx] = myWeekday;
+                    int idx = int.Parse(item.id);
+                    if (myVM.WeekDays[idx] != null)
+                    {
+                        myWeekday = myVM.WeekDays[idx];
+                        myWeekday.calEvents.Add(item);
+                        myVM.WeekDays[idx] = myWeekday;
+                    }
+                    else
+                    {
+                        myWeekday = new WeekDay();
+                        myWeekday.calEvents.Add(item);
+                        myVM.WeekDays[idx] = myWeekday;
+                    }
                 }
-            }
 
-            //set results
-            resourceWD myRWD = new resourceWD();
-            myRWD.resourceId = p_WorkplaceId;
-            myRWD.WeekDays = myVM.WeekDays;
-            p_myVM.resourcesWD.Add(myRWD);
+                //set results
+                resourceWD myRWD = new resourceWD();
+                myRWD.resourceId = p_WorkplaceId;
+                myRWD.WeekDays = myVM.WeekDays;
+                p_myVM.resourcesWD.Add(myRWD);
+            }
+            catch (Exception ex)
+            {
+
+                _logger.LogError(ex, "Error setBGEvents");
+            }
         }
 
 

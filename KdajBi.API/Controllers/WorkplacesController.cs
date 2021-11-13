@@ -23,9 +23,7 @@ namespace KdajBi.API.Controllers
     [ApiController]
     public class WorkplacesController : _BaseController
     {
-
-
-        public IList<AuthenticationScheme> ExternalLogins { get; set; }
+        //public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
         public WorkplacesController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<WorkplacesController> logger, IEmailSender emailSender)
             : base(context, userManager, signInManager, logger, emailSender)
@@ -34,8 +32,7 @@ namespace KdajBi.API.Controllers
         }
 
 
-        [HttpPost]
-        [Route("/api/workplacestable/{locationid}")]
+        [HttpPost("/api/workplacestable/{locationid}")]
         public JsonResult WorkplacesTable(long locationid, [FromBody] DataTableAjaxPostModel param)
         {
             int recordsTotal = 0;

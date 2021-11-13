@@ -29,7 +29,7 @@
                 <div class="row x_title">
                     <div class="col-md-6">
                         <h3>@Html.Raw(@Model.Location.Name)</h3>
-                        
+
                     </div>
 
                 </div>
@@ -179,7 +179,7 @@
 
                     </div>
                 </div>
-                
+
                 <div class="clearfix"></div>
             </div>
         </div>
@@ -217,7 +217,7 @@
                         <label for="cboGooCal">
                             Google koledar:
                         </label>
-                        <select id="cboGooCal" name="cboGooCal" class="selectpicker custom-select custom-select-sm form-control" >
+                        <select id="cboGooCal" name="cboGooCal" class="selectpicker custom-select custom-select-sm form-control">
                             <option value="0">[Create new calendar]</option>
                             @foreach (var item in Model.GoogleCalendars)
                             {
@@ -255,15 +255,15 @@
     <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
     <script src="~/plugins/toastr/toastr.min.js"></script>
     <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
-<script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
 
-<script type="text/javascript">
+    <script type="text/javascript">
 
         var myTable;
         @await Html.PartialAsync("_ApiAccess")
         @await Html.PartialAsync("_GooApiAccess")
 
-        
+
         $.validator.addMethod( "time", function( value, element ) {
 	        return  /^([01]\d|2[0-3]|[0-9])(:[0-5]\d){1,2}$/.test( value );
         }, "Vnesite veljaven čas npr. 8:30 ali 17:45" );
@@ -694,6 +694,6 @@
         //#endregion
 
 
-</script>
+    </script>
 }
 
