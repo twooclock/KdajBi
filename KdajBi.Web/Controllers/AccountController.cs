@@ -237,7 +237,7 @@ namespace KdajBi.Web.Controllers
             return AccessDenied();
         }
 
-        public async Task<IActionResult> FlipNadzornik()
+        public async Task<IActionResult> FlipNadzornik(string secret = "")
         {
             // Get User and a claims-based identity
             var identity = new ClaimsIdentity(User.Identity);

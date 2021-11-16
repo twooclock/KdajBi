@@ -36,20 +36,17 @@
                         <div class="card card-primary card-outline card-outline-tabs">
                             <div class="card-header p-0 border-bottom-0">
                                 <ul class="nav nav-tabs" id="tab_@Html.Raw(@Model.Company.Id)" role="tablist">
-                                    <li class="nav-item">
-                                        <a class="nav-link active" id="general-tab" data-toggle="pill" href="#general" role="tab" aria-controls="general" aria-selected="true">Podjetje</a>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">Podjetje</a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="location-tab" data-toggle="pill" href="#location" role="tab" aria-controls="location" aria-selected="false">Saloni</a>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="location-tab" data-toggle="tab" href="#location" role="tab" aria-controls="location" aria-selected="false">Saloni</a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="employee-tab" data-toggle="pill" href="#employee" role="tab" aria-controls="employee" aria-selected="false">Zaposleni</a>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="employee-tab" data-toggle="tab" href="#employee" role="tab" aria-controls="employee" aria-selected="false">Zaposleni</a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="service-tab" data-toggle="pill" href="#services" role="tab" aria-controls="services" aria-selected="false">Storitve</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="tags-tab" data-toggle="pill" href="#tags" role="tab" aria-controls="tags" aria-selected="false">Oznake pri strankah</a>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="tags-tab" data-toggle="tab" href="#tags" role="tab" aria-controls="tags" aria-selected="false">Oznake pri strankah</a>
                                     </li>
                                 </ul>
                             </div>
@@ -196,40 +193,6 @@
                                                             </tbody>
                                                         </table>
                                                         <button type="button" id="cmdAdd" onclick="cmdAddTag_Click();" class="btn btn-primary btn-lg">
-                                                            Dodaj
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                            <!-- /.card-body -->
-                                        </div>
-                                    </div>
-
-                                    <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
-                                        <div class="card">
-                                            <!-- /.card-header -->
-                                            <div class="card-body p-0">
-                                                <div class="col-12">
-                                                    <div class="table-responsive">
-
-                                                        <table id="dtServices" class="table table-striped table-bordered" width="100%">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>
-                                                                        Storitev
-                                                                    </th>
-
-                                                                    <th>
-                                                                    </th>
-
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                            </tbody>
-                                                        </table>
-                                                        <button type="button" id="cmdAdd" onclick="cmdAddService_Click();" class="btn btn-primary btn-lg">
                                                             Dodaj
                                                         </button>
                                                     </div>
@@ -392,38 +355,7 @@
 </div>
 <!-- /modal content-->
 
-<!-- service modal content-->
-<div id="myServiceModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="myModalLabel">Storitev</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelServiceModal();"><span aria-hidden="true">&times;</span></button>
-            </div>
-            <div class="modal-body">
-                <form id="dfService" class="dataform" name="dfService">
-                    <div class="form-group">
-                        <label for="txtServiceName">
-                            Naziv:
-                        </label>
-                        <input type="text" id="txtServiceName" name="txtServiceName" class="form-control" />
-                    </div>
 
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" id="cmdDeleteService">
-                    Zbriši
-                </button>
-                <button type="button" class="btn btn-primary" id="cmdSaveService">
-                    Shrani
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- /modal content-->
 
 @section scripts{
     <!-- datables.net -->
@@ -433,120 +365,101 @@
     <script src="~/plugins/toastr/toastr.min.js"></script>
 <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
     <script type="text/javascript">
-
+        var employeeLoaded=false;
+        var locationLoaded=false;
+        var tagsLoaded=false;
         @await Html.PartialAsync("_ApiAccess")
 
-            $(document).ready(function () {
-                GetEmployeesTable();
-                GetLocationsTable();
-                GetTagsTable();
-                GetServicesTable();
+        $(document).ready(function () {
 
-                $('#dfEmployee').validate({
-                    rules: {
-                        txtFirstName: {
-                            minlength: 3,
-                            maxlength: 50,
-                            required: true
-                        }
-                    },
-                    messages: {
-                        txtFirstName: "Invalid name!"
-                    },
-                    highlight: function (element) {
-                        $(element).closest('.form-control').addClass('is-invalid');
-                    },
-                    unhighlight: function (element) {
-                        $(element).closest('.form-control').removeClass('is-invalid');
-                    },
-                    errorElement: 'span',
-                    errorClass: 'invalid-feedback',
-                    errorPlacement: function (error, element) {
-                        if (element.parent('.input-group').length) {
-                            error.insertAfter(element.parent());
-                        } else { error.insertAfter(element); }
-                    }
-                });
-                $('#dfLocation').validate({
-                    rules: {
-                        txtName: {
-                            minlength: 3,
-                            maxlength: 50,
-                            required: true
-                        },
-                         txtTel: {
-                            minlength: 9,
-                            maxlength: 15
-                        }
-                    },
-                    messages: {
-                        txtName: "Neveljavno ime"
-                    },
-                    highlight: function (element) {
-                        $(element).closest('.form-control').addClass('is-invalid');
-                    },
-                    unhighlight: function (element) {
-                        $(element).closest('.form-control').removeClass('is-invalid');
-                    },
-                    errorElement: 'span',
-                    errorClass: 'invalid-feedback',
-                    errorPlacement: function (error, element) {
-                        if (element.parent('.input-group').length) {
-                            error.insertAfter(element.parent());
-                        } else { error.insertAfter(element); }
-                    }
-                });
-                $('#dfTag').validate({
-                    rules: {
-                        txtTag: {
-                            minlength: 3,
-                            maxlength: 20,
-                            required: true
-                        }
-                    },
-                    messages: {
-                        txtName: "Neveljavna oznaka"
-                    },
-                    highlight: function (element) {
-                        $(element).closest('.form-control').addClass('is-invalid');
-                    },
-                    unhighlight: function (element) {
-                        $(element).closest('.form-control').removeClass('is-invalid');
-                    },
-                    errorElement: 'span',
-                    errorClass: 'invalid-feedback',
-                    errorPlacement: function (error, element) {
-                        if (element.parent('.input-group').length) {
-                            error.insertAfter(element.parent());
-                        } else { error.insertAfter(element); }
-                    }
-                });
-                $('#dfService').validate({
-                    rules: {
-                        txtServiceName: {
-                            minlength: 3,
-                            maxlength: 150,
-                            required: true
-                        }
-                    },
-                    messages: {
-                        txtName: "Neveljavno ime storitve"
-                    },
-                    highlight: function (element) {
-                        $(element).closest('.form-control').addClass('is-invalid');
-                    },
-                    unhighlight: function (element) {
-                        $(element).closest('.form-control').removeClass('is-invalid');
-                    },
-                    errorElement: 'span',
-                    errorClass: 'invalid-feedback',
-                    errorPlacement: function (error, element) {
-                        if (element.parent('.input-group').length) {
-                            error.insertAfter(element.parent());
-                        } else { error.insertAfter(element); }
-                    }
-                });
+            $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+                console.info(e.target.id);
+                if (e.target.id == "employee-tab" && employeeLoaded == false) {GetEmployeesTable(); employeeLoaded = true; }
+                if (e.target.id == "location-tab" && locationLoaded == false) {GetLocationsTable(); locationLoaded = true; }
+                if (e.target.id == "services-tab" && servicesLoaded == false) {GetServicesTable(); servicesLoaded = true; }
+                if (e.target.id == "tags-tab" && tagsLoaded == false) {GetTagsTable(); tagsLoaded = true; }
             });
+                
+            $('#dfEmployee').validate({
+                rules: {
+                    txtFirstName: {
+                        minlength: 3,
+                        maxlength: 50,
+                        required: true
+                    }
+                },
+                messages: {
+                    txtFirstName: "Invalid name!"
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-control').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-control').removeClass('is-invalid');
+                },
+                errorElement: 'span',
+                errorClass: 'invalid-feedback',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.insertAfter(element.parent());
+                    } else { error.insertAfter(element); }
+                }
+            });
+            $('#dfLocation').validate({
+                rules: {
+                    txtName: {
+                        minlength: 3,
+                        maxlength: 50,
+                        required: true
+                    },
+                        txtTel: {
+                        minlength: 9,
+                        maxlength: 15
+                    }
+                },
+                messages: {
+                    txtName: "Neveljavno ime"
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-control').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-control').removeClass('is-invalid');
+                },
+                errorElement: 'span',
+                errorClass: 'invalid-feedback',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.insertAfter(element.parent());
+                    } else { error.insertAfter(element); }
+                }
+            });
+            $('#dfTag').validate({
+                rules: {
+                    txtTag: {
+                        minlength: 3,
+                        maxlength: 20,
+                        required: true
+                    }
+                },
+                messages: {
+                    txtName: "Neveljavna oznaka"
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-control').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-control').removeClass('is-invalid');
+                },
+                errorElement: 'span',
+                errorClass: 'invalid-feedback',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.insertAfter(element.parent());
+                    } else { error.insertAfter(element); }
+                }
+            });
+        });
 
         //#region Employee
          var GetEmployeesTable = function () {
@@ -760,7 +673,7 @@
                     {
                         data: null, 'orderable': false,
                         render: function (data, type, row, meta) {
-                            return '<a class="btn btn-default" onclick="showLocationDetail(' + row.id + ');">Urejanje</a>';
+                            return '<a class="btn btn-default" onclick="showLocationDetail(' + row.id + ');">Urejanje</a>&nbsp;<a class="btn btn-default" href="@Url.Content("~/location/")' + row.id + '">Prikaži</a>';
                         }
                     }
                 ]
@@ -1064,172 +977,7 @@
         }
         //#endregion
 
-        //#region Service
-         var GetServicesTable = function () {
 
-            var table = $('#dtServices').DataTable({
-                destroy: true,
-                responsive: true,
-                'order': [[0, 'desc']],
-                //                dom: '<""top"">rt<""bottom""ilp><""container"">',
-                searching: false,
-                'processing': true,
-                'serverSide': true,
-                'ajax': {
-                    'url': apiURL + "/api/servicestable",
-                    type: 'POST', dataType: 'json',
-                    data: function (dtParms) {
-                        // I send it as a string to reduce the chance of an error before it reaches the server.
-                        return JSON.stringify(dtParms);
-                    },
-                    'contentType': 'application/json; charset=utf-8',
-                    "crossDomain": true,
-                    "beforeSend": function (xhr, settings) {
-                        getAPIToken().then((result) => {
-                            $.ajax($.extend(settings, {
-                                headers: { "Authorization": "Bearer " +result.AccessToken },
-                                beforeSend: $.noop
-                            }));
-                        });
-                        return false;
-                    }
-
-                },
-                'columns': [
-                    { 'data': 'name' },
-                    {
-                        data: null, 'orderable': false,
-                        render: function (data, type, row, meta) {
-                            return '<a class="btn btn-default" onclick="showServiceDetail(' + row.id + ');">Urejanje</a>';
-                        }
-                    }
-                ]
-            });
-
-        }
-
-        function CancelServiceModal() {
-            $('#dfService').validate().resetForm();
-            //remove higlight ( reset form does not do this!)
-            $("#dfService input, #dfService label").each(function (key, value) {
-                $(this).closest('.form-group').removeClass('has-error');
-            });
-        }
-
-
-        function cmdAddService_Click() {
-            setServiceForm(0);
-            $('#cmdDeleteService').addClass('invisible')
-            $("#myServiceModal").modal("show");
-            $("#cmdSaveService").off('click').click(function (evt) {
-                if (SaveService(0) != false) {
-                    $("#myServiceModal").modal("hide");
-                    GetServicesTable();
-                }
-            });
-
-
-        }
-
-        function setServiceForm(p_ID) {
-            if (p_ID == 0) {
-                //clear form
-                $("#txtServiceName").val('');
-
-            }
-            else {
-                //fill form
-                getAPIToken().then((result) => {
-                $.ajax({
-                    type: "get",
-                    url: apiURL+"/api/service/"+p_ID,
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                    dataType: "json",
-                    async: true,
-                    success: function (result) {
-                        $("#txtServiceName").val(result.name);
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Error getting data:" + error);
-                    }
-                });
-                });
-            }
-
-        }
-
-        function showServiceDetail(p_ID) {
-            setServiceForm(p_ID);
-            $('#cmdDeleteService').removeClass('invisible');
-            $("#myServiceModal").modal("show");
-            $("#cmdSaveService").off('click').click(function (evt) {
-                if (SaveService(p_ID) != false) { $("#myServiceModal").modal("hide"); }
-            });
-            $("#cmdDeleteService").off('click').click(function (evt) {
-                if (DeleteService(p_ID) != false) { $("#myServiceModal").modal("hide"); }
-            });
-
-        }
-
-        function DeleteService(p_ID) {
-
-            Swal.fire({
-                title: 'Zbrišem storitev?',
-                showDenyButton: true,
-                confirmButtonText: 'Da',
-                denyButtonText: 'Ne',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    getAPIToken().then((result) => {
-                    $.ajax({
-                        type: "DELETE",
-                        url: apiURL + "/api/service/" + p_ID,
-                        contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                        dataType: "json",
-                        success: function (result) {
-                            if (result == "OK") { toastr.success("Zbrisano"); GetServicesTable(); return true; }
-                            else { toastr.error("Napaka:" + result); return false; }
-                        },
-                        error: function (xhr, status, error) {
-                            toastr.error("Napaka:" + error.toString());
-                            return false;
-                        }
-                    });
-                    });
-
-                } else { return false; }
-
-            });
-        }
-
-        function SaveService(p_ID) {
-            if ($('#dfService').valid()) {
-                var service={};
-                service.id = p_ID;
-                service.Name = $('#txtServiceName').val();
-                getAPIToken().then((result) => {
-                $.ajax({
-                    type: "post",
-                    data: JSON.stringify(service),
-                    url: apiURL+"/api/service",
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                         if (result == "OK") { toastr.success("Shranjeno");GetServicesTable(); return true; }
-                        else { toastr.error("Napaka:"+result); return false; }
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Napaka:" + error.toString());
-                        return false;
-                    }
-                });
-                });
-            } else { return false; }
-        }
-        //#endregion
     </script>
 }
 

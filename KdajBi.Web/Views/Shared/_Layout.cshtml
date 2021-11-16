@@ -26,7 +26,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="stylesheet" href="~/css/_all-skins.min.css" />
     @RenderSection("styles", required: false)
     <link rel="stylesheet" href="~/css/site.css" />
-
+    <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 </head>
 <body class="skin-blue sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed text-sm">
     <div class="wrapper">
@@ -60,8 +60,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
                     <li class="nav-item dropdown user user-menu">
                         <a href="#" class="nav-link" data-toggle="dropdown" aria-expanded="false">
-                            <img src="@User.FindFirst("picture").Value" class="user-image" alt="User Image">
-                            <span class="hidden-xs">@UserManager.GetUserName(User)</span>
+                            <img src="@User.FindFirst("picture").Value" class="user-image" alt="">
+                            <span class="hidden-xs">@UserManager.GetUserName(User).Replace("@gmail.com","")</span>
                             @if (User.HasClaim("Nadzornik", bool.TrueString))
                             {
                                 <span class="right badge badge-danger" style="position: absolute;right: 15px;top: 22px;">Nadzornik</span>
@@ -70,10 +70,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <ul class="dropdown-menu">
                             <!-- User image -->
                             <li class="user-header">
-                                <img src="@User.FindFirst("picture").Value" class="img-circle" alt="User Image">
+                                <img src="@User.FindFirst("picture").Value" class="img-circle" alt="">
 
                                 <p>
-                                    @UserManager.GetUserName(User)
+                                    @UserManager.GetUserName(User).Replace("@gmail.com","")
                                     <small>Member since Nov. 2012</small>
                                 </p>
                             </li>
@@ -82,15 +82,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 <div class="row">
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <div class="col-4 text-center">
-                                            <a href="~/companies/mycompany">Podjetje</a>
-                                        </div>
-                                        <div class="col-4 text-center">
-                                            <a id="linkLocations" href="#" onclick="showLocations()">Saloni</a>
-                                        </div>
-                                        <div class="col-4 text-center">
-                                            <a id="linkSettings" href="~/settings" >Nastavitve</a>
-                                        </div>
+                                        @if (User.HasClaim("Nadzornik", bool.TrueString))
+                                        {
+                                            <div class="col-4 text-center">
+                                                <a href="~/companies/mycompany">Podjetje</a>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <a id="linkLocations" href="#" onclick="showLocations()">Saloni</a>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <a id="linkSettings" href="~/settings">Nastavitve</a>
+                                            </div>
+                                        }
                                     }
                                 </div>
                                 <!-- /.row -->
@@ -99,20 +102,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             <li class="user-footer">
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <a href="#" class="btn btn-default btn-flat">Profil</a>
+                                        <a href="#" class="btn btn-default btn-flat btn-block">Profil</a>
                                     </div>
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <div class="col-md-4">
-                                            &nbsp;
-                                            @if (User.HasClaim("Nadzornik", bool.TrueString))
-                                            {<a href="~/Account/flipNadzornik" class="btn btn-danger btn-flat">Nadzornik</a> }
-                                            else
-                                            { <a href="~/Account/flipNadzornik" class="btn btn-default btn-flat">Nadzornik</a>}
-                                        </div>
+                                <div class="col-md-4">
+                                    @if (User.HasClaim("Nadzornik", bool.TrueString))
+                                    {<a href="#" onclick="flipNadzornik()" class="btn btn-danger btn-flat btn-block">
+                                            <i class="fa fa-lock" aria-hidden="true"></i>
+                                        </a> }
+                                    else
+                                    { <a href="#" onclick="flipNadzornik()" class="btn btn-default btn-flat btn-block">
+                                            <i class="fa fa-unlock-alt" aria-hidden="true"></i>
+                                        </a>}
+                                </div>
                                     }
                                     <div class="float-right col-md-4">
-                                        <a href="~/Account/Logout" class="btn btn-default btn-flat">Odjava</a>
+                                        <a href="~/Account/Logout" class="btn btn-default btn-flat btn-block">Odjava</a>
                                     </div>
                                 </div>
                             </li>
@@ -221,6 +227,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 <p>
                                     Obveščanje strank
                                 </p>
+                                <i class="fas fa-chevron-down right"></i>
                             </a>
                             <ul class="nav nav-treeview" style="display: block;">
                                 <li class="nav-item">
@@ -244,7 +251,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
                             </ul>
                         </li>
-                        <li class="nav-item has-treeview menu-open">
+                        @*<li class="nav-item has-treeview menu-open">
                             <a href="#" class="nav-link active">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>
@@ -268,7 +275,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
                             </ul>
-                        </li>
+                        </li>*@
 
 
 
@@ -315,9 +322,39 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="~/js/adminlte.min.js"></script>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+
     <script>
         function showLocations() {
-            window.location = @Url.Content("~/location/") + $('#cboLocations').val();
+            window.location = "@Url.Content("~/location/")" + $('#cboLocations').val();
+        }
+        function flipNadzornik() {
+            @if (User.HasClaim("Nadzornik", bool.TrueString))
+            { <text>window.location = "@Url.Content("~/Account/flipNadzornik")";</text> }
+            else
+            {
+            <text>
+            Swal.fire({
+            html: `<div class="form-group">
+                Geslo:
+                <p class="">
+                    <input id="secret" class="form-control" type="text" placeholder="geslo">
+                </p>
+            </div>`,
+            confirmButtonText: 'Confirm',
+            showCancelButton: true,
+            preConfirm: function () {
+                return new Promise((resolve, reject) => {
+                    resolve($('#secret').val());
+                });
+            }
+            }).then((data) => {
+                if (data.isConfirmed) { window.location = "@Url.Content("~/Account/flipNadzornik/?secret=")"+data.value;  }
+            });
+
+            </text>
+            }
+
         }
     </script>
     @RenderSection("Scripts", required: false)

@@ -60,7 +60,6 @@ namespace KdajBi.Web.Services
                     {
                         //refresh token if expired
                         myToken[email] = RefreshToken(email);
-
                     }
 
                 }
@@ -94,14 +93,16 @@ namespace KdajBi.Web.Services
 
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    if (jsonstringJWT.StartsWith("\"Expired"))
-                    { myToken[email] = RequestToken(email); }
-                    else
-                    {
-                        _logger.LogWarning("RefreshToken BadRequest not expired:"+ jsonstringJWT);
-                        fals.AccessToken = "RefreshToken BadRequest not expired";
-                        myToken[email] = fals;
-                    }
+                    myToken[email] = RequestToken(email);
+
+                    //if (jsonstringJWT.StartsWith("\"Expired"))
+                    //{}
+                    //else
+                    //{
+                    //    _logger.LogWarning("RefreshToken BadRequest not expired:"+ jsonstringJWT);
+                    //    fals.AccessToken = "RefreshToken BadRequest not expired";
+                    //    myToken[email] = fals;
+                    //}
                 }
 
             }

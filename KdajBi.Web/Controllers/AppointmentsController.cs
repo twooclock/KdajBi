@@ -135,6 +135,7 @@ namespace KdajBi.Web.Controllers
                         }
                         catch (Exception ex)
                         {
+                            //TODO:expired google credentials
                             _logger.LogError(ex, "Error /home/");
                             throw;
                         }

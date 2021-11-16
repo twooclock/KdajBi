@@ -24,14 +24,14 @@ namespace KdajBi.API.Controllers
         }
 
 
-        [HttpPost("/api/Servicestable")]
-        public JsonResult ServicesTable([FromBody] DataTableAjaxPostModel param)
+        [HttpPost("/api/Servicestable/{locationid}")]
+        public JsonResult ServicesTable(long locationid, [FromBody] DataTableAjaxPostModel param)
         {
             int recordsTotal = 0;
             //var user = await _userManager.GetUserAsync(HttpContext.User);
 
             var v = from a in _context.Services select a;
-            v = v.Where(c => c.CompanyId == _CurrentUserCompanyID());
+            v = v.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId== locationid);
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
             {
@@ -45,13 +45,13 @@ namespace KdajBi.API.Controllers
         }
 
 
-        [HttpGet("/api/Services")]
-        public async Task<ActionResult<List<Service>>> GetServices()
+        [HttpGet("/api/Services/{locationid}")]
+        public async Task<ActionResult<List<Service>>> GetServices(long locationid)
         {
             List<Service> Service;
             try
             {
-                Service = _context.Services.Where(c => c.CompanyId == _CurrentUserCompanyID()).OrderBy(t=>t.Name).ToList(); ;
+                Service = _context.Services.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.SortPosition ==locationid).OrderBy(t=>t.Name).ThenBy(t=>t.Name).ToList(); ;
             }
             catch (Exception ex)
             {
@@ -134,7 +134,9 @@ namespace KdajBi.API.Controllers
 
                 Serviceindb.UpdatedUserID = _CurrentUserID();
                 Serviceindb.UpdatedDate = DateTime.Now;
-                Service.CompanyId = _CurrentUserCompanyID();
+                Serviceindb.CompanyId = _CurrentUserCompanyID();
+                Serviceindb.LocationId = Service.LocationId;
+                Serviceindb.SortPosition = Service.SortPosition;
                 Serviceindb.Name = Service.Name;
                 Serviceindb.Minutes = Service.Minutes;
                 Serviceindb.Active = Service.Active;

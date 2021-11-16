@@ -15,12 +15,15 @@ namespace KdajBi.Core.Models
         [ForeignKey("Company"), Required]
         public long CompanyId { get; set; }
 
+        [ForeignKey("Location"), Required]
+        public long LocationId { get; set; }
 
         [MinLength(3), MaxLength(150), Required]
         public string Name { get; set; }
 
         //approximate service duration in minutes
-        public int Minutes { get; set; } 
+        public int Minutes { get; set; }
+        public int SortPosition { get; set; }
 
     }
 }

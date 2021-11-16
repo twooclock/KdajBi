@@ -6,7 +6,6 @@
 
 @section styles{
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
-    <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
     <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
     <link href="~/plugins/bootstrap-tokenfield/css/tokenfield-typeahead.min.css" rel="stylesheet" />
     <link href="~/plugins/bootstrap-tokenfield/css/bootstrap-tokenfield.min.css" rel="stylesheet" />
@@ -196,14 +195,12 @@
 
 @section scripts{
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
-    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
     <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
     <!-- cookies needed for changing location -->
     <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
     <script src="~/plugins/toastr/toastr.min.js"></script>
     <script src="~/plugins/bootstrap-tokenfield/bootstrap-tokenfield.min.js"></script>
-    <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
 
 
@@ -591,7 +588,7 @@
                             },
                             customButtons: {
                                 fullscreen: {
-                                    text: '[]',
+                                    text:'¤',
                                     click: function () {
                                         if (isFullScreen) { exitFullScreen(); } else { goFullScreen('fs'); }
 
@@ -599,6 +596,9 @@
                                 }
                             },
                             views: {
+                                resourceTimeGridDay: {
+                                    titleFormat: function(date) { return dayjs(date.start.marker).format("dddd, ll"); }
+                                },
                                 resourceTimeGridTwoDay: {
                                     type: 'resourceTimeGrid',
                                     duration: { days: 3 },
@@ -1057,7 +1057,7 @@
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
-                    url: apiURL + "/api/services/",
+                    url: apiURL + "/api/services/@Html.Raw(Model.Location.Id)/",
                     contentType: "application/json; charset=utf-8",
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",

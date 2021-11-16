@@ -1968,7 +1968,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Services\" />
     <Folder Include="Views\Tags\" />
     <Folder Include="wwwroot\img\icons\" />
   </ItemGroup>
