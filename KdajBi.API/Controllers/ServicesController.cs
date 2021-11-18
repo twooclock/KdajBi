@@ -51,7 +51,7 @@ namespace KdajBi.API.Controllers
             List<Service> Service;
             try
             {
-                Service = _context.Services.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.SortPosition ==locationid).OrderBy(t=>t.Name).ThenBy(t=>t.Name).ToList(); ;
+                Service = _context.Services.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId ==locationid).OrderBy(t=>t.Name).ToList(); ;
             }
             catch (Exception ex)
             {

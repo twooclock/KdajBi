@@ -53,8 +53,9 @@ namespace KdajBi.Web.Controllers
                                     using (GoogleService service = new GoogleService(gt))
                                     {
                                         var cals = service.getCalendars().Items;
-                                        foreach (var item in myVM.Location.Workplaces)
+                                        for (int i = myVM.Location.Workplaces.Count - 1; i >= 0; i--)
                                         {
+                                            var item = myVM.Location.Workplaces.ElementAt(i);
                                             if (item.GoogleCalendarID != null)
                                             {
                                                 myVM.GoogleCalendars.Add(item.GoogleCalendarID, item.Name);
@@ -91,7 +92,6 @@ namespace KdajBi.Web.Controllers
                                                             {
                                                                 newEvent.title = client;
                                                             }
-
                                                         }
                                                         if (newEvent.extendedProps.ContainsKey("notes"))
                                                         {
@@ -111,14 +111,16 @@ namespace KdajBi.Web.Controllers
                                                 //get schedule bgEvents
                                                 setBGEvents(myVM, item.Id, scheduletype);
                                                 myVM.AddcalEvents(myVM.calBGEvents);
-
                                             }
+                                            else { 
+                                                myVM.Location.Workplaces.Remove(item); }
                                             //get calendar color
                                             foreach (var cal in cals)
                                             {
                                                 if (cal.Id == item.GoogleCalendarID) { item.GoogleCalendarColor = cal.BackgroundColor; }
                                             }
                                         }
+                                        
                                     }
 
                                     myVM.AddcalEvents(Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray()));

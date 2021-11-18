@@ -56,35 +56,35 @@
                                         <form class="form-horizontal">
                                             <div class="form-group">
                                                 <label for="inputName" class="control-label">Naziv</label>
-                                                <input type="email" class="form-control col-sm-10" id="inputName" placeholder="Naziv podjetja" value="@Html.Raw(@Model.Company.Name)">
+                                                <input type="text" class="form-control col-sm-10" id="txtCName" placeholder="Naziv podjetja" value="@Html.Raw(@Model.Company.Name)">
                                             </div>
                                             <div class="form-group">
                                                 <label for="inputName" class="control-label">Ulica</label>
-                                                <input class="form-control col-sm-10" id="inputTel" placeholder="Ulica">
+                                                <input class="form-control col-sm-10" id="txtCStreet" placeholder="Ulica">
                                             </div>
                                             <div class="form-group">
                                                 <label for="inputName" class="control-label">Kraj</label>
-                                                <input class="form-control col-sm-10" id="inputTel" placeholder="Kraj">
+                                                <input class="form-control col-sm-10" id="txtCTown" placeholder="Kraj">
                                             </div>
                                             <div class="form-row">
                                                 <div class="form-group col-sm-3">
                                                     <label for="inputName" class="control-label">Pošta</label>
-                                                    <input class="form-control" id="inputTel" placeholder="Pošta">
+                                                    <input class="form-control" id="txtCZip" placeholder="Pošta">
                                                 </div>
                                                 <div class="form-group col-sm-5">
                                                     <label for="inputName" class="control-label">Kraj</label>
-                                                    <input class="form-control" id="inputTel" placeholder="Kraj">
+                                                    <input class="form-control" id="txtCZipTown" placeholder="Kraj">
                                                 </div>
                                             </div>
                                             <div class="form-row">
                                                 <div class="form-group col-sm-3">
                                                     <label for="inputName" class="control-label">Davčna številka</label>
-                                                    <input class="form-control col-sm-10" id="inputTel" placeholder="SI12345678">
+                                                    <input class="form-control col-sm-10" id="txtCTaxID" placeholder="SI12345678">
                                                 </div>
                                                 <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
                                                     <div class="form-check" style="margin-bottom: 1rem;">
-                                                        <input type="checkbox" class="form-check-input" id="VAT">
-                                                        <label class="form-check-label" for="exampleCheck2">Davčni zavezanec</label>
+                                                        <input type="checkbox" class="form-check-input" id="cbIsVAT">
+                                                        <label class="form-check-label" for="cbIsVAT">Davčni zavezanec</label>
                                                     </div>
                                                 </div>
                                             </div>
@@ -232,7 +232,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="myModalLabel">Zaposleni</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelEmployeeModal();"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="dfEmployee" class="dataform" name="dfEmployee">
@@ -254,9 +254,9 @@
                         </label>
                         <input type="text" id="txtEmail" name="txtEmail" class="form-control" />
                     </div>
-                    <div class="form-group">
-                        <label for="inputName" class="control-label">Davčna številka</label>
-                        <input class="form-control col-sm-10" id="inputTel" placeholder="12345678">
+                    <div class="form-group" style="display:none">
+                        <label for="txtETaxID">Davčna številka</label>
+                        <input type="text" id="txtETaxID" name="txtETaxID" class="form-control" placeholder="12345678">
                     </div>
                     <div class="form-group">
                         <label class="custom-control custom-checkbox">
@@ -285,7 +285,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="myLocationModalLabel">Salon</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelLocationModal();"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="dfLocation" name="dfLocation" class="dataform">
@@ -329,7 +329,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="myModalLabel">Oznaka</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelTagModal();"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" ><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="dfTag" class="dataform" name="dfTag">
@@ -386,10 +386,12 @@
                         minlength: 3,
                         maxlength: 50,
                         required: true
-                    }
+                    },
+                    txtEmail: {required: true, maxlength: 255}
                 },
                 messages: {
-                    txtFirstName: "Invalid name!"
+                    txtFirstName: "Invalid name!",
+                    txtEmail: "Invalid email!"
                 },
                 highlight: function (element) {
                     $(element).closest('.form-control').addClass('is-invalid');
@@ -459,6 +461,16 @@
                     } else { error.insertAfter(element); }
                 }
             });
+
+            $('#myEmployeeModal').on('hidden.bs.modal', function (e) {
+                CancelEmployeeModal();
+            });
+            $('#myLocationModal').on('hidden.bs.modal', function (e) {
+                CancelLocationModal();
+            });
+            $('#myTagModal').on('hidden.bs.modal', function (e) {
+                CancelTagModal();
+            });
         });
 
         //#region Employee
@@ -510,8 +522,8 @@
         function CancelEmployeeModal() {
             $('#dfEmployee').validate().resetForm();
             //remove higlight ( reset form does not do this!)
-            $("#dfEmployee input, #dfEmployee label").each(function (key, value) {
-                $(this).closest('.form-group').removeClass('has-error');
+            $("#dfEmployee input").each(function (key, value) {
+                $(this).closest('.form-control').removeClass('is-invalid');
             });
         }
 
@@ -536,6 +548,7 @@
                 $("#txtEmail").val('');
                 $("#txtFirstName").val('');
                 $("#txtLastName").val('');
+                $("#txtETaxID").val('');
                 $("#cbActive").prop('checked', true);
             }
             else {
@@ -615,22 +628,22 @@
                 user.UserName = $('#txtEmail').val();
                 user.EMail = $('#txtEmail').val();
                 getAPIToken().then((result) => {
-                $.ajax({
-                    type: "post",
-                    data: JSON.stringify(user),
-                    url: apiURL+"/api/myappuser",
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                         if (result == "OK") { toastr.success("Shranjeno"); GetEmployeesTable(); return true; }
-                        else { toastr.error("Napaka:" + result); return false; }
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Napaka:" + error.toString());
-                        return false;
-                    }
-                });
+                    $.ajax({
+                        type: "post",
+                        data: JSON.stringify(user),
+                        url: apiURL+"/api/myappuser",
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "json",
+                        success: function (result) {
+                             if (result == "OK") { toastr.success("Shranjeno"); GetEmployeesTable(); return true; }
+                            else { toastr.error("Napaka:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka:" + error.toString());
+                            return false;
+                        }
+                    });
                 });
             } else { return false; }
         }
@@ -684,8 +697,8 @@
          function CancelLocationModal() {
             $('#dfLocation').validate().resetForm();
             //remove higlight ( reset form does not do this!)
-            $("#dfLocation input, #dfLocation label").each(function (key, value) {
-                $(this).closest('.form-group').removeClass('has-error');
+            $("#dfLocation input").each(function (key, value) {
+                $(this).closest('.form-control').removeClass('is-invalid');
             });
         }
 
@@ -857,8 +870,8 @@
         function CancelTagModal() {
             $('#dfTag').validate().resetForm();
             //remove higlight ( reset form does not do this!)
-            $("#dfTag input, #dfTag label").each(function (key, value) {
-                $(this).closest('.form-group').removeClass('has-error');
+            $("#dfTag input").each(function (key, value) {
+                $(this).closest('.form-control').removeClass('is-invalid');
             });
         }
 

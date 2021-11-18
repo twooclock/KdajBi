@@ -66,18 +66,24 @@ namespace KdajBi.Web.Controllers
             ExternalLoginInfo info = await signInManager.GetExternalLoginInfoAsync();
             if (info == null)
                 return RedirectToAction(nameof(Login));
-
             AppUser appUser = await userManager.FindByNameAsync(info.Principal.FindFirst(ClaimTypes.Email).Value);
 
             var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false);
-            canContinue = result.Succeeded;
-            if (appUser != null && result.Succeeded == false)
+            if (result != null)
             {
-                var identResult = await userManager.AddLoginAsync(appUser, info);
-                canContinue = identResult.Succeeded;
+                canContinue = result.Succeeded;
+                if (appUser != null && result.Succeeded == false)
+                {
+                    var identResult = await userManager.AddLoginAsync(appUser, info);
+                    if (identResult != null) 
+                    { canContinue = identResult.Succeeded;  }
+                    else
+                    { canContinue = false;  }
+                }
             }
+            else { canContinue = false;  }
 
-            if (canContinue)
+            if (canContinue==true)
             {
                 //returning user
                 var claimsPrincipal = await signInManager.CreateUserPrincipalAsync(appUser);
@@ -127,7 +133,7 @@ namespace KdajBi.Web.Controllers
                     Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
                     UserName = info.Principal.FindFirst(ClaimTypes.Email).Value,
                     FirstName = info.Principal.FindFirst(ClaimTypes.GivenName).Value,
-                    LastName = info.Principal.FindFirst(ClaimTypes.Surname).Value
+                    LastName = (info.Principal.FindFirst(ClaimTypes.Surname) != null) ? info.Principal.FindFirst(ClaimTypes.Surname).Value : ""
                 };
 
 

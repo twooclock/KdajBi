@@ -194,14 +194,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             @if (User.HasClaim("Nadzornik", bool.TrueString))
                             {
                                 @await Component.InvokeAsync("LocationsMenu", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
-                                <li class="nav-item  ">
-                                    <a href="@Url.Content("~/services/")" class="nav-link ">
-                                        <i class="nav-icon fas fa-address-card"></i>
-                                        <p>
-                                            Storitve
-                                        </p>
-                                    </a>
-                                </li>
                             }
                         }
 
@@ -213,6 +205,20 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </p>
                             </a>
                         </li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            @if (User.HasClaim("Nadzornik", bool.TrueString))
+                            {
+                                <li class="nav-item  ">
+                                    <a href="@Url.Content("~/clients/")" class="nav-link ">
+                                        <i class="nav-icon fas fa-address-card"></i>
+                                        <p>
+                                            Stranke (seznam)
+                                        </p>
+                                    </a>
+                                </li>
+                            }
+                        }
                         <li class="nav-item  ">
                             <a href="@Url.Content("~/clients/Index3/")" class="nav-link ">
                                 <i class="nav-icon fas fa-address-card"></i>
@@ -338,10 +344,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
             html: `<div class="form-group">
                 Geslo:
                 <p class="">
-                    <input id="secret" class="form-control" type="text" placeholder="geslo">
+                    <input id="secret" class="form-control" type="password" placeholder="geslo">
                 </p>
             </div>`,
-            confirmButtonText: 'Confirm',
+            confirmButtonText: 'Potrdi',
+            cancelButtonText: 'Prekliči',
             showCancelButton: true,
             preConfirm: function () {
                 return new Promise((resolve, reject) => {

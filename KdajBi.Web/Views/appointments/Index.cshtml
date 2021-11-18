@@ -85,6 +85,10 @@
         .fc-header-toolbar {
             padding: 0px !important;
         }
+
+        .content-wrapper {
+            background: white;
+        }
     </style>
 }
 
@@ -99,7 +103,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title" id="myModalLabel">Naročilo</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"><span aria-hidden="true">&times;</span></button>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body ui-front">
                         <form id="formEvent" class="formEvent" name="formEvent">
@@ -151,12 +155,6 @@
                                     </label>
                                     <div class="input-group  p-0">
                                         <input type="text" id="txtEndTime" name="txtEndTime" class="form-control " />
-                                    </div>
-                                    <div class="form-group mb-1" style="display:none">
-                                        <label for="txtDebug">
-                                            Debug:
-                                        </label>
-                                        <textarea rows="10" id="txtDebug" name="txtDebug" class="form-control"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -510,53 +508,53 @@
         }
 
         var isFullScreen = false;
-            function goFullScreen(p_ElementId) {
+        function goFullScreen(p_ElementId) {
 
-                var elem = document.getElementById(p_ElementId);
+            var elem = document.getElementById(p_ElementId);
 
-                if (elem.requestFullscreen) { elem.requestFullscreen(); }
-                else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
-                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-                else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-                isFullScreen = true;
-            }
-            function exitFullScreen(){
+            if (elem.requestFullscreen) { elem.requestFullscreen(); }
+            else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            isFullScreen = true;
+        }
+        function exitFullScreen() {
 
-                if(document.exitFullscreen){ document.exitFullscreen(); }
-                else if(document.mozCancelFullScreen){ document.mozCancelFullScreen(); }
-                else if(document.webkitExitFullscreen){ document.webkitExitFullscreen();}
-                else if(document.msExitFullscreen){ document.msExitFullscreen();}
-                isFullScreen = false;
-            }
+            if (document.exitFullscreen) { document.exitFullscreen(); }
+            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            isFullScreen = false;
+        }
 
-        $.validator.addMethod( "time", function( value, element ) {
-                return  /^([01]\d|2[0-3]|[0-9])(:[0-5]\d){1,2}$/.test( value );
-            }, "Vnesite veljaven čas npr. 8:30 ali 17:45" );
+        $.validator.addMethod("time", function (value, element) {
+            return /^([01]\d|2[0-3]|[0-9])(:[0-5]\d){1,2}$/.test(value);
+        }, "Vnesite veljaven čas npr. 8:30 ali 17:45");
 
         $.validator.addMethod("greaterThan", function (value, element, param) {
-                var otherElement = dayjs(fp.selectedDates[0]).format("l")+" " + value;
-                return (dayjs(otherElement,"DD.MM.YYYY HH:mm").toDate()  > new Date(fp.selectedDates[0]));
-            }, "Konec mora biti večji od začetka.");
+            var otherElement = dayjs(fp.selectedDates[0]).format("l") + " " + value;
+            return (dayjs(otherElement, "DD.MM.YYYY HH:mm").toDate() > new Date(fp.selectedDates[0]));
+        }, "Konec mora biti večji od začetka.");
 
             function getScrollTime()
             {
                 return "13:30:00";
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
-                gapi.load('client:auth2', function () {
-                    gapi.client.load(DISCOVERY_DOCS, 'v3').then(function () {
-                        gapi.auth.setToken({ access_token: gooToken.access_token })
-                });
-                });
+        async function loadLocale(lang) {
+            return new Promise(function (resolve, reject) {
+                console.info("loadLocale:", lang);
 
-                var calendarEl = document.getElementById('calendar');
+                if (lang != "en") {
+                    loadScript("/lib/fullcalendar-scheduler-5.9.0/lib/locales/" + navigator.language.slice(0, 2) + ".js").then(resolve());
+                } else { resolve(); }
+            });
+        }
 
-
-
-                loadScript("/lib/fullcalendar-scheduler-5.9.0/lib/locales/" + navigator.language.slice(0, 2) + ".js")
+        function loadCalendar() {
+                loadLocale(navigator.language.slice(0, 2))
                     .then(function () {
-                        calendar = new FullCalendar.Calendar(calendarEl, {
+                        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                             locale: navigator.language.slice(0, 2),
                             eventDisplay: 'block',
                             themeSystem: 'bootstrap',
@@ -671,109 +669,121 @@
 
                             });
                         calendar.render();
-                //calendar.setOption("height", "1450px");
+                        //calendar.setOption("height", "1450px");
 
-            });
+                    });
+        }
 
- //fill client search
-                var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
-
-            $("#txtClientsearch").autocomplete({
-                minlength: 3,
-                delay: 200,
-                source: myClients,
-                select: function (event, ui) {
-                    hideKeyboard();
-                    $("#txtClientsearch").val(ui.item.label);
-                    $("#txtClientMobile").val(ui.item.mobile);
-                    SelectedClientID = ui.item.value;
-                    $("#txtClientsearch").blur();
-                    event.preventDefault();
-                    return false;
-                },
-                response: function (event, ui) {
-                    if (ui.content.length === 0) {
-                        SelectedClientID = 0;
-                    }
-                },
-                focus: function (event, ui) { event.preventDefault(); return false; }
-            });
-
-            // load locale and Get flatpicker localized instance
-                loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
-                            loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
-                .then(function () {
-                dayjs.locale(navigator.language.slice(0, 2));
-                loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
-                    .then(function () {
-                    fp = $(".flatpickr").flatpickr({
-                        altInput: true,
-                                //defaultDate: new Date(),
-                                minDate: new Date(),
-                                locale: dayjs.locale(),
-                                plugins: [new confirmDatePlugin({ showAlways: true })],
-                                enableTime: true, //minTime: "8:00", maxTime: "20:00",
-                                dateFormat: "llll",
-                                clickOpens: true, allowInput: false, wrap: true,
-                                //allowInvalidPreload: true,
-                                altFormat: dayjs.localeData().longDateFormat('llll'),
-                                //ariaDateFormat: dayjs.localeData().longDateFormat('llll'),
-                                dateFormat: dayjs.localeData().longDateFormat('llll'),
-                                parseDate: (datestr, format) => {
-                                    var fmt = format;
-                                    if (fmt == 'Y-m-d\\TH:i:S') { fmt = 'YYYY-MM-DD\\THH:mm'; }
-                                    if (fmt == 'H:i:S') { fmt = 'HH:mm'; }
-                                    var tekst = $('#txtDebug').val();
-                                    tekst = 'parseDate(' + datestr + ',' + fmt + ') return:' + formatDate(dayjs(datestr, fmt).toDate()) + '\n' + tekst;
-                                    $('#txtDebug').val(tekst);
-                                    return dayjs(datestr, fmt).toDate();
-                                },
-                                formatDate: (date, format, locale) => {
-                                    if (format != 'F j, Y') {
-                                        var tekst = $('#txtDebug').val();
-                                        tekst = 'formatDate:' + formatDate(date) + '-' + format + '-' + locale.weekdays.longhand[0] + '\n' + tekst;
-                                        $('#txtDebug').val(tekst)
-                                        return dayjs(date).format(format);
-                                    }
-                                }
-                            });
+            document.addEventListener('DOMContentLoaded', function() {
+                gapi.load('client:auth2', function () {
+                    gapi.client.load(DISCOVERY_DOCS, 'v3').then(function () {
+                        gapi.auth.setToken({ access_token: gooToken.access_token })
+                    });
                 });
+
+                // load locale and Get flatpicker localized instance
+                console.info("loading dayjs,fp:", navigator.language.slice(0, 2));
+                loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
+                    .then(function () {
+                        dayjs.locale(navigator.language.slice(0, 2));
+                        loadCalendar();
+                        loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
+                            .then(function () {
+                                fp = $(".flatpickr").flatpickr({
+                                    altInput: true,
+                                    //defaultDate: new Date(),
+                                    minDate: new Date(),
+                                    locale: dayjs.locale(),
+                                    plugins: [new confirmDatePlugin({ showAlways: true })],
+                                    enableTime: true, //minTime: "8:00", maxTime: "20:00",
+                                    dateFormat: "llll",
+                                    clickOpens: true, allowInput: false, wrap: true,
+                                    //allowInvalidPreload: true,
+                                    altFormat: dayjs.localeData().longDateFormat('llll'),
+                                    //ariaDateFormat: dayjs.localeData().longDateFormat('llll'),
+                                    dateFormat: dayjs.localeData().longDateFormat('llll'),
+                                    parseDate: (datestr, format) => {
+                                        var fmt = format;
+                                        if (fmt == 'Y-m-d\\TH:i:S') { fmt = 'YYYY-MM-DD\\THH:mm'; }
+                                        if (fmt == 'H:i:S') { fmt = 'HH:mm'; }
+                                        return dayjs(datestr, fmt).toDate();
+                                    },
+                                    formatDate: (date, format, locale) => {
+                                        if (format != 'F j, Y') {
+                                            return dayjs(date).format(format);
+                                        }
+                                    }
+                                });
+
+                            });
+                    });
+
+
+
+
+
+                //fill client search
+                var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
+                $("#txtClientsearch").autocomplete({
+                    minlength: 3,
+                    delay: 200,
+                    source: myClients,
+                    select: function (event, ui) {
+                        hideKeyboard();
+                        $("#txtClientsearch").val(ui.item.label);
+                        $("#txtClientMobile").val(ui.item.mobile);
+                        SelectedClientID = ui.item.value;
+                        $("#txtClientsearch").blur();
+                        event.preventDefault();
+                        return false;
+                    },
+                    response: function (event, ui) {
+                        if (ui.content.length === 0) {
+                            SelectedClientID = 0;
+                        }
+                    },
+                    focus: function (event, ui) { event.preventDefault(); return false; }
+                });
+
+
+
+                $('#formEvent').validate({
+                    rules: {
+                        txtEndTime: { time: true, greaterThan: "#txtStartTime" },
+                    },
+                    messages: {
+                        txtClientFirstName: "Neveljavno ime!"
+                    },
+                    highlight: function (element) {
+                        $(element).closest('.form-control').addClass('is-invalid');
+                    },
+                    unhighlight: function (element) {
+                        $(element).closest('.form-control').removeClass('is-invalid');
+                    },
+                    errorElement: 'span',
+                    errorClass: 'invalid-feedback',
+                    errorPlacement: function (error, element) {
+                        if (element.parent('.input-group').length) {
+                            error.insertAfter(element.parent());
+                        } else { error.insertAfter(element); }
+                    }
+                });
+
+                $("#myModal").on('shown.bs.modal', function(){
+                    $(this).find('#txtClientsearch').focus();
+                });
+                $('#myModal').on('hidden.bs.modal', function (e) {
+                    CancelModal();
+                });
+
+                initServicesTags();
+
+                $("#cboLocations").off('change').change(function (evt) {
+                    Cookies.set('DefaultLocation', $(this).val());
+                    window.location.reload(true);
+                });
+
             });
-
-            $('#formEvent').validate({
-                rules: {
-                    txtEndTime: { time: true, greaterThan: "#txtStartTime" },
-                },
-                messages: {
-                    txtClientFirstName: "Neveljavno ime!"
-                },
-                highlight: function (element) {
-                    $(element).closest('.form-control').addClass('is-invalid');
-                },
-                unhighlight: function (element) {
-                    $(element).closest('.form-control').removeClass('is-invalid');
-                },
-                errorElement: 'span',
-                errorClass: 'invalid-feedback',
-                errorPlacement: function (error, element) {
-                    if (element.parent('.input-group').length) {
-                        error.insertAfter(element.parent());
-                    } else { error.insertAfter(element); }
-                }
-            });
-
-            $("#myModal").on('shown.bs.modal', function(){
-                $(this).find('#txtClientsearch').focus();
-
-            });
-
-            initServicesTags();
-
-            $("#cboLocations").off('change').change(function (evt) {
-                Cookies.set('DefaultLocation', $(this).val());
-                window.location.reload(true);
-            });
-        });
 
 
 
@@ -783,12 +793,12 @@
             //#region Event modal
 
 
-            function CancelModal() {
+        function CancelModal() {
             $('#formEvent').validate().resetForm();
             //remove higlight ( reset form does not do this!)
-            $("#formEvent input, #formEvent label").each(function (key, value) {
-                $(this).closest('.form-group').removeClass('has-error');
-                });
+            $("#formEvent input").each(function (key, value) {
+                $(this).closest('.form-control').removeClass('is-invalid');
+            });
         }
 
 
@@ -895,40 +905,53 @@
 
         async function getClientID() {
                 return new Promise(function (resolve, reject) {
-                if (SelectedClientID == 0) {
-                    var client = {};
-                    client.id = 0;
-                    client.LocationId = parseInt($("#cboLocations").val());
-                    client.FirstName = "";
-                    client.LastName = $("#txtClientsearch").val();
-                    client.Mobile = $("#txtClientMobile").val();
-                    client.Email = "";
-                    client.AllowsSMS = true;
-                    client.AllowsEmail = true;
-                    client.Birthday = new Date($("#txtClientBirthday").val());
-                    client.Address = "";
-                    client.Zip = "";
-                    client.Notes = "";
-                    client.Active = true;
-                    client.Sex = "F";
-                    getAPIToken().then((result) => {
-                        $.ajax({
-                        type: "post",
-                            data: JSON.stringify(client),
-                            url: apiURL + "/api/client/",
-                            contentType: "application/json; charset=utf-8",
-                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                            dataType: "json",
-                            success: function (retval) {
-                if (retval.result == "OK") { toastr.info("Saved new client (" + retval.id.toString() + ")"); resolve(retval.id); }
-                else { reject(retval.result); return false; }
-            },
-                            error: function (xhr, status, error) {
-                reject("Error saving client:" + error.toString());
-                return false;
-            }
-                        });
-                    });
+                    if (SelectedClientID == 0) {
+                        const name = $("#txtClientsearch").val().trim();
+                        if (name.length > 0) {
+                            var client = {};
+                            client.id = 0;
+                            client.LocationId = parseInt($("#cboLocations").val());
+
+                            const i = name.indexOf(' ');
+                            if (i > -1) {
+                                client.FirstName = name.substring(0, i).trim();
+                                client.LastName = name.substring(i + 1).trim();
+                            }
+                            else {
+                                client.FirstName = name.substring(i + 1).trim();
+                                client.LastName = "";
+                            }
+
+                            client.Mobile = $("#txtClientMobile").val().trim();
+                            client.Email = "";
+                            client.AllowsSMS = true;
+                            client.AllowsEmail = true;
+                            client.Birthday = new Date($("#txtClientBirthday").val());
+                            client.Address = "";
+                            client.Zip = "";
+                            client.Notes = "";
+                            client.Active = true;
+                            client.Sex = "F";
+                            getAPIToken().then((result) => {
+                                $.ajax({
+                                    type: "post",
+                                    data: JSON.stringify(client),
+                                    url: apiURL + "/api/client/",
+                                    contentType: "application/json; charset=utf-8",
+                                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                                    dataType: "json",
+                                    success: function (retval) {
+                                        if (retval.result == "OK") { toastr.info("Saved new client (" + retval.id.toString() + ")"); resolve(retval.id); }
+                                        else { reject(retval.result); return false; }
+                                    },
+                                    error: function (xhr, status, error) {
+                                        reject("Error saving client:" + error.toString());
+                                        return false;
+                                    }
+                                });
+                            });
+                        }
+                        else { resolve(SelectedClientID); }
                 }
                 else { resolve(SelectedClientID);}
             });
@@ -1049,7 +1072,7 @@
         }
 
 
-        //inti tags for services
+        //init services tags  
         function initServicesTags() {
 
             //get tags

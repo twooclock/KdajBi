@@ -295,6 +295,8 @@ namespace KdajBi.API.Controllers
                         }
 
                     }
+                    else
+                    { return Json(result.Errors.First().Description); }
 
                     try
                     {

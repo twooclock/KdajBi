@@ -233,7 +233,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="myModalLabel">Delovno mesto</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="formWorkplace" class="formWorkplace" name="formWorkplace">
@@ -289,7 +289,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="ServiceModalLabel">Storitev</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelServiceModal();"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="formService" class="formService" name="formService">
@@ -496,6 +496,13 @@
                 var selected = $(e.currentTarget).val();
                 if (selected == "0" && isSelected==true) { addGooCalendar();}
             });
+
+            $('#myModal').on('hidden.bs.modal', function (e) {
+                CancelModal();
+            });
+            $('#ServiceModal').on('hidden.bs.modal', function (e) {
+                CancelServiceModal();
+            });
         });
 
         async function CreateCalendar(p_name) {
@@ -649,8 +656,8 @@
         function CancelModal() {
             $('#formWorkplace').validate().resetForm();
             //remove higlight ( reset form does not do this!)
-            $("#formWorkplace input, #formWorkplace label").each(function (key, value) {
-                $(this).closest('.form-group').removeClass('has-error');
+            $("#formWorkplace input").each(function (key, value) {
+                $(this).closest('.form-control').removeClass('is-invalid');
             });
         }
 
@@ -751,6 +758,7 @@
                 var workplace={};
                 workplace.id = p_ID;
                 workplace.sortPosition = parseInt($('#txtPosition').val());
+                if (isNaN(workplace.sortPosition)) { workplace.sortPosition = 0;}
                 workplace.name = $('#txtName').val();
                 workplace.googleCalendarId = $('#cboGooCal').val();
                 workplace.active = $("#cbActive").prop('checked');
@@ -805,10 +813,10 @@
         //#region Services
 
         function CancelServiceModal() {
-            $('#formService').validate().resetServiceForm();
+            $('#formService').validate().resetForm();
             //remove higlight ( reset form does not do this!)
-            $("#formService input, #formService label").each(function (key, value) {
-                $(this).closest('.form-group').removeClass('has-error');
+            $("#formService input").each(function (key, value) {
+                $(this).closest('.form-control').removeClass('is-invalid');
             });
         }
 
@@ -857,7 +865,7 @@
                     {
                         data: null, 'orderable': false,
                         render: function (data, type, row, meta) {
-                            return '<a href="#" onclick="showServiceDetail(' + row.id + ');">Edit</a>';
+                            return '<a class="btn btn-default" onclick="showServiceDetail(' + row.id + ');">Urejanje</a>';
                         }
                     }
                 ]
@@ -904,7 +912,7 @@
 
                     },
                     error: function (xhr, status, error) {
-                        alert("Error:" + error);
+                        toastr.error("Napaka:" + error.toString());
                     }
                 });
                 });
@@ -926,7 +934,13 @@
         }
 
         function DeleteService(p_ID) {
-            if (confirm("Delete service?") == true) {
+            Swal.fire({
+                title: 'Zbrišem storitev?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
                 getAPIToken().then((result) => {
                     $.ajax({
                     type: "DELETE",
@@ -935,17 +949,18 @@
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
-                        if (result == "OK") { GetServicesTable(); return true; }
-                        else { alert(result); return false; }
+                        if (result == "OK") {toastr.success("storitev zbrisana"); GetServicesTable(); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
                     },
                     error: function (xhr, status, error) {
-                        alert("Error deleting:" + error.toString());
+                        toastr.error("Napaka:" + error.toString());
                         return false;
                     }
                 });
                 });
 
             } else { return false; }
+            });
 
         }
 
@@ -955,7 +970,8 @@
                 service.id = p_ID;
                 service.LocationId = parseInt($("#cboLocations").val());
                 service.Name = $('#txtServiceName').val();
-                service.Minutes =$("#txtServiceMinutes").val();
+                service.Minutes = parseInt($("#txtServiceMinutes").val());
+                if (isNaN(service.Minutes)) { service.Minutes = 0;}
                 service.Active = $("#cbActive").prop('checked');
                 getAPIToken().then((result) => {
                 $.ajax({
@@ -966,11 +982,11 @@
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
-                         if (result == "OK") { GetServicesTable(); return true; }
-                        else { alert(result); return false; }
+                         if (result == "OK") { toastr.success("Shranjeno"); GetServicesTable(); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
                     },
                     error: function (xhr, status, error) {
-                        alert("Error saving:" + error.toString());
+                        toastr.error("Napaka:" + error.toString());
                         return false;
                     }
                 });

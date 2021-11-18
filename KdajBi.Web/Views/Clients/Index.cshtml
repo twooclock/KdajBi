@@ -80,7 +80,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="ClientModalLabel">Stranka</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelClientModal();"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
                 <form id="dataform" class="dataform" name="dataform">
@@ -211,7 +211,7 @@
                     });
                 },
                 error: function () {
-                    alert("Error filling clients");
+                    toastr.error("Napaka: Ni podatkov o strankah!");
                 }
             });
             });
@@ -244,16 +244,19 @@
                     }
                 });
 
-
+            
+                $('#myModal').on('hidden.bs.modal', function (e) {
+                    CancelClientModal();
+                });
             });
 
 
 
         function CancelClientModal() {
-            $('#dataform').validate().resetClientForm();
+            $('#dataform').validate().resetForm();
             //remove higlight ( reset form does not do this!)
-            $("#dataform input, #dataform label").each(function (key, value) {
-                $(this).closest('.form-group').removeClass('has-error');
+            $("#dataform input").each(function (key, value) {
+                $(this).closest('.form-control').removeClass('is-invalid');
             });
         }
 
@@ -302,7 +305,7 @@
                     {
                         data: null, 'orderable': false,
                         render: function (data, type, row, meta) {
-                            return '<a href="#" onclick="showClientDetail(' + row.id + ');">Edit</a>';
+                            return '<a class="btn btn-default" onclick="showClientDetail(' + row.id + ');">Urejanje</a>';
                         }
                     }
                 ]
@@ -365,7 +368,7 @@
 
                     },
                     error: function (xhr, status, error) {
-                        alert("Error:" + error);
+                        toastr.error("Napaka:" + error.toString());
                     }
                 });
                 });
@@ -387,27 +390,33 @@
         }
 
         function DeleteClient(p_ID) {
-            if (confirm("Delete client?") == true) {
-                getAPIToken().then((result) => {
-                    $.ajax({
-                    type: "DELETE",
-                    url: apiURL+"/api/client/"+p_ID,
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                        if (result == "OK") { GetClientsTable(); return true; }
-                        else { alert(result); return false; }
-                    },
-                    error: function (xhr, status, error) {
-                        alert("Error deleting:" + error.toString());
-                        return false;
-                    }
-                });
-                });
+            Swal.fire({
+                title: 'Zbrišem stranko?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    getAPIToken().then((result) => {
+                        $.ajax({
+                            type: "DELETE",
+                            url: apiURL + "/api/client/" + p_ID,
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (result) {
+                                if (result == "OK") { toastr.success("Stranka zbrisana"); GetClientsTable(); return true; }
+                                else { toastr.error("Napaka:" + result); return false; }
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka:" + error.toString());
+                                return false;
+                            }
+                        });
+                    });
 
-            } else { return false; }
-
+                } else { return false; }
+            });
         }
 
         function SaveClient(p_ID) {
@@ -436,11 +445,11 @@
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
-                         if (result == "OK") { GetClientsTable(); return true; }
-                        else { alert(result); return false; }
+                         if (result == "OK") { toastr.success("Shranjeno"); GetClientsTable(); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
                     },
                     error: function (xhr, status, error) {
-                        alert("Error saving:" + error.toString());
+                        toastr.error("Napaka:" + error.toString());
                         return false;
                     }
                 });

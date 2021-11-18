@@ -167,7 +167,7 @@ namespace KdajBi.API.Controllers
                 Clientindb.TaxId = p_Client.TaxId;
                 Clientindb.ZipCode = p_Client.ZipCode;
 
-                // Update and Insert children
+                // Update / Insert ClientTags
                 foreach (var childModel in Clientindb.ClientTags)
                 {
                     var existingChild = p_Client.ClientTags
@@ -177,7 +177,6 @@ namespace KdajBi.API.Controllers
                     if (existingChild != null)
                     {
                         // Update child
-
                         continue;
                     }
                     else
@@ -205,19 +204,6 @@ namespace KdajBi.API.Controllers
                         continue;
                     }
                 }
-
-                
-                //foreach (var existingChild in p_Client.ClientTags)
-                //{
-                //    if (!Clientindb.ClientTags.Any(c => c.TagId == existingChild.TagId))
-                //    {
-                //        continue;
-                //    }    
-                        
-                //}
-
-               
-
 
 
                 _context.Entry(Clientindb).State = EntityState.Modified;

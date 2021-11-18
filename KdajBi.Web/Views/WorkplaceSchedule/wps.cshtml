@@ -138,7 +138,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="myModalLabel">Urnik</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="CancelModal();"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body ui-front">
                 <form id="formEvent" class="formEvent" name="formEvent">
@@ -565,9 +565,11 @@
             $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                 if (e.target.id = "general-tab") {wcalendar.render(); }
                 if (e.target.id = "day-tab") {dcalendar.render(); }
-                
             });
 
+            $('#myModal').on('hidden.bs.modal', function (e) {
+                CancelModal();
+            });
         });
 
 
@@ -577,8 +579,8 @@
         function CancelModal() {
             $('#formEvent').validate().resetForm();
             //remove higlight ( reset form does not do this!)
-            $("#formEvent input, #formEvent label").each(function (key, value) {
-                $(this).closest('.form-group').removeClass('has-error');
+            $("#formEvent input").each(function (key, value) {
+                $(this).closest('.form-control').removeClass('is-invalid');
             });
         }
 

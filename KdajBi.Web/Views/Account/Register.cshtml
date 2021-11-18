@@ -199,11 +199,11 @@
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (result) {
-                        if (result == "OK") { GetTable(); return true; }
-                        else { alert(result); return false; }
+                        if (result == "OK") { toastr.success("Shranjeno"); GetTable(); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
                     },
                     error: function (xhr, status, error) {
-                        alert("Error saving:" + error.toString());
+                        toastr.error("Napaka:" + error.toString());
                         return false;
                     }
                 });
