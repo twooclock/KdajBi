@@ -12,7 +12,8 @@ namespace KdajBi.Web.Services
 {
     public interface IEmailSender
     {
-        Task SendEmailAsync(string email, string subject, string message);
+        EmailSettings emailSettings();
+        Task<bool> SendEmailAsync(string p_From, string p_To, string p_Subject, string p_HtmlMessage);
     }
 
     public class EmailSettings
@@ -44,12 +45,18 @@ namespace KdajBi.Web.Services
             _logger = logger;
         }
 
-        public async Task SendEmailAsync(string p_To, string p_Subject, string p_HtmlMessage)
+        public async Task<bool> SendEmailAsync(string p_From, string p_To, string p_Subject, string p_HtmlMessage)
         {
             try
             {
                 var mailMessage = new MimeMessage();
-                mailMessage.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderMail));
+                if (p_From != "")
+                { 
+                    mailMessage.From.Add(new MailboxAddress(p_From, p_From));
+                    mailMessage.ReplyTo.Add(new MailboxAddress(p_From, p_From));
+                }
+                else
+                { mailMessage.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderMail)); }
 
                 mailMessage.To.Add(new MailboxAddress("", p_To));
                 mailMessage.Subject = p_Subject;
@@ -71,8 +78,14 @@ namespace KdajBi.Web.Services
             catch (System.Exception ex)
             {
                 _logger.LogError(ex, "Error in SendEmailAsync(" + p_To + "," + p_Subject + "):" + p_HtmlMessage);
-
+                return false;
             }
+            return true;
+        }
+
+        EmailSettings IEmailSender.emailSettings()
+        {
+            return _emailSettings;
         }
     }
 }

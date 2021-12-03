@@ -27,6 +27,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     @RenderSection("styles", required: false)
     <link rel="stylesheet" href="~/css/site.css" />
     <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
 </head>
 <body class="skin-blue sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed text-sm">
     <div class="wrapper">
@@ -57,11 +58,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 @await Component.InvokeAsync("LocationsCombo", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
 
                 <ul class="navbar-nav ml-auto">
-
+                    <li class="nav-item">
+                        <a class="nav-link" style="padding-top: 0px;" href="#" role="button" data-toggle="modal" data-target="#myContactModal">
+                            <i class="far fa-envelope user-image" style="font-size: 2.1rem; color: #fff;"></i>
+                        </a>
+                    </li>
                     <li class="nav-item dropdown user user-menu">
                         <a href="#" class="nav-link" data-toggle="dropdown" aria-expanded="false">
                             <img src="@User.FindFirst("picture").Value" class="user-image" alt="">
-                            <span class="hidden-xs">@UserManager.GetUserName(User).Replace("@gmail.com","")</span>
+                            <span class="hidden-xs"></span>
                             @if (User.HasClaim("Nadzornik", bool.TrueString))
                             {
                                 <span class="right badge badge-danger" style="position: absolute;right: 15px;top: 22px;">Nadzornik</span>
@@ -69,59 +74,39 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         </a>
                         <ul class="dropdown-menu">
                             <!-- User image -->
-                            <li class="user-header">
-                                <img src="@User.FindFirst("picture").Value" class="img-circle" alt="">
-
-                                <p>
-                                    @UserManager.GetUserName(User).Replace("@gmail.com","")
-                                    <small>Member since Nov. 2012</small>
-                                </p>
-                            </li>
+                            <a class="dropdown-item" href="#">@UserManager.GetUserName(User)</a>
                             <!-- Menu Body -->
-                            <li class="user-body">
-                                <div class="row">
-                                    @if (User.IsInRole("Admin"))
-                                    {
-                                        @if (User.HasClaim("Nadzornik", bool.TrueString))
-                                        {
-                                            <div class="col-4 text-center">
-                                                <a href="~/companies/mycompany">Podjetje</a>
-                                            </div>
-                                            <div class="col-4 text-center">
-                                                <a id="linkLocations" href="#" onclick="showLocations()">Saloni</a>
-                                            </div>
-                                            <div class="col-4 text-center">
-                                                <a id="linkSettings" href="~/settings">Nastavitve</a>
-                                            </div>
-                                        }
-                                    }
-                                </div>
-                                <!-- /.row -->
-                            </li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                @if (User.HasClaim("Nadzornik", bool.TrueString))
+                                {
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="~/companies/mycompany">Podjetje</a>
+                                    @*<a class="dropdown-item" id="linkLocations" href="#" onclick="showLocations()">Saloni</a>*@
+                                    <a class="dropdown-item" id="linkSettings" href="~/settings">Nastavitve</a>
+                                }
+                            }
+                            <!-- /.row -->
                             <!-- Menu Footer-->
-                            <li class="user-footer">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <a href="#" class="btn btn-default btn-flat btn-block">Profil</a>
-                                    </div>
-                                    @if (User.IsInRole("Admin"))
-                                    {
-                                <div class="col-md-4">
-                                    @if (User.HasClaim("Nadzornik", bool.TrueString))
-                                    {<a href="#" onclick="flipNadzornik()" class="btn btn-danger btn-flat btn-block">
-                                            <i class="fa fa-lock" aria-hidden="true"></i>
-                                        </a> }
-                                    else
-                                    { <a href="#" onclick="flipNadzornik()" class="btn btn-default btn-flat btn-block">
-                                            <i class="fa fa-unlock-alt" aria-hidden="true"></i>
-                                        </a>}
-                                </div>
-                                    }
-                                    <div class="float-right col-md-4">
-                                        <a href="~/Account/Logout" class="btn btn-default btn-flat btn-block">Odjava</a>
-                                    </div>
-                                </div>
-                            </li>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <div class="dropdown-divider"></div>
+                                @if (User.HasClaim("Nadzornik", bool.TrueString))
+                                {
+                                    <a class="dropdown-item" href="#" onclick="flipNadzornik()">
+                                        Zakleni
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="dropdown-item" href="#" onclick="flipNadzornik()">
+                                        Odkleni
+                                    </a>
+}
+                            }
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="~/Account/Logout">Odjava</a>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -258,30 +243,30 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             </ul>
                         </li>
                         @*<li class="nav-item has-treeview menu-open">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>
-                                    Jobs
-                                    <i class="fas fa-chevron-down right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview" style="display: block;">
-                                <li class="nav-item">
-                                    <a href="@Url.Content("~/jobs/new")" class="nav-link">
-                                        <i class="far nav-icon"></i>
-                                        <p>New job</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="@Url.Content("~/jobs")" class="nav-link">
-                                        <i class="far nav-icon"></i>
-                                        <p>My jobs</p>
-                                    </a>
-                                </li>
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas fa-tachometer-alt"></i>
+                                    <p>
+                                        Jobs
+                                        <i class="fas fa-chevron-down right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview" style="display: block;">
+                                    <li class="nav-item">
+                                        <a href="@Url.Content("~/jobs/new")" class="nav-link">
+                                            <i class="far nav-icon"></i>
+                                            <p>New job</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="@Url.Content("~/jobs")" class="nav-link">
+                                            <i class="far nav-icon"></i>
+                                            <p>My jobs</p>
+                                        </a>
+                                    </li>
 
 
-                            </ul>
-                        </li>*@
+                                </ul>
+                            </li>*@
 
 
 
@@ -318,7 +303,29 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <strong>Copyright &copy; 2014-2019 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights reserved.
         </footer>
     </div>
+
     <!-- ./wrapper -->
+    <!-- modal content-->
+    <div id="myContactModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Sporočilo</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dataform" class="dataform" name="dataform">
+                        <textarea class="form-control" id="txtMessage" rows="5"></textarea>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="cmdSend" class="btn btn-primary" onclick="SendMail();"><i class="far fa-envelope"></i> Pošlji</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /modal content-->
     <!-- REQUIRED SCRIPTS -->
     <!-- jQuery -->
     <script src="~/plugins/jquery/jquery.min.js"></script>
@@ -329,6 +336,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="~/plugins/toastr/toastr.min.js"></script>
 
     <script>
         function showLocations() {
@@ -363,6 +371,38 @@ scratch. This page gets rid of all links and provides the needed markup only.
             }
 
         }
+
+
+    function SendMail() {
+        if (JSON.stringify($("#txtMessage").val().length > 0)) {
+            var companyID = $("#cboLocations").val();
+            $.ajax({
+                type: "post",
+                data: JSON.stringify($("#txtMessage").val()),
+                url: "@Url.Action("SendMail","Account")/" + companyID,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    if (result == "OK") { toastr.success("Sporočilo poslano! <br/>Dajte nam, prosim, nekaj časa za odgovor..."); }
+                    else { toastr.error("Error sending message:" + " - " + result.d); }
+                    CancelMessage();
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("Error sending message:" + " - " + error);
+                }
+            });
+        }
+    }
+    function OpenMessage(p_text) {
+        $("#txtMessage").val(p_text);
+        $("#myContactModal").modal('show');
+    }
+    function CancelMessage() {
+        $("#txtMessage").val('');
+        $("#myContactModal").modal('hide');
+    }
+
+
     </script>
     @RenderSection("Scripts", required: false)
 </body>

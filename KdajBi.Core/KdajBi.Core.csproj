@@ -93,6 +93,12 @@
     <Compile Remove="Migrations\20211108064750_addWorkplaceScheduleExceptions.Designer.cs" />
     <Compile Remove="Migrations\20211108065057_addWorkplaceScheduleExceptions.cs" />
     <Compile Remove="Migrations\20211108065057_addWorkplaceScheduleExceptions.Designer.cs" />
+    <Compile Remove="Migrations\20211203082726_addContactMails.cs" />
+    <Compile Remove="Migrations\20211203082726_addContactMails.Designer.cs" />
+    <Compile Remove="Migrations\20211203101018_addContactMails.cs" />
+    <Compile Remove="Migrations\20211203101018_addContactMails.Designer.cs" />
+    <Compile Remove="Migrations\20211203103521_addContactMails.cs" />
+    <Compile Remove="Migrations\20211203103521_addContactMails.Designer.cs" />
     <Compile Remove="Models\UserCompany.cs" />
   </ItemGroup>
 

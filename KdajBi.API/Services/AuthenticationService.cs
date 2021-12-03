@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using KdajBi.Core.Models;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace KdajBi.API.Services
 {
@@ -17,12 +18,14 @@ namespace KdajBi.API.Services
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser>  _signInManager;
         private readonly ITokenHandler _tokenHandler;
-        
-        public AuthenticationService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenHandler tokenHandler)
+        private readonly ILogger _logger;
+
+        public AuthenticationService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenHandler tokenHandler, ILogger<AuthenticationService> logger)
         {
             _tokenHandler = tokenHandler;
             _signInManager = signInManager;
             _userManager = userManager;
+            _logger = logger;
         }
 
         public async Task<TokenResponse> CreateAccessTokenAsync(string email, string password)
@@ -64,7 +67,9 @@ namespace KdajBi.API.Services
             {
                 return new TokenResponse(false, "Invalid credentials.", null);
             }
+
             var roles = await _userManager.GetRolesAsync(user);
+
             if (roles.Count > 0)
             {
                 user.UserRoles = new List<AppRole>();

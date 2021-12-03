@@ -29,6 +29,8 @@ namespace KdajBi.Core
         public DbSet<WorkplaceSchedule> WorkplaceSchedules { get; set; }
         public DbSet<WorkplaceScheduleException> WorkplaceScheduleExceptions { get; set; }
 
+        public DbSet<ContactMail> ContactMails { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

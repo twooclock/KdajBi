@@ -1,6 +1,7 @@
 ﻿using KdajBi.Core;
 using KdajBi.Core.Models;
 using KdajBi.Web.Services;
+using KdajBi.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -21,8 +22,9 @@ namespace KdajBi.Web.Controllers
         [Route("/users")]
         public IActionResult Index()
         {
-            
-            return View(_GetToken());
+            _BaseViewModel vmModel = new _BaseViewModel();
+            vmModel.Token = _GetToken();
+            return View(vmModel);
         }
 
         

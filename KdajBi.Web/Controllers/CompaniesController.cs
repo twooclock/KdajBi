@@ -22,7 +22,9 @@ namespace KdajBi.Web.Controllers
         [Route("/companies")]
         public IActionResult Index()
         {
-            return View(_GetToken());
+            _BaseViewModel vmModel = new _BaseViewModel();
+            vmModel.Token = _GetToken();
+            return View(vmModel);
         }
 
         [Route("/companies/mycompany")]

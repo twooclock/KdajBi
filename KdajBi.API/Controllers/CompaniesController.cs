@@ -66,7 +66,7 @@ namespace KdajBi.API.Controllers
             return company;
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("/api/companies/{id}")]
         public async Task<ActionResult<Company>> GetCompany(long id)
         {
             var company = await _context.Companies.FindAsync(id);
@@ -79,7 +79,7 @@ namespace KdajBi.API.Controllers
             return company;
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("/api/companies/{id}")]
         public async Task<IActionResult> PutCompany(long id, Company company)
         {
             if (id != company.Id)
@@ -154,7 +154,7 @@ namespace KdajBi.API.Controllers
             return Json("OK");
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("/api/companies/{id}")]
         public async Task<ActionResult<Company>> DeleteCompany(long id)
         {
             var company = await _context.Companies.FindAsync(id);
@@ -163,7 +163,25 @@ namespace KdajBi.API.Controllers
                 return NotFound();
             }
 
+            foreach (var locItem in _context.Locations.Where(u => u.CompanyId == id).ToList())
+            {
+                var wplaces = _context.Workplaces.Where(u => u.LocationId == locItem.Id).ToList();
+                foreach (var wpItem in wplaces)
+                {
+                    _context.WorkplaceScheduleExceptions.RemoveRange(_context.WorkplaceScheduleExceptions.Where(u => u.WorkplaceId == wpItem.Id).ToList());
+                    var wpschedules = _context.WorkplaceSchedules.Where(u => u.WorkplaceId == wpItem.Id).ToList();
+                    foreach (var schItem in wpschedules)
+                    {
+                        _context.Schedules.Remove(_context.Schedules.Find(schItem.Id));
+                    }
+                    _context.WorkplaceSchedules.RemoveRange(wpschedules);
+                }
+                _context.Workplaces.RemoveRange(wplaces);
+            }
+            _context.Settings.RemoveRange(_context.Settings.Where(u => u.CompanyId == id).ToList());
+            _context.Clients.RemoveRange(_context.Clients.Where(u => u.CompanyId == id).ToList());
             _context.Companies.Remove(company);
+
             await _context.SaveChangesAsync();
 
             return Json("OK");

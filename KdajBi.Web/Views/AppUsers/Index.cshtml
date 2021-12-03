@@ -22,7 +22,7 @@
 
                 <div class="row x_title">
                     <div class="col-sm-6 col-12 text-left">
-                        <h3>Users  </h3>
+                        <h3>Users</h3>
                     </div>
 
                 </div>
@@ -78,24 +78,6 @@
                         </label>
                         <input type="text" id="txtName" name="txtName" class="form-control" />
                     </div>
-                    <div class="col-xs-12 no-padding" style="border: 1px;border-style: dotted;">
-                        User has access to following companies:
-                        <div class="col-xs-12 no-padding" style="display:flex">
-                            <select id="ddlCompany" name="ddlCompany" class="selectpicker col-xs-9 no-padding" data-live-search="true"></select>
-                            <button type="button" class="btn btn-primary col-xs-2 novpad" id="cmdAddCompany" onclick="cmdAddCompany_Click();">
-                                Dodaj
-                            </button>
-                        </div>
-                        <div class="form-group">
-                            <div id="ulUserCompanies" class="col-xs-12 card custom-controls-stacked o-auto no-padding" style="height: 20rem; padding-left: 0px">
-                                <div style="display: flex; padding-top: 10px; padding-bottom: 10px;">
-                                    <div class="col-xs-9 novpad">Company</div>
-                                    <div class="col-xs-3 novpad">Sessions</div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
                     <div class="form-group">
                         <label class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="cbActive" value="true" checked="">
@@ -124,7 +106,7 @@
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
 
     <script type="text/javascript">
-        var myUser = { companies: [] };
+        var myUser = { };
         var myTable;
         @await Html.PartialAsync("_ApiAccess")
 
@@ -157,7 +139,6 @@
                     }
                 });
 
-                GetMyCompanies();
                 
                 $('#myModal').on('hidden.bs.modal', function (e) {
                     CancelModal();
@@ -210,7 +191,7 @@
                     {
                         data: null, 'orderable': false,
                         render: function (data, type, row, meta) {
-                            return '<a class="btn btn-default" onclick="showDetail(' + row.id + ');">Urejanje</a>;
+                            return '<a class="btn btn-default" onclick="showDetail(' + row.id + ');">Urejanje</a>';
                         }
                     }
                 ]
@@ -244,21 +225,12 @@
                 getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
-                    url: apiURL+"/api/appusers/"+p_ID,
+                    url: apiURL+"/api/appuser/"+p_ID,
                     contentType: "application/json; charset=utf-8",
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     async: true,
                     success: function (result) {
-                        myUser.id = result.id;
-                        myUser.email = result.email;
-                       result.companies.forEach(function (uc) {
-                            AddUserCompany(uc.id, uc.name);
-                            myUser.companies.push({ id: Number(uc.id), name: uc.name });
-                        });
-
-
-
                         $("#txtName").val(result.email);
                         $("#cbActive").prop('checked', result.active);
                     },
@@ -295,7 +267,7 @@
                     getAPIToken().then((result) => {
                         $.ajax({
                             type: "DELETE",
-                            url: apiURL + "/api/appusers/" + p_ID,
+                            url: apiURL + "/api/appuser/" + p_ID,
                             contentType: "application/json; charset=utf-8",
                             headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                             dataType: "json",
@@ -341,67 +313,10 @@
         }
 
 
-        function GetMyCompanies() {
-            getAPIToken().then((result) => {
-                $.ajax({
-                type: 'GET', dataType: 'json',
-                url: apiURL + "/api/companies",
-                contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                async: false,
-                dataType: "json",
-                data: "",
-                success: function (msg) {
-                    $("#ddlCompany").empty();
-                    $.each(msg, function (index, item) {
-                        if (this.active == true) { $("#ddlCompany").append($("<option />").val(this.id).text(this.name)); }
-                        else { $("#ddlCompany").append($("<option />").val(this.id).text(this.name).attr('disabled', 'disabled')); }
-                    });
-                    $('#ddlCompany').selectpicker('refresh');
-                    //var cookieValue = $.cookie("idC");
-                    //if (cookieValue == null) { $('#ddlCompany').find('option:first').attr('selected', 'selected'); }
-                    //else { $('#ddlCompany').val(cookieValue) }
+        
 
-                    //$.cookie("idC", $('#ddlCompany').val());
 
-                },
-                error: function () {
-                    toastr.error("Napaka: Ni podatkov o podjetjih");
-                }
-            });
-            });
-        }
 
-        function cmdAddCompany_Click() {
-            var found = false;
-
-            myUser.companies.forEach(function (uc) {
-                if (uc.id == Number($("#ddlCompany").val())) {
-                    found = true;
-                }
-            });
-
-            if (found == false) {
-                AddUserCompany($("#ddlCompany").val(), $("#ddlCompany option:selected").text());
-                myUser.companies.push({ id: Number($("#ddlCompany").val()), name: $("#ddlCompany option:selected").text() });
-            }
-
-        }
-        function cmdRemoveCompany_Click(p_CID) {
-            $('#cbCompany' + p_CID).remove();
-            myUser.companies.forEach(function (uc) {
-                if (uc.id == Number(p_CID)) {
-                    myUser.companies.splice(myUser.companies.indexOf(uc), 1);
-                }
-            });
-        }
-        function AddUserCompany(p_IDCompany, p_CompanyName) {
-            var addHTML = '';
-            addHTML = '<div id="cbCompany' + p_IDCompany + '" name="cbProduct" style="align-items:center;display: flex;"><div class="col-xs-9 novpad"><input type="hidden" value="' + p_IDCompany + '" />' + p_CompanyName + '</div>';
-            addHTML = addHTML + '<div class="col-xs-3 novpad"><button type="button" class="btn btn-primary" onclick="cmdRemoveCompany_Click(' + p_IDCompany + ');">remove</button></div>';
-            $("#ulUserCompanies").append(addHTML);
-
-        }
 
 
     </script>

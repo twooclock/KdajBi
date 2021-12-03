@@ -60,7 +60,15 @@ namespace KdajBi.Web.Controllers
 
         protected JwtToken _GetToken()
         {
-            return _apiTokenProvider.GetToken(User.Identity.Name);
+            JwtToken retval = _apiTokenProvider.GetToken(User.Identity.Name);
+            if (retval != null)
+            { return retval; }
+            else
+            {
+                retval = new JwtToken();
+                retval.AccessToken = "GetTokenError:"+ User.Identity.Name;
+                return retval;
+            }
         }
 
         protected bool LocationIsMine(long locationId)
@@ -82,6 +90,8 @@ namespace KdajBi.Web.Controllers
                 if (long.TryParse(id, out retval) == false)
                 { retval = _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID()).FirstOrDefault().Id; }
             }
+            if (LocationIsMine(retval) == false)
+            { retval = _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID()).FirstOrDefault().Id; }
             return retval;
         }
 

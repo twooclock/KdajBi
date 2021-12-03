@@ -6,7 +6,6 @@
 
 @section styles{
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
-    <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
     <link href="~/plugins/bootstrap-tokenfield/css/tokenfield-typeahead.min.css" rel="stylesheet" />
     <link href="~/plugins/bootstrap-tokenfield/css/bootstrap-tokenfield.min.css" rel="stylesheet" />
     <link href="~/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
@@ -197,7 +196,6 @@
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
     <!-- cookies needed for changing location -->
     <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
-    <script src="~/plugins/toastr/toastr.min.js"></script>
     <script src="~/plugins/bootstrap-tokenfield/bootstrap-tokenfield.min.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
 
@@ -533,7 +531,7 @@
 
         $.validator.addMethod("greaterThan", function (value, element, param) {
             var otherElement = dayjs(fp.selectedDates[0]).format("l") + " " + value;
-            return (dayjs(otherElement, "DD.MM.YYYY HH:mm").toDate() > new Date(fp.selectedDates[0]));
+            return (dayjs(otherElement, "D.M.YYYY HH:mm").toDate() > new Date(fp.selectedDates[0]));
         }, "Konec mora biti večji od začetka.");
 
             function getScrollTime()
@@ -969,7 +967,7 @@
                     if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
-                        end: { 'dateTime': dayjs(otherElement, "DD.MM.YYYY HH:mm").toDate() },
+                        end: { 'dateTime': dayjs(otherElement, "D.M.YYYY HH:mm").toDate() },
                         summary: eventSummary,
                         "extendedProperties": {
                             "private": {
@@ -1019,7 +1017,7 @@
                     if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
-                        end: { 'dateTime': dayjs(otherElement, "DD.MM.YYYY HH:mm").toDate() },
+                        end: { 'dateTime': dayjs(otherElement, "D.M.YYYY HH:mm").toDate() },
                         summary: eventSummary,
                         "extendedProperties": {
                             "private": {

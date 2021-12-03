@@ -14,7 +14,8 @@ namespace KdajBi.Core.Models
         [Key]
         public long Id { get; set; }
 
-        [ForeignKey("UserID"), Required]
+        [ForeignKey("AppUser"), Required]
+        public int UserId { get; set; }
         public virtual AppUser AppUser { get; set; }
 
         [ForeignKey("CompanyId"), Required]

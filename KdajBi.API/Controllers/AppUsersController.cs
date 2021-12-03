@@ -45,7 +45,7 @@ namespace KdajBi.API.Controllers
             }
 
             recordsTotal = v.Count();
-            var data = v.Skip(param.start).Take(param.length).ToListAsync();
+            var data = v.Skip(param.start).Take(param.length).ToList();
 
             return Json(new { draw = param.draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
         }
@@ -173,6 +173,10 @@ namespace KdajBi.API.Controllers
             }
 
             _context.Users.Remove(appuser);
+            //delete workspaces
+            _context.Workplaces.RemoveRange(_context.Workplaces.Where(u => u.UserId == id).ToList());
+            _context.Settings.RemoveRange(_context.Settings.Where(u => u.UserId == id).ToList());
+            _context.SmsCampaigns.RemoveRange(_context.SmsCampaigns.Where(u => u.AppUser.Id == id).ToList());
             await _context.SaveChangesAsync();
 
             return Json("OK");
