@@ -15,7 +15,7 @@
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
     <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
     <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
-    <link href='~/lib/fullcalendar-scheduler-5.9.0/lib/main.min.css' rel='stylesheet' />
+    <link href='~/lib/fullcalendar-scheduler-5.10.1/lib/main.min.css' rel='stylesheet' />
 
     <style>
 
@@ -200,9 +200,9 @@
     <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
     <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
 
-    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/main.js'></script>
-    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/rrule.min.js'></script>
-    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/main.global.min.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/main.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/rrule.min.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/main.global.min.js'></script>
 
 
     <script type="text/javascript">
@@ -306,7 +306,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
 
-            loadScript("/lib/fullcalendar-scheduler-5.9.0/lib/locales/" + navigator.language.slice(0, 2) + ".js")
+            loadScript("/lib/fullcalendar-scheduler-5.10.1/lib/locales/" + navigator.language.slice(0, 2) + ".js")
                 .then(function () {
                     wcalendar = new FullCalendar.Calendar(document.getElementById('wcalendar'), {
                         locale: navigator.language.slice(0, 2), eventResizableFromStart: true,

@@ -12,7 +12,7 @@
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
     <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
     <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
-    <link href='~/lib/fullcalendar-scheduler-5.9.0/lib/main.min.css' rel='stylesheet' />
+    <link href='~/lib/fullcalendar-scheduler-5.10.1/lib/main.min.css' rel='stylesheet' />
 
     <style>
 
@@ -51,12 +51,12 @@
         div.token {
             font-size: 13px;
         }
-        /*sticky header*/
+        /*sticky header
         .fc-toolbar.fc-header-toolbar {
             position: sticky;
-            top: 200px;
+            top: 250px;
             z-index: 10;
-        }
+        }*/
 
         .fc-head-container.fc-widget-header {
             position: sticky;
@@ -65,20 +65,20 @@
             background: red;
         }
 
-        .fc-timeline .fc-body .fc-scroller {
+        /*.fc-timeline .fc-body .fc-scroller {
             height: 400px !important;
-        }
+        }*/
 
         .fc .fc-toolbar.fc-header-toolbar {
             margin-bottom: 1.5em;
             position: sticky;
-            top: 0;
             background: #ffffff;
             z-index: 100;
+            top: 47px;
         }
 
         .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
-            top: 34px;
+            top: 82px;
         }
 
         .fc-header-toolbar {
@@ -212,9 +212,11 @@
     <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
     <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
 
-    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/main.js'></script>
-    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/rrule.min.js'></script>
-    <script src='~/lib/fullcalendar-scheduler-5.9.0/lib/main.global.min.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/main.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/rrule.min.js'></script>
+    <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/main.global.min.js'></script>
+    
+<script src="~/plugins/AlloyFinger/alloy_finger.js"></script>
 
     <script type="text/javascript">
         @await Html.PartialAsync("_ApiAccess")
@@ -515,6 +517,9 @@
             else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
             else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
             isFullScreen = true;
+            $(".fc-toolbar.fc-header-toolbar").css('top', '0px');
+            $(".fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > *").css('top', '34px');
+            
         }
         function exitFullScreen() {
 
@@ -523,6 +528,14 @@
             else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
             else if (document.msExitFullscreen) { document.msExitFullscreen(); }
             isFullScreen = false;
+            $(".fc-toolbar.fc-header-toolbar").css('top', '47px');
+            $(".fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > *").css('top', '82px');
+
+        }
+        function exitHandler() {
+            if (!document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
+                exitFullScreen();
+            }
         }
 
         $.validator.addMethod("time", function (value, element) {
@@ -530,8 +543,11 @@
         }, "Vnesite veljaven čas npr. 8:30 ali 17:45");
 
         $.validator.addMethod("greaterThan", function (value, element, param) {
-            var otherElement = dayjs(fp.selectedDates[0]).format("l") + " " + value;
-            return (dayjs(otherElement, "D.M.YYYY HH:mm").toDate() > new Date(fp.selectedDates[0]));
+            var cas = value.split(":");
+            var endDate = new Date(fp.selectedDates[0]);
+            if (cas[0] != undefined) {  endDate.setHours(cas[0]); }
+            if (cas[1] != undefined) {  endDate.setMinutes(cas[1]); }
+            return (endDate > fp.selectedDates[0]);
         }, "Konec mora biti večji od začetka.");
 
             function getScrollTime()
@@ -544,7 +560,7 @@
                 console.info("loadLocale:", lang);
 
                 if (lang != "en") {
-                    loadScript("/lib/fullcalendar-scheduler-5.9.0/lib/locales/" + navigator.language.slice(0, 2) + ".js").then(resolve());
+                    loadScript("/lib/fullcalendar-scheduler-5.10.1/lib/locales/" + navigator.language.slice(0, 2) + ".js").then(resolve());
                 } else { resolve(); }
             });
         }
@@ -557,6 +573,7 @@
                             eventDisplay: 'block',
                             themeSystem: 'bootstrap',
                             stickyFooterScrollbar: true,
+                            stickyHeaderDates: true,
                             initialView: 'resourceTimeGridDay',
                             //initialDate: 'today',
                             slotMinTime: "@Html.Raw(Model.Location.Schedule.minTime())", //"7:00:00",
@@ -572,6 +589,7 @@
                                 meridiem: false
                             },
                             slotLabelInterval: "00:30",
+                            height:'auto',
                             expandRows: true,
                             editable: true,
                             selectable: true,
@@ -669,6 +687,17 @@
                         calendar.render();
                         //calendar.setOption("height", "1450px");
 
+                        // gestures
+                        var af = new AlloyFinger(document.getElementById('calendar'), {
+                            swipe: function (evt) {
+                                switch (evt.direction) {
+                                    case "Left": calendar.next();
+                                        break;
+                                    case "Right": calendar.prev();
+                                        break;
+                                }
+                            }
+                        });
                     });
         }
 
@@ -781,6 +810,13 @@
                     window.location.reload(true);
                 });
 
+                //ad exitFullScreen handler (če user pressing Esc to exit fullscreen)
+                if (document.addEventListener) {
+                    document.addEventListener('webkitfullscreenchange', exitHandler, false);
+                    document.addEventListener('mozfullscreenchange', exitHandler, false);
+                    document.addEventListener('fullscreenchange', exitHandler, false);
+                    document.addEventListener('MSFullscreenChange', exitHandler, false);
+                }
             });
 
 
@@ -961,13 +997,16 @@
                 getClientID().catch((result) => { toastr.info(result); }).then((result) => {
                     //create new event
                     var calid = $('#cboGooCal').val();
-                    var otherElement = dayjs(fp.selectedDates[0]).format("l") + " " + $("#txtEndTime").val();
+                    var cas =  $("#txtEndTime").val().split(":");
+                    var endDate = new Date(fp.selectedDates[0]);
+                    if (cas[0] != undefined) {  endDate.setHours(cas[0]); }
+                    if (cas[1] != undefined) { endDate.setMinutes(cas[1]); }
                     var eventSummary = $("#txtClientsearch").val();
                     if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
                     if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
-                        end: { 'dateTime': dayjs(otherElement, "D.M.YYYY HH:mm").toDate() },
+                        end: { 'dateTime': endDate },
                         summary: eventSummary,
                         "extendedProperties": {
                             "private": {
@@ -1011,13 +1050,18 @@
                     var res = p_event.event.getResources();
                     var calid = $('#cboGooCal').val();
 
-                    var otherElement = dayjs(fp.selectedDates[0]).format("l") + " " + $("#txtEndTime").val();
+                     var cas =  $("#txtEndTime").val().split(":");
+                    var endDate = new Date(fp.selectedDates[0]);
+                    if (cas[0] != undefined) {  endDate.setHours(cas[0]); }
+                    if (cas[1] != undefined) { endDate.setMinutes(cas[1]); }
+
+                    
                     var eventSummary = $("#txtClientsearch").val();
                     if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
                     if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
-                        end: { 'dateTime': dayjs(otherElement, "D.M.YYYY HH:mm").toDate() },
+                        end: { 'dateTime': endDate },
                         summary: eventSummary,
                         "extendedProperties": {
                             "private": {

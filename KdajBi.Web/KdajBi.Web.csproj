@@ -19,18 +19,23 @@
     <Compile Remove="Controllers\Resources\**" />
     <Compile Remove="Extensions\**" />
     <Compile Remove="Security\**" />
+    <Compile Remove="wwwroot\dist\**" />
     <Content Remove="Controllers\Resources\**" />
     <Content Remove="Extensions\**" />
     <Content Remove="Security\**" />
+    <Content Remove="wwwroot\dist\**" />
     <EmbeddedResource Remove="Controllers\Resources\**" />
     <EmbeddedResource Remove="Extensions\**" />
     <EmbeddedResource Remove="Security\**" />
+    <EmbeddedResource Remove="wwwroot\dist\**" />
     <None Remove="Controllers\Resources\**" />
     <None Remove="Extensions\**" />
     <None Remove="Security\**" />
+    <None Remove="wwwroot\dist\**" />
     <TypeScriptCompile Remove="Controllers\Resources\**" />
     <TypeScriptCompile Remove="Extensions\**" />
     <TypeScriptCompile Remove="Security\**" />
+    <TypeScriptCompile Remove="wwwroot\dist\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,21 +51,6 @@
     <Content Remove="Views\Home\Index3.cshtml" />
     <Content Remove="wwwroot\css\chunk-vendors.88e4f5e1.css" />
     <Content Remove="wwwroot\favicon.ico" />
-    <Content Remove="wwwroot\img\icons\android-chrome-192x192.png" />
-    <Content Remove="wwwroot\img\icons\android-chrome-512x512.png" />
-    <Content Remove="wwwroot\img\icons\android-chrome-maskable-192x192.png" />
-    <Content Remove="wwwroot\img\icons\android-chrome-maskable-512x512.png" />
-    <Content Remove="wwwroot\img\icons\apple-touch-icon-120x120.png" />
-    <Content Remove="wwwroot\img\icons\apple-touch-icon-152x152.png" />
-    <Content Remove="wwwroot\img\icons\apple-touch-icon-180x180.png" />
-    <Content Remove="wwwroot\img\icons\apple-touch-icon-60x60.png" />
-    <Content Remove="wwwroot\img\icons\apple-touch-icon-76x76.png" />
-    <Content Remove="wwwroot\img\icons\apple-touch-icon.png" />
-    <Content Remove="wwwroot\img\icons\favicon-16x16.png" />
-    <Content Remove="wwwroot\img\icons\favicon-32x32.png" />
-    <Content Remove="wwwroot\img\icons\msapplication-icon-144x144.png" />
-    <Content Remove="wwwroot\img\icons\mstile-150x150.png" />
-    <Content Remove="wwwroot\img\icons\safari-pinned-tab.svg" />
     <Content Remove="wwwroot\index.html" />
     <Content Remove="wwwroot\js\app.e527dc6b.js" />
     <Content Remove="wwwroot\js\app.e527dc6b.js.map" />
@@ -130,15 +120,10 @@
     <None Include="wwwroot\css\alt\adminlte.pages.min.css.map" />
     <None Include="wwwroot\css\alt\adminlte.plugins.css.map" />
     <None Include="wwwroot\css\alt\adminlte.plugins.min.css.map" />
-    <None Include="wwwroot\dist\img\icons\safari-pinned-tab.svg" />
     <None Include="wwwroot\js\adminlte.js" />
     <None Include="wwwroot\js\adminlte.js.map" />
     <None Include="wwwroot\js\adminlte.min.js" />
     <None Include="wwwroot\js\adminlte.min.js.map" />
-    <None Include="wwwroot\js\demo.js" />
-    <None Include="wwwroot\js\pages\dashboard.js" />
-    <None Include="wwwroot\js\pages\dashboard2.js" />
-    <None Include="wwwroot\js\pages\dashboard3.js" />
     <None Include="wwwroot\js\site.js" />
     <None Include="wwwroot\LandingPage\assets\css\style.css.map" />
     <None Include="wwwroot\LandingPage\assets\fonts\LineIcons.svg" />
@@ -1969,7 +1954,6 @@
 
   <ItemGroup>
     <Folder Include="Views\Tags\" />
-    <Folder Include="wwwroot\img\icons\" />
   </ItemGroup>
 
 </Project>
