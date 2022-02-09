@@ -84,6 +84,10 @@
                         required: true,
                         isSITaxID: true
                     },
+                    p_naziv: {
+                        minlength: 3,
+                        required: true
+                    },
                     p_nazivsalona: {
                         minlength: 3,
                         maxlength: 20,
@@ -95,6 +99,7 @@
                     p_firstname: "Neveljavno ime",
                     p_lastname: "Neveljaven priimek",
                     p_davcna: "Vnesite veljavno davčno številko",
+                    p_naziv: "Kliknite \"Poišči\", da naložite podatke o podjetju",
                     p_nazivsalona: "Neveljavno ime"
                 },
                 highlight: function (element) {
