@@ -49,19 +49,38 @@ namespace KdajBi.GoogleHelper
             return retval;
         }
 
-        public Events GetEvents(string p_calendarID)
+        /// <summary>
+        /// returns list of events FOR A MONTH!
+        /// </summary>
+        /// <param name="p_calendarID"></param>
+        /// <param name="p_Date"></param>
+        /// <returns></returns>
+        public List<Event> GetEvents(string p_calendarID, DateTime p_Date)
         {
+            var firstDayOfMonth = new DateTime(p_Date.Year, p_Date.Month, 1);
+            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
             EventsResource.ListRequest request = calendarService.Events.List(p_calendarID);
-            request.OauthToken = googleAuthToken.access_token;
-            request.TimeMin = DateTime.Now;
-            request.ShowDeleted = false;
-            request.SingleEvents = true;
-            request.MaxResults = 10;
-            request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
+            Events events;
+            List<Event> retval = new List<Event>();
+            string nextpageToken = null;
+            do
+            {
+                request.OauthToken = googleAuthToken.access_token;
+                if (nextpageToken != null) { request.PageToken = nextpageToken; }
+                request.TimeMin = firstDayOfMonth;
+                request.TimeMax = lastDayOfMonth;
+                request.ShowDeleted = false;
+                request.SingleEvents = true;
+                //request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
 
-            Events events = request.Execute();
+                events = request.Execute();
+                retval.AddRange(events.Items);
+                nextpageToken = events.NextPageToken;
+            } while (nextpageToken != null);
+            
 
-            return events;
+            return retval;
         }
 
         public bool EnsureReadPermissionsForService(string p_GooCalsJson, string p_GooServiceName)
@@ -75,7 +94,7 @@ namespace KdajBi.GoogleHelper
                 request.OauthToken = googleAuthToken.access_token;
                 try
                 {
-                     var myaclx = request.Execute();
+                    var myaclx = request.Execute();
                     myacl = (List<AclRule>)myaclx.Items;
                 }
                 catch (Exception ex)

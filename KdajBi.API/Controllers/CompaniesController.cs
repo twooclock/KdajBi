@@ -172,7 +172,7 @@ namespace KdajBi.API.Controllers
                     var wpschedules = _context.WorkplaceSchedules.Where(u => u.WorkplaceId == wpItem.Id).ToList();
                     foreach (var schItem in wpschedules)
                     {
-                        _context.Schedules.Remove(_context.Schedules.Find(schItem.Id));
+                        _context.Schedules.Remove(_context.Schedules.Find(schItem.ScheduleId));
                     }
                     _context.WorkplaceSchedules.RemoveRange(wpschedules);
                 }
@@ -180,6 +180,7 @@ namespace KdajBi.API.Controllers
             }
             _context.Settings.RemoveRange(_context.Settings.Where(u => u.CompanyId == id).ToList());
             _context.Clients.RemoveRange(_context.Clients.Where(u => u.CompanyId == id).ToList());
+            _context.Services.RemoveRange(_context.Services.Where(u => u.CompanyId == id).ToList());
             _context.Companies.Remove(company);
 
             await _context.SaveChangesAsync();

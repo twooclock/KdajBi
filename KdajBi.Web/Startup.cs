@@ -65,6 +65,7 @@ namespace KdajBi
                    opts.ClientId = Configuration.GetSection("GoogleSettings")["ClientId"];
                    opts.ClientSecret = Configuration.GetSection("GoogleSettings")["ClientSecret"];
                    opts.SignInScheme = IdentityConstants.ExternalScheme;
+                   opts.CorrelationCookie.SameSite = SameSiteMode.Lax;
                    opts.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
                    opts.Scope.Add("https://www.googleapis.com/auth/calendar");
                    opts.AccessType = "offline";
