@@ -1,0 +1,38 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+@model vmBooking
+@{
+    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+    ViewData["Title"] = "Naročilo";
+}
+
+@section styles{
+    <!-- datatables.net -->
+    <link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.css" rel="stylesheet" />"
+    <link href="~/plugins/datatables-buttons/css/buttons.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
+}
+
+
+<!-- page content -->
+
+
+<div class="card-body login-card-body">
+    <div class="col-md-12" role="main">
+        <h3>@Html.Raw(@Model.token.Company.Name)</h3>
+        @Html.Raw(@Model.gt)
+    </div>
+</div>
+@section scripts{
+    <!-- datables.net -->
+    <script src="~/plugins/datatables/jquery.dataTables.js"></script>
+    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
+    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+
+    <script type="text/javascript">
+
+    </script>
+}
+

@@ -30,6 +30,8 @@ namespace KdajBi.Core
         public DbSet<WorkplaceScheduleException> WorkplaceScheduleExceptions { get; set; }
 
         public DbSet<ContactMail> ContactMails { get; set; }
+        
+        public DbSet<AppointmentToken> AppointmentTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
