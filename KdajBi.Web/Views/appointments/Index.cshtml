@@ -677,8 +677,9 @@
                             {
                                 <text>
                                 ,datesSet: function (dateInfo) {
-                                console.info("date changes to:", dateInfo.start,"list of events:");
-                                FetchRenderExceptions(calendar, dateInfo.start).then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
+                                console.info("date changes to start:", dateInfo.start," end:",dateInfo.end);
+                                    FetchRenderExceptions(calendar, dateInfo.start).then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
+                                    FetchRenderEvents(calendar, dateInfo.start).then(result => { FetchRenderEvents(calendar, dateInfo.end) });
                                 }
                                 </text>
                             }
@@ -820,7 +821,76 @@
             });
 
 
+        //#region GooEvents
+        @Html.Raw("var EventsExMonths = ['"+DateTime.Now.ToString("yyyyMM")+"'];")
 
+        async function FetchRenderEvents(p_calendar, p_date) {
+            return new Promise(async function (resolve, reject) {
+                console.info("FetchRenderEvents:", p_date);
+                if (isInArray(EventsExMonths, dayjs(p_date).format("YYYYMM")) == false) {
+                    EventsExMonths.push(dayjs(p_date).format("YYYYMM"));
+                    console.info("asking for events for month ", dayjs(p_date).format("YYYY-MM"));
+
+                    var res = p_calendar.getResources();
+                    for (var i = 0; i < res.length; i++) {
+                        var calid = res[i].extendedProps.gid;
+                        console.info("cal:",calid);
+                        if (calid != '') {
+                            var minDate = new Date(p_date.getFullYear(), p_date.getMonth(), 1);
+                            var maxDate = new Date(p_date.getFullYear(), p_date.getMonth()+1, 0);
+                            
+                            var pageToken = null;
+                            var calEvents = [];
+                            do {
+                                if (pageToken === null) {
+                                     gotEvents = await gapi.client.calendar.events.list({
+                                        "calendarId": calid,
+                                        "maxResults": 2,
+                                        "showDeleted": false,
+                                         "singleEvents": true,
+                                         "timeMin": minDate.toISOString(),
+                                        "timeMax": maxDate.toISOString()
+                                    });
+                                }
+                                else {
+                                     gotEvents = await gapi.client.calendar.events.list({
+                                        "calendarId": calid,
+                                        "pageToken": pageToken,
+                                        "maxResults": 2,
+                                        "showDeleted": false,
+                                        "singleEvents": true,
+                                        "timeMin": minDate.toISOString(),
+                                        "timeMax": maxDate.toISOString()
+                                    });
+                                }
+                                calEvents=calEvents.concat(gotEvents.result.items);
+                                pageToken = gotEvents.result.nextPageToken;
+                            } while (pageToken != null);
+
+                            console.info(calid, " got all ", calEvents.length);
+                            for (const element of calEvents) {
+                                p_calendar.addEvent({
+                                    id: element.id,
+                                    title: element.summary,
+                                    start: element.start.dateTime,
+                                    end: element.end.dateTime,
+                                    resourceId: res[i].id,
+                                    extendedProps: element.extendedProperties.private
+                                });
+                            }
+
+
+                        }
+                    }
+                    //EventsExMonths.push(dayjs(p_date).format("YYYYMM"));
+                    resolve(true);
+                   
+                }
+                else { resolve(true); }
+            });
+
+        }
+        //#endregion
 
 
 

@@ -60,9 +60,9 @@ namespace KdajBi.Web.Controllers
                                             {
                                                 myVM.GoogleCalendars.Add(item.GoogleCalendarID, item.Name);
                                                 //get calendar events
-                                                Events calEvents = service.GetEvents(item.GoogleCalendarID);
+                                                List<Event> calEvents = service.GetEvents(item.GoogleCalendarID, DateTime.Now);
 
-                                                foreach (var calEvent in calEvents.Items)
+                                                foreach (var calEvent in calEvents)
                                                 {
                                                     var start = calEvent.Start.DateTime.Value;
                                                     var end = calEvent.End.DateTime.Value;

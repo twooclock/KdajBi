@@ -64,6 +64,9 @@ namespace KdajBi.Core.Models
 
         public int? UpdatedUserID { get; set; }
 
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public DateTime? LastLoginDate { get; set; }
+
         public virtual ICollection<AppRole> UserRoles { get; set; }
     }
 

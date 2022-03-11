@@ -177,6 +177,18 @@ namespace KdajBi.Web.Controllers
                 var authProperties = new AuthenticationProperties { IsPersistent = false };
                 await _signInManager.SignInAsync(appUser, authProperties);
 
+                //log login
+                appUser.LastLoginDate = DateTime.Now;
+                _context.Entry(appUser).State = EntityState.Modified;
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error writing LastLoginDate for user {0}", appUser.Id);
+                }
+
                 return Redirect("~/Home/Index");
             }
             else
@@ -190,6 +202,7 @@ namespace KdajBi.Web.Controllers
                     LastName = (info.Principal.FindFirst(ClaimTypes.Surname) != null) ? info.Principal.FindFirst(ClaimTypes.Surname).Value : ""
                 };
 
+               
 
                 return Register(user);
             }
@@ -204,17 +217,24 @@ namespace KdajBi.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(string p_email, string p_firstname, string p_lastname, string p_davcna, string p_naziv, string p_nazivsalona)
         {
+            
             ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
+            {
+                _logger.LogWarning("_signInManager.GetExternalLoginInfoAsync is NULL!");
                 return RedirectToAction(nameof(Login));
+            }
+            
 
+            
             AppUser user = new AppUser
             {
                 Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
                 UserName = info.Principal.FindFirst(ClaimTypes.Email).Value,
                 FirstName = p_firstname,
                 LastName = p_lastname,
-                CreatedDate = DateTime.Now
+                CreatedDate = DateTime.Now,
+                LastLoginDate=DateTime.Now
             };
 
             Company company = new Company
@@ -222,15 +242,22 @@ namespace KdajBi.Web.Controllers
                 Davcna = p_davcna,
                 Name = p_naziv != null ? p_naziv.Split('|')[0] : "",
                 Active = true
+                CreatedDate = DateTime.Now
             };
 
 
-
-            //create company
-            _context.Companies.Add(company);
-            _context.SaveChanges();
-            user.CompanyId = company.Id;
-
+            try
+            {
+                //create company
+                _context.Companies.Add(company);
+                _context.SaveChanges();
+                user.CompanyId = company.Id;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,"couldnt create company!");
+                throw;
+            }
             IdentityResult identResult = await _userManager.CreateAsync(user);
             if (identResult.Succeeded)
             {
@@ -244,12 +271,21 @@ namespace KdajBi.Web.Controllers
 
                     Location salon = new Location
                     {
-                        Name = p_nazivsalona
+                        Name = p_nazivsalona,
+                        CreatedDate = DateTime.Now
                     };
                     salon.CompanyId = company.Id;
                     salon.Schedule = new Schedule { };
+                    try
+                    {
+                        _context.Locations.Add(salon);
 
-                    _context.Locations.Add(salon);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "couldnt create location!");
+                        throw;
+                    }
 
                     try
                     {
@@ -259,7 +295,8 @@ namespace KdajBi.Web.Controllers
                         {
                             LocationId = salon.Id,
                             UserId = user.Id,
-                            Name = user.FirstName
+                            Name = user.FirstName,
+                            CreatedDate = DateTime.Now
                         };
                         _context.Workplaces.Add(wp);
                         await _context.SaveChangesAsync();
@@ -269,7 +306,10 @@ namespace KdajBi.Web.Controllers
                         _logger.LogError(ex, "Register - error");
                         throw;
                     }
+                    try
+                    {
 
+                   
                     //add picture to claims (not into database)
                     Claim myClaim = new Claim("picture", "");
                     foreach (Claim c in info.Principal.Claims)
@@ -287,9 +327,17 @@ namespace KdajBi.Web.Controllers
 
                     var authProperties = new AuthenticationProperties { IsPersistent = false };
                     await _signInManager.SignInAsync(currentUser, authProperties);
-
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Register - error2");
+                        throw;
+                    }
                     return Redirect("~/Home/Index");
                 }
+            } else
+            {
+                _logger.LogWarning("couldnt create user!");
             }
 
             //something went wrong
