@@ -237,12 +237,11 @@ namespace KdajBi.Web.Controllers
                 LastLoginDate=DateTime.Now
             };
 
-
             Company company = new Company
             {
                 Davcna = p_davcna,
-                Name = p_naziv.Split('|')[0],
-                Active = true,
+                Name = p_naziv != null ? p_naziv.Split('|')[0] : "",
+                Active = true
                 CreatedDate = DateTime.Now
             };
 
