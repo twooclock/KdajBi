@@ -1,38 +1,160 @@
 ﻿@using Newtonsoft.Json;
 @using KdajBi.Web.ViewModels;
+@inject KdajBi.Web.Services.IApiTokenProvider apiTP
 @model vmBooking
 @{
-    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
-    ViewData["Title"] = "Naročilo";
+  Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+  ViewData["Title"] = "Naročilo";
 }
 
 @section styles{
-    <!-- datatables.net -->
-    <link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.css" rel="stylesheet" />"
-    <link href="~/plugins/datatables-buttons/css/buttons.bootstrap4.css" rel="stylesheet" />
-    <link href="~/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.css" rel="stylesheet" />
-    <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
-    <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
+  
+  <style>
+    .appointment {
+      cursor: pointer;
+    }
+    .appointment.card:hover {
+      background: #007bff22;
+    }
+  </style>
 }
 
 
 <!-- page content -->
 
-
-<div class="card-body login-card-body">
-    <div class="col-md-12" role="main">
+<div class="card mt-5">
+  <div class="card-body login-card-body">
+    <h1 class="mb-2">KdajBi naročanje</h1>
+    <div class="row">
+      <div class="col">
         <h3>@Html.Raw(@Model.token.Company.Name)</h3>
-        @Html.Raw(@Model.gt)
+      </div>
+      <div class="col" id="appointments">
+        <div class="mb-2 align-center d-flex justify-content-between align-items-center">
+          <button type="button" class="btn btn-outline-primary" id="previousDay"><</button>
+          <span id="selected-date"></span>
+          <button type="button" class="btn btn-outline-primary" id="nextDay">></button>
+        </div>
+        <div id="no-appointments" class="card card-outline card-primary p-1" style="display: none">
+          <div class="card-body text-center">
+            <h4>Ni prostih terminov</h4>
+          </div>
+        </div>
+        <div id="appointments-loader" class="card card-outline card-primary p-1" style="display: none">
+          <div class="card-body text-center">
+            <div class="spinner-border" role="status">
+              <span class="sr-only">Nalagam...</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 @section scripts{
-    <!-- datables.net -->
-    <script src="~/plugins/datatables/jquery.dataTables.js"></script>
-    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
-    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+<script type="text/javascript">
+  var apiURL = "@Html.Raw(apiTP.Settings().BaseAddress)"
 
-    <script type="text/javascript">
+  var token = "@Html.Raw(@Model.token.Token)";
+  var date = new Date();
 
-    </script>
+  $( document ).ready( function () {
+    $( "#previousDay" ).click( function() {
+      changeDate( -1 ) 
+    } );
+    $( "#nextDay" ).click(function() {
+      changeDate( 1 ) 
+    } );
+
+    var dateString = getQueryParameter( 'date' );
+    dateFormatRegex = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
+
+    if ( dateFormatRegex.test( dateString ) ) {
+      date = new Date( dateString );
+    }
+
+    loadFreeAppointments( );
+  } );
+  function formatDate( date ) {
+    var days = [
+      'Ponedeljek',
+      'Torek',
+      'Sreda',
+      'Četrtek',
+      'Petek',
+      'Sobota',
+      'Nedelja'
+    ];
+    var months = [
+      'januar',
+      'februar',
+      'marec',
+      'april',
+      'maj',
+      'junij',
+      'julij',
+      'avgust',
+      'september',
+      'oktober',
+      'november',
+      'december',
+    ];
+
+    return days[date.getDay()] + ", " + date.getDate() + ". " + months[date.getMonth()];
+  }
+
+  function loadFreeAppointments() {
+    $( "#selected-date" ).text( formatDate( date ) );
+
+    $( ".appointment" ).remove();
+    $( "#no-appointments" ).hide();
+    $( "#appointments-loader" ).show();
+
+    $.ajax( {
+      type: "GET",
+      url: apiURL + "/api/booking/" + token + "?date=" + date.toISOString().substring( 0, 10 ),
+      contentType: "application/json; charset=utf-8",
+      success: function ( result ) {
+        $( "#appointments-loader" ).hide();
+        if ( result.length === 0 ) {
+          $( "#no-appointments" ).show();
+          return;
+        }
+        console.log( result );
+        result.forEach(appointment => {
+          console.log(appointment[1]);
+          
+          $("#appointments").append(`
+          <div class="appointment card card-outline card-primary p-1">
+            <div class="card-body text-center">
+              <h4>` + appointment[0] + ` - ` +  appointment[1] + `</h4>
+            </div>
+          </div>
+          `);
+        })
+      },
+      error: function ( xhr, status, error ) {
+        console.log( xhr, status, error ); $( "#appointments-loader" ).hide();
+        return false;
+      }
+    } );
+  }
+
+  function changeDate( noOfDays ) {
+    var newDate = new Date( date );
+    newDate.setDate( newDate.getDate() + noOfDays );
+    var url = new URL( window.location.href );
+    url.searchParams.set( "date", newDate.toISOString().substring( 0, 10 ) ); // setting your param
+    window.history.pushState( { path: url.href }, '', url.href );
+    date = newDate;
+    loadFreeAppointments();
+  }
+
+  function getQueryParameter ( name ) {
+    var results = new RegExp( '[\?&]' + name + '=([^&#]*)' )
+      .exec( window.location.search );
+
+    return ( results !== null ) ? results[1] || 0 : false;
+  }
+</script>
 }
-

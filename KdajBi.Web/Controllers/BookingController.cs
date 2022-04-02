@@ -29,9 +29,7 @@ namespace KdajBi.Web.Controllers
         {
             AppointmentToken appointmentToken = _context.AppointmentTokens.Include(s => s.Company).FirstOrDefault(x => x.Token == token);
             vmBooking vm = new vmBooking();
-            var gt = JsonConvert.DeserializeObject<GoogleAuthToken>(User.FindFirst("GooToken").Value);
             vm.token = appointmentToken;
-            vm.gt = gt;
             return View(vm);
         }
     }
