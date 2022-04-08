@@ -40,6 +40,10 @@ namespace KdajBi.Core.Models
             get => WorkplaceSchedules.Select(r => r.Schedule).ToList();
             set => WorkplaceSchedules = value.Select(v => new WorkplaceSchedule() { ScheduleId = v.Id }).ToList();
         }
+
+        
+        public ICollection<WorkplaceScheduleException> WorkplaceScheduleExceptions { get; set; }
+
         public Schedule ScheduleByType(long p_ScheduleType)
         {
             Schedule retval;

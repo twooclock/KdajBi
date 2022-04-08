@@ -201,7 +201,7 @@ namespace KdajBi.API.Controllers
         [HttpPost("/api/GetLocationScheduleExceptions/{locationid}/{date}")]
         public async Task<ActionResult<Schedule>> GetLocationScheduleExceptions(long locationid, string date)
         {
-            //get schedule Exceptions
+            //get schedule Exceptions for a month
             if (LocationIsMine(locationid))
             {
                 DateTime d = DateTime.ParseExact(date, "yyyyMMdd", CultureInfo.InvariantCulture);

@@ -15,6 +15,7 @@ namespace KdajBi.GoogleHelper
         public string token_type;
     }
 
+    //used to communicate with google via GoogleAuthToken (user must be authenticated via Google)
     public class GoogleService : IDisposable
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();

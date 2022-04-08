@@ -13,18 +13,18 @@ namespace KdajBi.Core.Migrations
                 {
                     Id = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CreatedDate = table.Column<DateTime>(nullable: true),
-                    CreatedUserID = table.Column<int>(nullable: true),
-                    UpdatedDate = table.Column<DateTime>(nullable: true),
-                    UpdatedUserID = table.Column<int>(nullable: true),
-                    Active = table.Column<bool>(nullable: true),
                     Token = table.Column<string>(nullable: false),
                     Service = table.Column<string>(nullable: false),
                     Minutes = table.Column<long>(nullable: false),
                     CompanyId = table.Column<long>(nullable: false),
                     LocationId = table.Column<long>(nullable: false),
                     ClientId = table.Column<long>(nullable: false),
-                    AppUserId = table.Column<long>(nullable: false)
+                    AppUserId = table.Column<long>(nullable: false),
+                    Active = table.Column<bool>(nullable: true, defaultValueSql: "1"),
+                    CreatedDate = table.Column<DateTime>(nullable: true, defaultValueSql: "GETDATE()"),
+                    CreatedUserID = table.Column<int>(nullable: true),
+                    UpdatedDate = table.Column<DateTime>(nullable: true, defaultValueSql: "GETDATE()"),
+                    UpdatedUserID = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {

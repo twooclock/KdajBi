@@ -138,6 +138,8 @@ namespace KdajBi
             services.AddAutoMapper(this.GetType().Assembly);
             services.AddTransient<ISmsInfo, SmsInfo>(s => new SmsInfo(Configuration.GetSection("Settings")["SmsInfoWS"]));
 
+            services.Configure<CalendarV3ProviderSettings>(Configuration.GetSection("CalendarV3ProviderSettings"));
+            services.AddTransient<ICalendarV3Provider, CalendarV3Provider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
