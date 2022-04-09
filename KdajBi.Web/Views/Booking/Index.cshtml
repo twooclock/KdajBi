@@ -32,9 +32,9 @@
       </div>
       <div class="col" id="appointments">
         <div class="mb-2 align-center d-flex justify-content-between align-items-center">
-          <button type="button" class="btn btn-outline-primary" id="previousDay"><</button>
+          <button type="button" class="btn btn-outline-primary" id="previous-day"><</button>
               <span id="selected-date"></span>
-              <button type="button" class="btn btn-outline-primary" id="nextDay">></button>
+              <button type="button" class="btn btn-outline-primary" id="next-day">></button>
         </div>
         <div id="no-appointments" class="card card-outline card-primary p-1" style="display: none">
           <div class="card-body text-center">
@@ -60,10 +60,10 @@
   var date = new Date();
 
   $( document ).ready( function () {
-    $( "#previousDay" ).click( function () {
+    $( "#previous-day" ).click( function () {
       changeDate( -1 )
     } );
-    $( "#nextDay" ).click( function () {
+    $( "#next-day" ).click( function () {
       changeDate( 1 )
     } );
 
@@ -107,9 +107,9 @@
   function loadFreeAppointments() {
     $( "#selected-date" ).text( formatDate( date ) );
 
-    $( "#previousDay" ).prop( "disabled", false );
+    $( "#previous-day" ).prop( "disabled", false );
     if ( date <= new Date() ) {
-      $( "#previousDay" ).prop( "disabled", true );
+      $( "#previous-day" ).prop( "disabled", true );
     }
 
     $( ".appointment" ).remove();
@@ -122,13 +122,12 @@
       contentType: "application/json; charset=utf-8",
       success: function ( result ) {
         $( "#appointments-loader" ).hide();
+        $( "#no-appointments" ).hide();
         if ( result.length === 0 ) {
           $( "#no-appointments" ).show();
           return;
         }
-        console.log( result );
         result.forEach( appointment => {
-
           $( "#appointments" ).append( `
           <div class="appointment card card-outline card-primary p-1">
             <div class="card-body text-center">
