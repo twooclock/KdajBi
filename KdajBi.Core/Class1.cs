@@ -47,7 +47,10 @@ namespace KdajBi.Core
 
                 while (start.AddMinutes(minutes) <= end)
                 {
-                    timeSlots.Add(new TimeSlot(start, start.AddMinutes(minutes)));
+                    if (start >= DateTime.Now) // we only add slots in future
+                    {
+                        timeSlots.Add(new TimeSlot(start, start.AddMinutes(minutes)));
+                    }
                     start = start.AddMinutes(30); // We can change this value to get interval from settings
                 }
             }
@@ -71,7 +74,7 @@ namespace KdajBi.Core
                     continue;
                 }
 
-                if (occupiedAppointment.start > appointment.start && occupiedAppointment.start < appointment .end)
+                if (occupiedAppointment.start > appointment.start && occupiedAppointment.start < appointment.end)
                 {
                     retval.Remove(appointment);
                 }
