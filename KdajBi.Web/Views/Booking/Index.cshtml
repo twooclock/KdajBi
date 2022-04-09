@@ -8,15 +8,16 @@
 }
 
 @section styles{
-  
-  <style>
-    .appointment {
-      cursor: pointer;
-    }
-    .appointment.card:hover {
-      background: #007bff22;
-    }
-  </style>
+
+<style>
+  .appointment {
+    cursor: pointer;
+  }
+
+  .appointment.card:hover {
+    background: #007bff22;
+  }
+</style>
 }
 
 
@@ -59,11 +60,11 @@
   var date = new Date();
 
   $( document ).ready( function () {
-    $( "#previousDay" ).click( function() {
-      changeDate( -1 ) 
+    $( "#previousDay" ).click( function () {
+      changeDate( -1 )
     } );
-    $( "#nextDay" ).click(function() {
-      changeDate( 1 ) 
+    $( "#nextDay" ).click( function () {
+      changeDate( 1 )
     } );
 
     var dateString = getQueryParameter( 'date' );
@@ -73,17 +74,17 @@
       date = new Date( dateString );
     }
 
-    loadFreeAppointments( );
+    loadFreeAppointments();
   } );
   function formatDate( date ) {
     var days = [
+      'Nedelja',
       'Ponedeljek',
       'Torek',
       'Sreda',
       'Četrtek',
       'Petek',
-      'Sobota',
-      'Nedelja'
+      'Sobota'
     ];
     var months = [
       'januar',
@@ -121,23 +122,32 @@
           return;
         }
         console.log( result );
-        result.forEach(appointment => {
-          console.log(appointment[1]);
-          
-          $("#appointments").append(`
+        result.forEach( appointment => {
+
+          $( "#appointments" ).append( `
           <div class="appointment card card-outline card-primary p-1">
             <div class="card-body text-center">
-              <h4>` + appointment[0] + ` - ` +  appointment[1] + `</h4>
+              <h4>` + formatAppointmentDate( appointment ) + `</h4>
             </div>
           </div>
           `);
-        })
+        } )
       },
       error: function ( xhr, status, error ) {
         console.log( xhr, status, error ); $( "#appointments-loader" ).hide();
         return false;
       }
     } );
+  }
+
+  function formatAppointmentDate( appointment ) {
+    var start = new Date( appointment.start );
+    var end = new Date( appointment.end );
+
+    return start.getHours() + ":"
+      + ( start.getMinutes() < 10 ? "0" + start.getMinutes() : start.getMinutes() )
+      + " - " + end.getHours() + ":"
+      + ( end.getMinutes() < 10 ? "0" + end.getMinutes() : end.getMinutes() );
   }
 
   function changeDate( noOfDays ) {
@@ -150,7 +160,7 @@
     loadFreeAppointments();
   }
 
-  function getQueryParameter ( name ) {
+  function getQueryParameter( name ) {
     var results = new RegExp( '[\?&]' + name + '=([^&#]*)' )
       .exec( window.location.search );
 

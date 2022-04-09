@@ -31,6 +31,10 @@ namespace KdajBi.Core.Models
         public long ClientId { get; set; }
         public virtual Client Client { get; set; }
 
+        [ForeignKey("Workplace"), Required]
+        public long WorkplaceId { get; set; }
+        public virtual Workplace Workplace { get; set; }
+
         [ForeignKey("AppUser"), Required]
         public long AppUserId { get; set; }
 
