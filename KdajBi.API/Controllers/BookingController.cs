@@ -2,6 +2,7 @@
 using KdajBi.Core.dtoModels;
 using KdajBi.Core.Models;
 using KdajBi.GoogleHelper;
+using KdajBi.Core.dtoModels.Requests;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -200,6 +201,38 @@ namespace KdajBi.API.Controllers
             schedule.Add(new TimeSlot(date + ((DateTime)data.start).TimeOfDay, date + ((DateTime)data.end).TimeOfDay));
 
             return schedule;
+        }
+
+        [AllowAnonymous]
+        [HttpPost("/api/booking/{token}")]
+        public ActionResult<List<TimeSlot>> Store(
+            string token,
+            BookingRequest bookingRequest)
+        {
+
+            AppointmentToken appointmentToken = _context.AppointmentTokens
+                .Include(s => s.Company)
+                .Include(s => s.Client)
+                .Include(s => s.Workplace)
+                .FirstOrDefault(x => x.Token == token);
+
+            // validate timeslot
+            
+            using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
+            {
+                myGoogleHelper.AddEvent(
+                    appointmentToken.Workplace.GoogleCalendarID,
+                    appointmentToken.Client.FullName,
+                    null,
+                    null,
+                    bookingRequest.TimeSlot.start,
+                    bookingRequest.TimeSlot.end
+                );
+            }
+
+            //deactivate token
+
+            return Ok();
         }
     }
 }
