@@ -55,6 +55,7 @@ namespace KdajBi.API.Controllers
 
             AppointmentToken appointmentToken = _context.AppointmentTokens
                 .Include(s => s.Company)
+                .Where(s => s.Active == true)
                 .FirstOrDefault(x => x.Token == token);
 
             if (appointmentToken == null)
@@ -214,23 +215,36 @@ namespace KdajBi.API.Controllers
                 .Include(s => s.Company)
                 .Include(s => s.Client)
                 .Include(s => s.Workplace)
+                .Where(x => x.Active == true)
                 .FirstOrDefault(x => x.Token == token);
 
             // validate timeslot
             
+            BookingConfirmation bookingConfirmation = new BookingConfirmation();
+            bookingConfirmation.Active = true;
+            bookingConfirmation.CreatedDate = DateTime.Now;
+            bookingConfirmation.AppointmentToken = appointmentToken;
+            bookingConfirmation.Start = bookingRequest.TimeSlot.start;
+            bookingConfirmation.End = bookingRequest.TimeSlot.end;
+
+            
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {
-                myGoogleHelper.AddEvent(
+                var gEvent = myGoogleHelper.AddEvent(
                     appointmentToken.Workplace.GoogleCalendarID,
-                    appointmentToken.Client.FullName,
+                    "Čaka na potrditev: " + appointmentToken.Client.FullName + " - " + appointmentToken.Service,
                     null,
                     null,
                     bookingRequest.TimeSlot.start,
                     bookingRequest.TimeSlot.end
                 );
+                
+                bookingConfirmation.GCalId = gEvent.Id;
             }
-
-            //deactivate token
+            _context.BookingConfirmations.Add(bookingConfirmation);
+            
+            appointmentToken.Active = false;
+            _context.SaveChanges();
 
             return Ok();
         }

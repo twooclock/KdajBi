@@ -187,7 +187,9 @@
         } );
       },
       error: function ( xhr, status, error ) {
-        console.log( xhr, status, error ); $( "#appointments-loader" ).hide();
+        $( "#appointments-loader" ).hide();
+        $( "#no-appointments" ).show();
+        // TODO: Show invalid token error
         return false;
       }
     } );
