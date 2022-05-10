@@ -67,7 +67,7 @@ namespace KdajBi.API.Controllers
             appointmentToken.LocationId = appointmentTokenRequest.LocationId; 
             appointmentToken.ClientId = appointmentTokenRequest.ClientId; 
             appointmentToken.AppUserId = appointmentTokenRequest.AppUserId; 
-            
+            //manjka workplace (zaposleni)
             _context.AppointmentTokens.Add(appointmentToken);
                 
             await _context.SaveChangesAsync();

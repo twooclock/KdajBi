@@ -151,7 +151,8 @@ namespace KdajBi.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error /Appointments/index");
-                return Redirect("~/Home/index");
+                //TODO:not all errors are solved with user logoff/logon! FIX!
+                return Redirect("~/LandingPage/index.html");
             }
 
 
