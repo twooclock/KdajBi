@@ -84,7 +84,7 @@ namespace KdajBi.GoogleHelper
         }
 
 
-        public void AddEvent(string calendarId, string title, string contents, string location, DateTime startTime, DateTime endTime)
+        public Event AddEvent(string calendarId, string title, string contents, string location, DateTime startTime, DateTime endTime)
         {
 
             Event newEvent = new Event()
@@ -105,6 +105,27 @@ namespace KdajBi.GoogleHelper
 
             EventsResource.InsertRequest insRequest = myCALservice.Events.Insert(newEvent, calendarId);
             Event createdEvent = insRequest.Execute();
+            return createdEvent;
+        }
+
+        public Event UpdateEvent(string title, string calendarId, string eventId)
+        {
+            EventsResource.GetRequest getRequest = myCALservice.Events.Get(calendarId, eventId);
+            Console.WriteLine(calendarId);
+            Console.WriteLine(eventId);
+            Event evt = getRequest.Execute();
+            
+            evt.Summary = title;
+
+            EventsResource.UpdateRequest updateRequest = myCALservice.Events.Update(evt, calendarId, eventId);
+            Event createdEvent = updateRequest.Execute();
+            return createdEvent;
+        }
+
+        public void DeleteEvent( string calendarId, string eventId)
+        {
+            EventsResource.DeleteRequest deleteRequest = myCALservice.Events.Delete(calendarId, eventId);
+            deleteRequest.Execute();
         }
 
         public void Dispose()

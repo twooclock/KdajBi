@@ -4,14 +4,16 @@ using KdajBi.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace KdajBi.Core.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220408143222_addWorkplaceToAppointmentToken")]
+    partial class addWorkplaceToAppointmentToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -209,50 +211,6 @@ namespace KdajBi.Core.Migrations
                     b.HasIndex("WorkplaceId");
 
                     b.ToTable("AppointmentTokens");
-                });
-
-            modelBuilder.Entity("KdajBi.Core.Models.BookingConfirmation", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool?>("Active")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit");
-
-                    b.Property<long>("AppointmentTokenId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedUserID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("End")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("GCalId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Start")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedUserID")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppointmentTokenId");
-
-                    b.ToTable("BookingConfirmations");
                 });
 
             modelBuilder.Entity("KdajBi.Core.Models.Client", b =>
@@ -1068,15 +1026,6 @@ namespace KdajBi.Core.Migrations
                     b.HasOne("KdajBi.Core.Models.Workplace", "Workplace")
                         .WithMany()
                         .HasForeignKey("WorkplaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("KdajBi.Core.Models.BookingConfirmation", b =>
-                {
-                    b.HasOne("KdajBi.Core.Models.AppointmentToken", "AppointmentToken")
-                        .WithMany()
-                        .HasForeignKey("AppointmentTokenId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

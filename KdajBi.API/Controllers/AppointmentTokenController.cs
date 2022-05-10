@@ -2,6 +2,7 @@
 using KdajBi.Core.dtoModels;
 using KdajBi.Core.Models;
 using KdajBi.GoogleHelper;
+using KdajBi.Core.dtoModels.Requests;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -56,7 +57,7 @@ namespace KdajBi.API.Controllers
         }
 
         [HttpPost("/api/appointment-tokens")]
-        public async Task<ActionResult<AppointmentToken>> Store(AppointmentToken appointmentTokenRequest)
+        public async Task<ActionResult<AppointmentToken>> Store(AppointmentTokenRequest appointmentTokenRequest)
         {
             AppointmentToken appointmentToken = new AppointmentToken();
 

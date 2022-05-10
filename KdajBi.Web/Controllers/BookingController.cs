@@ -32,5 +32,12 @@ namespace KdajBi.Web.Controllers
             vm.token = appointmentToken;
             return View(vm);
         }
+
+        [AllowAnonymous]
+        [Route("/booking-successful")]
+        public IActionResult Success()
+        {
+            return View();
+        }
     }
 }

@@ -1,0 +1,23 @@
+﻿@using KdajBi.Core.Models;
+@model IEnumerable<BookingConfirmation>
+
+<h5>Naročila</h5>
+@foreach (var item in Model)
+{
+    <div class="card bg-secondary" id="booking-confirmation" data-id="@Html.Raw(item.Id)">
+        <div class="card-header">
+            <h3 class="card-title">
+                @Html.Raw(item.AppointmentToken.Client.FullName)
+            </h3>
+        </div>
+        <div class="card-body">
+            <p>@Html.Raw(item.AppointmentToken.Service)</p>
+            <p>@Html.Raw(item.Start.ToString("dd.MM.yyyy"))</p>
+            <p>@Html.Raw(item.Start.ToString("HH:mm")) - @Html.Raw(item.End.ToString("HH:mm"))</p>
+        </div>
+        <div class="card-footer px-auto">
+            <button type="button" class="btn btn-danger">Izbriši</button>
+            <button type="button" class="btn btn-success">Potrdi</button>
+        </div>
+    </div>
+}

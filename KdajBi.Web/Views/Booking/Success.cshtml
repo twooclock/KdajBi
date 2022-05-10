@@ -1,0 +1,30 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+@inject KdajBi.Web.Services.IApiTokenProvider apiTP
+@model vmBooking
+@{
+  Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+  ViewData["Title"] = "Naročilo";
+}
+
+@section styles{
+
+<style>
+</style>
+}
+
+
+<!-- page content -->
+
+<div class="card mt-5">
+  <div class="card-body login-card-body">
+    <h1 class="mb-2">KdajBi naročanje</h1>
+    <div>
+      Uspešno ste naročeni na termin
+    </div>
+  </div>
+</div>
+@section scripts{
+<script type="text/javascript">
+</script>
+}
