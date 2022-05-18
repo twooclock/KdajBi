@@ -1,5 +1,6 @@
 ﻿using KdajBi.Core;
 using KdajBi.Core.Models;
+using KdajBi.GoogleHelper;
 using KdajBi.Models;
 using KdajBi.Web.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -10,8 +11,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -161,9 +164,32 @@ namespace KdajBi.Web.Controllers
                 }
                 else
                 { await _userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim); }
-
-                myClaim = new Claim("GooToken", JsonSerializer.Serialize(info.AuthenticationTokens.ToDictionary(x => x.Name, y => y.Value)));
+                //set GooToken, mind refresh token (returned only on consent approval - not on every google login!)
                 existingClaim = claimsPrincipal.Claims.FirstOrDefault(r => r.Type == "GooToken");
+                GoogleAuthToken newToken = new GoogleAuthToken();
+                if (existingClaim != null)
+                { newToken = JsonConvert.DeserializeObject<GoogleAuthToken>(existingClaim.Value); }
+                newToken.access_token = info.AuthenticationTokens.Single(x => x.Name == "access_token").Value;
+                string refresh_token=null;
+                try
+                {
+                    refresh_token = info.AuthenticationTokens.Single(x => x.Name == "refresh_token").Value;
+                }
+                catch (Exception)
+                {
+                    refresh_token = null;
+                }
+                if (refresh_token != null)
+                {
+                    newToken.refresh_token = refresh_token;
+                }
+                DateTimeOffset dateOffset;
+                if (DateTimeOffset.TryParse(info.AuthenticationTokens.SingleOrDefault(x => x.Name == "expires_at").Value, null, DateTimeStyles.AssumeUniversal, out dateOffset))
+                {
+                    newToken.expires_at = dateOffset.UtcDateTime;
+                }
+                
+                myClaim = new Claim("GooToken", JsonConvert.SerializeObject(newToken));
                 if (existingClaim == null)
                 {
                     //add Google token to claims
@@ -171,6 +197,7 @@ namespace KdajBi.Web.Controllers
                 }
                 else
                 {
+                    //refresh Google token claim
                     await _userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim);
                 }
 
@@ -241,7 +268,7 @@ namespace KdajBi.Web.Controllers
             {
                 Davcna = p_davcna,
                 Name = p_naziv != null ? p_naziv.Split('|')[0] : "",
-                Active = true
+                Active = true,
                 CreatedDate = DateTime.Now
             };
 
@@ -364,6 +391,17 @@ namespace KdajBi.Web.Controllers
             await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, new ClaimsPrincipal(identity), authProperties);
 
             return Redirect("~/Home/Index");
+        }
+
+        [HttpPost("/account/gapitoken")]
+        public async Task<IActionResult> gapitoken()
+        {
+            GoogleAuthToken myToken = _CurrentUserGooToken();
+            if (myToken != null) { 
+                myToken.refresh_token = ""; 
+            }
+            
+            return Json(JsonConvert.SerializeObject(myToken));
         }
     }
 }

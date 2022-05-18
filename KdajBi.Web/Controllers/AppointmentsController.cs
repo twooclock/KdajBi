@@ -50,7 +50,7 @@ namespace KdajBi.Web.Controllers
                                 if (gt != null)
                                 {
                                     var events = new List<FullCalendar.Event>();
-                                    using (GoogleService service = new GoogleService(gt))
+                                    using (GoogleService service = new GoogleService(User.Identity.Name, gt))
                                     {
                                         var cals = service.getCalendars().Items;
                                         for (int i = myVM.Location.Workplaces.Count - 1; i >= 0; i--)
@@ -137,7 +137,7 @@ namespace KdajBi.Web.Controllers
                         }
                         catch (Exception ex)
                         {
-                            //TODO:expired google credentials
+                            //TODO:expired google credentials?
                             _logger.LogError(ex, "Error /home/");
                             throw;
                         }
@@ -146,12 +146,14 @@ namespace KdajBi.Web.Controllers
                     { return NotFound(); }
                 }
                 else
-                { return Redirect("~/LandingPage/index.html"); }
+                {
+                    _logger.LogError("Error User.identity is NOT Authenticated!");
+                    return Redirect("~/LandingPage/index.html"); }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error /Appointments/index");
-                return Redirect("~/Home/index");
+                return Redirect("~/LandingPage/index.html");
             }
 
 

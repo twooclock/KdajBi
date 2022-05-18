@@ -76,7 +76,7 @@ namespace KdajBi.API.Controllers
                 var gt = _CurrentUserGooToken();
                 if (gt != null)
                 {
-                    using (GoogleService service = new GoogleService(gt))
+                    using (GoogleService service = new GoogleService(User.Identity.Name, gt))
                     {
                         if (service.EnsureReadPermissionsForService(p_settings["SMS_GOO_Cals"], _config.GetSection("GoogleSettings")["GooServiceAccount"]) == false)
                         {return Json("Not all calendar access permissions were set!"); }
