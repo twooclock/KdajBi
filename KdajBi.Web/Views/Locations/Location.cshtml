@@ -71,6 +71,8 @@
                                         <div class="form-group">
                                             <div class="col-sm-offset-2 col-sm-10">
                                                 <button class="btn btn-default" onclick="saveGeneral()">Shrani</button>
+                                                <br><br><button id="showEventsBtn" onclick="showEvents();">Show Calendar</button>
+                                                <br><br><button id="revokeBtn" onclick="revokeToken();">Revoke access token</button>
                                             </div>
                                         </div>
                                     </div>
@@ -256,7 +258,7 @@
                             <option value="0">[Create new calendar]</option>
                             @foreach (var item in Model.GoogleCalendars)
                             {
-                                <option value="@item.Key">@Html.Raw(item.Value)</option>
+                            <option value="@item.Key">@Html.Raw(item.Value)</option>
                             }
                         </select>
                     </div>
@@ -332,10 +334,10 @@
     <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
+
 
     <script type="text/javascript">
-
+    
         var workplacesLoaded=false;
         var servicesLoaded=false;
         @await Html.PartialAsync("_ApiAccess")
@@ -356,14 +358,6 @@
             //swal inside modal!
             $.fn.modal.Constructor.prototype._enforceFocus = function() {};
 
-            gapi.load('client:auth2', function () {
-                gapi.client.load(DISCOVERY_DOCS, 'v3').then(function () {
-                    gapi.auth.setToken({ access_token: gooToken.access_token })
-                    //fill goo calendar combo
-                    //LoadCalendars();
-                })
-            })
-
             //bind cboLocations
             $("#cboLocations").val( @Html.Raw(@Model.Location.Id));
             $("#cboLocations").off('change').change(function (evt) {
@@ -374,7 +368,7 @@
                  if (e.target.id == "workplaces-tab" && workplacesLoaded == false) { GetWorkplacesTable(); workplacesLoaded = true;}
                  if (e.target.id == "services-tab" && servicesLoaded == false) { GetServicesTable(); servicesLoaded = true;}
             });
-            
+
 
             $('#formGeneral').validate({
                 rules: {
@@ -505,17 +499,17 @@
 
         async function CreateCalendar(p_name) {
             return new Promise(function (resolve, reject) {
-
-                var request = gapi.client.calendar.calendars.insert({ "summary": p_name })
-                    .execute(function (resp) {
-                    if (typeof resp.error === "undefined") {
-                        $("#cboGooCal").append($("<option />").val(resp.id).text(p_name));
-                        $("#cboGooCal").selectpicker('refresh');
-                        $("#cboGooCal").selectpicker('val',resp.id);
-                        resolve(true);
-
-                    }
-                    else { reject(resp.error.message); }
+                refreshGAPIToken().then(() => {
+                    var request = gapi.client.calendar.calendars.insert({ "summary": p_name })
+                        .execute(function (resp) {
+                            if (typeof resp.error === "undefined") {
+                                $("#cboGooCal").append($("<option />").val(resp.id).text(p_name));
+                                $("#cboGooCal").selectpicker('refresh');
+                                $("#cboGooCal").selectpicker('val', resp.id);
+                                resolve(true);
+                            }
+                            else { reject(resp.error.message); }
+                        });
                 });
 
             });
@@ -994,5 +988,8 @@
 
         //#endregion
     </script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoadOkay()" onerror="gapiLoadFail(event)"></script>
+
+    
 }
 

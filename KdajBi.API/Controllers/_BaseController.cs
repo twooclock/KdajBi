@@ -49,8 +49,33 @@ namespace KdajBi.API.Controllers
         {
             try
             {
-                //TODO: check expiration and renew
-                return JsonConvert.DeserializeObject<GoogleAuthToken>(_context.UserClaims.First(i => i.ClaimType == "GooToken" && i.UserId == _CurrentUserID()).ClaimValue);
+                //before
+                //return JsonConvert.DeserializeObject<GoogleAuthToken>(_context.UserClaims.First(i => i.ClaimType == "GooToken" && i.UserId == _CurrentUserID()).ClaimValue);
+                //check expiration and renew
+                var gooToken = JsonConvert.DeserializeObject<GoogleAuthToken>(_context.UserClaims.First(i => i.ClaimType == "GooToken" && i.UserId == _CurrentUserID()).ClaimValue);
+                using (GoogleService service = new GoogleService(_CurrentUserEmail(), gooToken))
+                {
+                    if (service.TokenWasRefreshed == true)
+                    {
+                        gooToken = service.googleAuthToken;
+                        var strJson = JsonConvert.SerializeObject(gooToken);
+                        var myClaim = new Claim("GooToken", strJson);
+                        AppUser appUser = _userManager.FindByNameAsync(_CurrentUserEmail()).Result;
+                        var claimsPrincipal = _signInManager.CreateUserPrincipalAsync(appUser).Result;
+                        var existingClaim = claimsPrincipal.Claims.FirstOrDefault(r => r.Type == "GooToken");
+                        if (existingClaim == null)
+                        {
+                            //add Google token to claims
+                            _ = _userManager.AddClaimAsync(appUser, myClaim).Result;
+                        }
+                        else
+                        {
+                            _ = _userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim).Result;
+                        }
+                        _ = _signInManager.SignInAsync(appUser, false, null); //to refresh user claims
+                    }
+                }
+                return gooToken;
             }
             catch (System.Exception ex)
             {
@@ -58,5 +83,7 @@ namespace KdajBi.API.Controllers
                 return null;
             }
         }
+
+
     }
 }

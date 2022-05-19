@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
@@ -48,8 +49,33 @@ namespace KdajBi.Web.Controllers
         {
             try
             {
-                //TODO: check expiration and renew
-                return JsonConvert.DeserializeObject<GoogleAuthToken>(User.FindFirst("GooToken").Value);
+                //check expiration and renew
+                var gooToken = JsonConvert.DeserializeObject<GoogleAuthToken>(User.FindFirst("GooToken").Value);
+                using (GoogleService service = new GoogleService(User.Identity.Name, gooToken))
+                {
+                    if (service.TokenWasRefreshed == true)
+                    {
+                        gooToken.access_token = service.googleAuthToken.access_token;
+                        gooToken.expires_at = service.googleAuthToken.expires_at;
+                        if (service.googleAuthToken.refresh_token != null) { gooToken.refresh_token = service.googleAuthToken.refresh_token; }
+                        var strJson = JsonConvert.SerializeObject(gooToken);
+                        var myClaim = new Claim("GooToken", strJson);
+                        AppUser appUser = _userManager.FindByNameAsync(User.Identity.Name).Result;
+                        var claimsPrincipal = _signInManager.CreateUserPrincipalAsync(appUser).Result;
+                        var existingClaim = claimsPrincipal.Claims.FirstOrDefault(r => r.Type == "GooToken");
+                        if (existingClaim == null)
+                        {
+                            //add Google token to claims
+                            _ = _userManager.AddClaimAsync(appUser, myClaim).Result;
+                        }
+                        else
+                        {
+                            _ = _userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim).Result;
+                        }
+                        _ = _signInManager.SignInAsync(appUser, false, null); //to refresh user claims
+                    }
+                }
+                return gooToken;
             }
             catch (Exception ex)
             {

@@ -219,7 +219,6 @@
     <!-- cookies needed for changing location -->
     <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
     <script src="~/plugins/bootstrap-tokenfield/bootstrap-tokenfield.min.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
 
 
     <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
@@ -337,10 +336,70 @@
         var fp;
         var SelectedClientID = 0;
 
+        //#region events
+        @Html.Raw("var eventsMonths = []; eventsMonths.push(dayjs(Date()).format(\"YYYYMM\"));")
+        async function FetchRenderEvents(p_calendar, p_date) {
+            return new Promise(function (resolve, reject) {
+                console.info("FetchRenderEvents:", p_date);
+                if (isInArray(eventsMonths, dayjs(p_date).format("YYYYMM")) == false) {
+                    console.info("asking for events for ", dayjs(p_date).format("YYYY-MM"));
+                    var firstDayOfMonth = new Date(p_date.getFullYear(), p_date.getMonth(), 1);
+                    var lastDayOfMonth = new Date(p_date.getFullYear(), p_date.getMonth() + 1, 0);
+
+                    refreshGAPIToken().then(() => {
+                        p_calendar.getResources().forEach(function (aResource) {
+                            //for each goo calendar
+                            var pageToken = null;
+                            do {
+                                //get events
+                                gapi.client.calendar.events.list({
+                                    "calendarId": aResource.extendedProps.gid,
+                                    "timeMin": firstDayOfMonth.toISOString(),
+                                    "timeMax": lastDayOfMonth.toISOString(),
+                                    "showDeleted": false,
+                                    "singleEvents": true,
+                                    "pageToken": pageToken
+                                }).execute(function (response) {
+                                    if (response.error || response == false) {
+                                        toastr.error("Napaka:gapi.client.calendar.events.list");
+                                        reject(); return;
+                                    }
+                                    else {
+                                        response.items.forEach(function (item) {
+                                            //put on calendar
+                                            calendar.addEvent({
+                                                id: item.id,
+                                                title: item.summary,
+                                                start: item.start.dateTime,
+                                                end: item.end.dateTime,
+                                                resourceId: getResourceIdByGid(aResource.extendedProps.gid),
+                                                extendedProps: ((typeof item.extendedProperties === "undefined") ? {} : item.extendedProperties.private)
+                                            });
+                                        });
+                                        pageToken = ((typeof response.nextPageToken === "undefined") ? null : response.nextPageToken);
+                                        pageToken = pageToken;
+                                    }
+
+                                });
+                            } while (pageToken != null);
+
+
+                        });
+
+                        eventsMonths.push(dayjs(p_date).format("YYYYMM"));
+                        resolve(true);
+                    });
+                }
+                else { resolve(true); }
+            });
+
+        }
+        //#endregion
+
     //#region background events
         @Html.Raw("var resourceswd=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.resourcesWD));
         @Html.Raw("var exMonths = [];")
-        @{const bool nakaziUrnike = true; }
+        @{const bool nakaziUrnike = false; }
         function isInArray(array, value) {
             return (array.find(item => { return item == value }) || []).length > 0;
         }
@@ -362,7 +421,7 @@
                         rwd.WeekDays.forEach(function (arrayItem, idx) {
                             var reswd = rwd.WeekDays[idx];
                             if (arrayItem.changed == true) {
-                                //remove enevts by Id
+                                //remove events by Id
                                 aResource.getEvents().forEach(function (rEvent) {
                                     if (rEvent.id == idx.toString() && rEvent.display=="background") { rEvent.remove(); }
                                 });
@@ -466,61 +525,64 @@
                     start: { 'dateTime': info.event.start },
                     end: { 'dateTime': info.event.end }
                 };
-
-                if (info.newResource != null) {
-                    //move event first
-                    calid = info.newResource.extendedProps.gid;
-                    var eventToUpdate = gapi.client.calendar.events.move({
-                        "calendarId": info.oldResource.extendedProps.gid,
-                        "eventId": info.event.id,
-                        "destination": info.newResource.extendedProps.gid
-                    }).execute(function (response) {
-                        if (response.error || response == false) {
-                            toastr.error("Napaka:gapi.client.calendar.events.move");
-                            reject(info); return;
-                        }
-                        else {
-                            console.log("Moved event: %s", event.id);
-                            if (info.delta.milliseconds != 0 || info.delta.days != 0 || info.delta.months != 0 || info.delta.years != 0) {
-                                //update event if changed
-                                eid = event.id;
-                                var eventToUpdate = gapi.client.calendar.events.patch({
-                                    "calendarId": calid,
-                                    "eventId": eid,
-                                    "resource": eventPatch
-                                }).execute(function (response) {
-                                    if (response.error || response == false) {
-                                        toastr.error("Napaka:gapi.client.calendar.events.patch");
-                                        reject(info); return;
-                                    }
-                                    else {
-                                        console.log("Updated event afer move: %s", response.id);
-                                    }
-                                });
-                            }
-                        }
-                    });
-
-                } else {
-                    if (info.delta.milliseconds != 0 || info.delta.days != 0 || info.delta.months != 0 || info.delta.years != 0) {
-                        //update event
-                        var eventToUpdate = gapi.client.calendar.events.patch({
-                            "calendarId": calid,
-                            "eventId": eid,
-                            "resource": eventPatch
+                refreshGAPIToken().then(() => {
+                    if (info.newResource != null) {
+                        //move event first
+                        calid = info.newResource.extendedProps.gid;
+                        var eventToUpdate = gapi.client.calendar.events.move({
+                            "calendarId": info.oldResource.extendedProps.gid,
+                            "eventId": info.event.id,
+                            "destination": info.newResource.extendedProps.gid
                         }).execute(function (response) {
                             if (response.error || response == false) {
-                                toastr.error("Napaka:gapi.client.calendar.events.patch");
+                                toastr.error("Napaka:gapi.client.calendar.events.move");
                                 reject(info); return;
                             }
                             else {
-                                console.log("Updated event: %s", response.id);
+                                console.log("Moved event: %s", info.event.id);
+                                
+                                if (info.delta.milliseconds != 0 || info.delta.days != 0 || info.delta.months != 0 || info.delta.years != 0) {
+                                    //update event if changed
+                                    eid = info.event.id;
+                                    eventPatch.extendedProperties = response.extendedProperties;
+                                    var eventToUpdate = gapi.client.calendar.events.patch({
+                                        "calendarId": calid,
+                                        "eventId": eid,
+                                        "resource": eventPatch
+                                    }).execute(function (response) {
+                                        if (response.error || response == false) {
+                                            toastr.error("Napaka:gapi.client.calendar.events.patch");
+                                            reject(info); return;
+                                        }
+                                        else {
+                                            console.log("Updated event after move: %s", response.id);
+                                            resolve(true);
+                                        }
+                                    });
+                                }
                             }
                         });
-                    }
-                }
 
-                resolve(true);
+                    } else {
+                        if (info.delta.milliseconds != 0 || info.delta.days != 0 || info.delta.months != 0 || info.delta.years != 0) {
+                            //update event
+                            var eventToUpdate = gapi.client.calendar.events.patch({
+                                "calendarId": calid,
+                                "eventId": eid,
+                                "resource": eventPatch
+                            }).execute(function (response) {
+                                if (response.error || response == false) {
+                                    toastr.error("Napaka:gapi.client.calendar.events.patch");
+                                    reject(info); return;
+                                }
+                                else {
+                                    console.log("Updated event: %s", response.id);
+                                    resolve(true);
+                                }
+                            });
+                        }
+                    }
+                });
             });
         }
 
@@ -533,23 +595,22 @@
                     start: { 'dateTime': info.event.start },
                     end: { 'dateTime': info.event.end }
                 };
-
-                var eventToUpdate = gapi.client.calendar.events.patch({
-                    "calendarId": calid,
-                    "eventId": eid,
-                    "resource": eventPatch
-                }).execute(function (response) {
-                    if (response.error || response == false) {
-                        toastr.error("Napaka:gapi.client.calendar.events.patch");
-                        reject(info); return;
-                    }
-                    else {
-                        console.log("Updated resized event: %s", response.id);
-                    }
+                refreshGAPIToken().then(() => {
+                    var eventToUpdate = gapi.client.calendar.events.patch({
+                        "calendarId": calid,
+                        "eventId": eid,
+                        "resource": eventPatch
+                    }).execute(function (response) {
+                        if (response.error || response == false) {
+                            toastr.error("Napaka:gapi.client.calendar.events.patch");
+                            reject(info); return;
+                        }
+                        else {
+                            console.log("Updated resized event: %s", response.id);
+                            resolve(true);
+                        }
+                    });
                 });
-
-
-                resolve(true);
             });
         }
 
@@ -624,7 +685,7 @@
                             //initialDate: 'today',
                             slotMinTime: "@Html.Raw(Model.Location.Schedule.minTime())", //"7:00:00",
                             slotMaxTime: "@Html.Raw(Model.Location.Schedule.maxTime())", //"21:00:00",
-                            slotDuration: '00:30:00',
+                            slotDuration: '00:30',
                             allDaySlot: false,
                             //scrollTime: getScrollTime(), //"8:00:00",
                             slotLabelFormat: {
@@ -707,11 +768,11 @@
                                 showEvent(info);
                             },
                             eventDrop: function (info) {
-                                console.info("eventDrop: info:", info);
+                                //console.info("eventDrop: info:", info);
                                 SaveDragedEvent(info).catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); });
                             },
                             eventResize: function (event, dayDelta, minuteDelta) {
-                                console.info("eventResize: ", event);
+                                //console.info("eventResize: ", event);
                                 SaveResizedEvent(event).catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); });
                             },
                             select: function (arg) {
@@ -722,15 +783,17 @@
                                     //show new Event modal
                                     newEvent(arg);
                                 }
-                            }
-                            @if (nakaziUrnike == true)
-                            {
+                            },
+                            datesSet: function (dateInfo) {
+                                console.info("date changes to:", dateInfo.start);
+                                FetchRenderEvents(calendar, dateInfo.start).then(result => { FetchRenderEvents(calendar, dateInfo.end) });
+                                @if (nakaziUrnike == true)
+                                {
                                 <text>
-                                ,datesSet: function (dateInfo) {
-                                console.info("date changes to:", dateInfo.start,"list of events:");
-                                FetchRenderExceptions(calendar, dateInfo.start).then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
-                                }
+                                    FetchRenderExceptions(calendar, dateInfo.start).then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
                                 </text>
+                                }
+                                
                             }
 
                             });
@@ -752,11 +815,6 @@
         }
 
             document.addEventListener('DOMContentLoaded', function() {
-                gapi.load('client:auth2', function () {
-                    gapi.client.load(DISCOVERY_DOCS, 'v3').then(function () {
-                        gapi.auth.setToken({ access_token: gooToken.access_token })
-                    });
-                });
 
                 // load locale and Get flatpicker localized instance
                 console.info("loading dayjs,fp:", navigator.language.slice(0, 2));
@@ -812,6 +870,9 @@
                         SelectedClientID = ui.item.value;
                         $("#txtClientsearch").blur();
                         event.preventDefault();
+                        document.getElementById("txtNotes").click();
+                        setTimeout(() => { document.getElementById("txtNotes-tokenfield").focus(); }, 400);
+                        //$("#txtNotes-tokenfield").focus();
                         return false;
                     },
                     response: function (event, ui) {
@@ -924,20 +985,17 @@
                 $("#txtClientsearch").val('');
                 $("#txtClientMobile").val('');
             }
-            else
-            {
+            else {
                 var client = JSON.parse(info.event.extendedProps.client);
                 $("#txtClientsearch").val(client.label);
                 SelectedClientID = client.value;
                 $("#txtClientMobile").val(client.mobile);
             }
-            if (typeof info.event?.extendedProps?.notes === "undefined")
-            {
+            if (typeof info.event?.extendedProps?.notes === "undefined") {
                 $("#txtNotes").val('');
                 $("#txtNotes").tokenfield('setTokens', ' ');
             }
-            else
-            {
+            else {
                 try {
                     $("#txtNotes").tokenfield('setTokens', JSON.parse(info.event.extendedProps.notes));
                 } catch (e) {
@@ -960,7 +1018,8 @@
             $("#cmdDelete").off('click').click(function (evt) {
                 if (DeleteEvent(info) != false) { $("#myModal").modal("hide"); }
             });
-            }
+            hideKeyboard();
+        }
 
 
 
@@ -973,22 +1032,23 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     var res = info.event.getResources();
-                    gapi.client.calendar.events.delete({
-                        "calendarId": res[0].extendedProps.gid,
-                        "eventId": info.event.id
-                    }).execute(function (response) {
-                        if (response.error || response == false) {
-                            toastr.error("Napaka:gapi.client.calendar.events.insert");
-                            return false;
-                        }
-                        else {
-                            console.log("Deleted event: %s", info.event.id);
-                            info.event.remove();
-                            return true;
-                        }
+                    refreshGAPIToken().then(() => {
+                        gapi.client.calendar.events.delete({
+                            "calendarId": res[0].extendedProps.gid,
+                            "eventId": info.event.id
+                        }).execute(function (response) {
+                            if (response.error || response == false) {
+                                toastr.error("Napaka:gapi.client.calendar.events.delete");
+                                return false;
+                            }
+                            else {
+                                console.log("Deleted event: %s", info.event.id);
+                                info.event.remove();
+                                return true;
+                            }
 
+                        });
                     });
-
                 } else { return false; }
             });
         }
@@ -1074,31 +1134,32 @@
                         }
                     };
 
-                    var eventToUpdate = gapi.client.calendar.events.insert({
-                        "calendarId": calid,
-                        "resource": newEvent
-                    }).execute(function (response) {
-                        if (response.error || response == false) {
-                            toastr.error("Napaka:gapi.client.calendar.events.insert");
-                            return false;
-                        }
-                        else {
-                            console.log("Created event: %s", response.id);
-                            //put on full calendar
-                            calendar.addEvent({
-                                id: response.id,
-                                title: newEvent.summary,
-                                start: newEvent.start.dateTime,
-                                end: newEvent.end.dateTime,
-                                resourceId: getResourceIdByGid(calid),
-                                extendedProps: {
-                                    client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                    notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
-                                }
-                            });
-                        }
+                    refreshGAPIToken().then(() => {
+                        var eventToUpdate = gapi.client.calendar.events.insert({
+                            "calendarId": calid,
+                            "resource": newEvent
+                        }).execute(function (response) {
+                            if (response.error || response == false) {
+                                toastr.error("Napaka:gapi.client.calendar.events.insert");
+                                return false;
+                            }
+                            else {
+                                console.log("Created event: %s", response.id);
+                                //put on full calendar
+                                calendar.addEvent({
+                                    id: response.id,
+                                    title: newEvent.summary,
+                                    start: newEvent.start.dateTime,
+                                    end: newEvent.end.dateTime,
+                                    resourceId: getResourceIdByGid(calid),
+                                    extendedProps: {
+                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                        notes: JSON.stringify($("#txtNotes").val())
+                                    }
+                                });
+                            }
+                        });
                     });
-
                 });
 
 
@@ -1133,48 +1194,48 @@
                         }
                     };
 
-
-                    var eventToUpdate = gapi.client.calendar.events.insert({
-                        "calendarId": calid,
-                        "resource": newEvent
-                    }).execute(function (response) {
-                        if (response.error || response == false) {
-                            toastr.error("Napaka:gapi.client.calendar.events.insert");
-                            return false;
-                        }
-                        else {
-                            console.log("Created event: %s", response.id);
-                            //put on calendar
-                            calendar.addEvent({
-                                id: response.id,
-                                title: newEvent.summary,
-                                start: newEvent.start.dateTime,
-                                end: newEvent.end.dateTime,
-                                resourceId: getResourceIdByGid(calid),
-                                extendedProps: {
-                                    client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                    notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
-                                }
-                            });
-                        }
-                        //delete previous event
-                        gapi.client.calendar.events.delete({
-                            "calendarId": res[0].extendedProps.gid,
-                            "eventId": p_event.event.id
+                    refreshGAPIToken().then(() => {
+                        var eventToUpdate = gapi.client.calendar.events.insert({
+                            "calendarId": calid,
+                            "resource": newEvent
                         }).execute(function (response) {
                             if (response.error || response == false) {
-                                toastr.error("Napaka:gapi.client.calendar.events.delete");
+                                toastr.error("Napaka:gapi.client.calendar.events.insert");
                                 return false;
                             }
                             else {
-                                console.log("Deleted event: %s", p_event.event.id);
-                                p_event.event.remove();
-                                return true;
+                                console.log("Created event: %s", response.id);
+                                //put on calendar
+                                calendar.addEvent({
+                                    id: response.id,
+                                    title: newEvent.summary,
+                                    start: newEvent.start.dateTime,
+                                    end: newEvent.end.dateTime,
+                                    resourceId: getResourceIdByGid(calid),
+                                    extendedProps: {
+                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                        notes: JSON.stringify($("#txtNotes").val())
+                                    }
+                                });
                             }
+                            //delete previous event
+                            gapi.client.calendar.events.delete({
+                                "calendarId": res[0].extendedProps.gid,
+                                "eventId": p_event.event.id
+                            }).execute(function (response) {
+                                if (response.error || response == false) {
+                                    toastr.error("Napaka:gapi.client.calendar.events.delete");
+                                    return false;
+                                }
+                                else {
+                                    console.log("Deleted event: %s", p_event.event.id);
+                                    p_event.event.remove();
+                                    return true;
+                                }
 
+                            });
                         });
                     });
-
                 });
 
 
@@ -1311,4 +1372,6 @@
             } else { return false; }
         }
     </script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoadOkay()" onerror="gapiLoadFail(event)"></script>
+
 }

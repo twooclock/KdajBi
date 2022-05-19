@@ -50,7 +50,7 @@ namespace KdajBi.Web.Controllers
                                 if (gt != null)
                                 {
                                     var events = new List<FullCalendar.Event>();
-                                    using (GoogleService service = new GoogleService(gt))
+                                    using (GoogleService service = new GoogleService(User.Identity.Name, gt))
                                     {
                                         var cals = service.getCalendars().Items;
                                         for (int i = myVM.Location.Workplaces.Count - 1; i >= 0; i--)
@@ -60,9 +60,9 @@ namespace KdajBi.Web.Controllers
                                             {
                                                 myVM.GoogleCalendars.Add(new Tuple<string,string,long>(item.GoogleCalendarID, item.Name, item.Id));
                                                 //get calendar events
-                                                Events calEvents = service.GetEvents(item.GoogleCalendarID);
+                                                List<Event> calEvents = service.GetEvents(item.GoogleCalendarID, DateTime.Now);
 
-                                                foreach (var calEvent in calEvents.Items)
+                                                foreach (var calEvent in calEvents)
                                                 {
                                                     var start = calEvent.Start.DateTime.Value;
                                                     var end = calEvent.End.DateTime.Value;
@@ -137,7 +137,7 @@ namespace KdajBi.Web.Controllers
                         }
                         catch (Exception ex)
                         {
-                            //TODO:expired google credentials
+                            //TODO:expired google credentials?
                             _logger.LogError(ex, "Error /home/");
                             throw;
                         }
@@ -146,7 +146,9 @@ namespace KdajBi.Web.Controllers
                     { return NotFound(); }
                 }
                 else
-                { return Redirect("~/LandingPage/index.html"); }
+                {
+                    _logger.LogError("Error User.identity is NOT Authenticated!");
+                    return Redirect("~/LandingPage/index.html"); }
             }
             catch (Exception ex)
             {

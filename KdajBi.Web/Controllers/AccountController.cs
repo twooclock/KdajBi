@@ -1,5 +1,6 @@
 ﻿using KdajBi.Core;
 using KdajBi.Core.Models;
+using KdajBi.GoogleHelper;
 using KdajBi.Models;
 using KdajBi.Web.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -10,8 +11,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -161,9 +164,32 @@ namespace KdajBi.Web.Controllers
                 }
                 else
                 { await _userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim); }
-
-                myClaim = new Claim("GooToken", JsonSerializer.Serialize(info.AuthenticationTokens.ToDictionary(x => x.Name, y => y.Value)));
+                //set GooToken, mind refresh token (returned only on consent approval - not on every google login!)
                 existingClaim = claimsPrincipal.Claims.FirstOrDefault(r => r.Type == "GooToken");
+                GoogleAuthToken newToken = new GoogleAuthToken();
+                if (existingClaim != null)
+                { newToken = JsonConvert.DeserializeObject<GoogleAuthToken>(existingClaim.Value); }
+                newToken.access_token = info.AuthenticationTokens.Single(x => x.Name == "access_token").Value;
+                string refresh_token=null;
+                try
+                {
+                    refresh_token = info.AuthenticationTokens.Single(x => x.Name == "refresh_token").Value;
+                }
+                catch (Exception)
+                {
+                    refresh_token = null;
+                }
+                if (refresh_token != null)
+                {
+                    newToken.refresh_token = refresh_token;
+                }
+                DateTimeOffset dateOffset;
+                if (DateTimeOffset.TryParse(info.AuthenticationTokens.SingleOrDefault(x => x.Name == "expires_at").Value, null, DateTimeStyles.AssumeUniversal, out dateOffset))
+                {
+                    newToken.expires_at = dateOffset.UtcDateTime;
+                }
+                
+                myClaim = new Claim("GooToken", JsonConvert.SerializeObject(newToken));
                 if (existingClaim == null)
                 {
                     //add Google token to claims
@@ -171,11 +197,24 @@ namespace KdajBi.Web.Controllers
                 }
                 else
                 {
+                    //refresh Google token claim
                     await _userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim);
                 }
 
                 var authProperties = new AuthenticationProperties { IsPersistent = false };
                 await _signInManager.SignInAsync(appUser, authProperties);
+
+                //log login
+                appUser.LastLoginDate = DateTime.Now;
+                _context.Entry(appUser).State = EntityState.Modified;
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error writing LastLoginDate for user {0}", appUser.Id);
+                }
 
                 return Redirect("~/Home/Index");
             }
@@ -190,6 +229,7 @@ namespace KdajBi.Web.Controllers
                     LastName = (info.Principal.FindFirst(ClaimTypes.Surname) != null) ? info.Principal.FindFirst(ClaimTypes.Surname).Value : ""
                 };
 
+               
 
                 return Register(user);
             }
@@ -204,34 +244,47 @@ namespace KdajBi.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(string p_email, string p_firstname, string p_lastname, string p_davcna, string p_naziv, string p_nazivsalona)
         {
+            
             ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
+            {
+                _logger.LogWarning("_signInManager.GetExternalLoginInfoAsync is NULL!");
                 return RedirectToAction(nameof(Login));
+            }
+            
 
+            
             AppUser user = new AppUser
             {
                 Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
                 UserName = info.Principal.FindFirst(ClaimTypes.Email).Value,
                 FirstName = p_firstname,
                 LastName = p_lastname,
-                CreatedDate = DateTime.Now
+                CreatedDate = DateTime.Now,
+                LastLoginDate=DateTime.Now
             };
-
 
             Company company = new Company
             {
                 Davcna = p_davcna,
-                Name = p_naziv.Split('|')[0],
-                Active = true
+                Name = p_naziv != null ? p_naziv.Split('|')[0] : "",
+                Active = true,
+                CreatedDate = DateTime.Now
             };
 
 
-
-            //create company
-            _context.Companies.Add(company);
-            _context.SaveChanges();
-            user.CompanyId = company.Id;
-
+            try
+            {
+                //create company
+                _context.Companies.Add(company);
+                _context.SaveChanges();
+                user.CompanyId = company.Id;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,"couldnt create company!");
+                throw;
+            }
             IdentityResult identResult = await _userManager.CreateAsync(user);
             if (identResult.Succeeded)
             {
@@ -245,12 +298,21 @@ namespace KdajBi.Web.Controllers
 
                     Location salon = new Location
                     {
-                        Name = p_nazivsalona
+                        Name = p_nazivsalona,
+                        CreatedDate = DateTime.Now
                     };
                     salon.CompanyId = company.Id;
                     salon.Schedule = new Schedule { };
+                    try
+                    {
+                        _context.Locations.Add(salon);
 
-                    _context.Locations.Add(salon);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "couldnt create location!");
+                        throw;
+                    }
 
                     try
                     {
@@ -260,7 +322,8 @@ namespace KdajBi.Web.Controllers
                         {
                             LocationId = salon.Id,
                             UserId = user.Id,
-                            Name = user.FirstName
+                            Name = user.FirstName,
+                            CreatedDate = DateTime.Now
                         };
                         _context.Workplaces.Add(wp);
                         await _context.SaveChangesAsync();
@@ -270,7 +333,10 @@ namespace KdajBi.Web.Controllers
                         _logger.LogError(ex, "Register - error");
                         throw;
                     }
+                    try
+                    {
 
+                   
                     //add picture to claims (not into database)
                     Claim myClaim = new Claim("picture", "");
                     foreach (Claim c in info.Principal.Claims)
@@ -288,9 +354,17 @@ namespace KdajBi.Web.Controllers
 
                     var authProperties = new AuthenticationProperties { IsPersistent = false };
                     await _signInManager.SignInAsync(currentUser, authProperties);
-
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Register - error2");
+                        throw;
+                    }
                     return Redirect("~/Home/Index");
                 }
+            } else
+            {
+                _logger.LogWarning("couldnt create user!");
             }
 
             //something went wrong
@@ -317,6 +391,17 @@ namespace KdajBi.Web.Controllers
             await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, new ClaimsPrincipal(identity), authProperties);
 
             return Redirect("~/Home/Index");
+        }
+
+        [HttpPost("/account/gapitoken")]
+        public async Task<IActionResult> gapitoken()
+        {
+            GoogleAuthToken myToken = _CurrentUserGooToken();
+            if (myToken != null) { 
+                myToken.refresh_token = ""; 
+            }
+            
+            return Json(JsonConvert.SerializeObject(myToken));
         }
     }
 }

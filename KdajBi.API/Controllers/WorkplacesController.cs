@@ -52,7 +52,7 @@ namespace KdajBi.API.Controllers
             var gt = _CurrentUserGooToken();
             if (gt != null)
             {
-                using (GoogleService service = new GoogleService(gt))
+                using (GoogleService service = new GoogleService(User.Identity.Name, gt))
                 {
                     foreach (var gooCalendar in service.getCalendars().Items)
                     {
