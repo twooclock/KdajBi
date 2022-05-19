@@ -58,7 +58,7 @@ namespace KdajBi.Web.Controllers
                                             var item = myVM.Location.Workplaces.ElementAt(i);
                                             if (item.GoogleCalendarID != null)
                                             {
-                                                myVM.GoogleCalendars.Add(item.GoogleCalendarID, item.Name);
+                                                myVM.GoogleCalendars.Add(new Tuple<string,string,long>(item.GoogleCalendarID, item.Name, item.Id));
                                                 //get calendar events
                                                 Events calEvents = service.GetEvents(item.GoogleCalendarID);
 

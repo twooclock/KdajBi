@@ -62,12 +62,15 @@ namespace KdajBi.API.Controllers
             AppointmentToken appointmentToken = new AppointmentToken();
 
             appointmentToken.Token = generateToken(); 
-            appointmentToken.Service = appointmentTokenRequest.Service; 
+            appointmentToken.Service = appointmentTokenRequest.Service.Trim(); 
             appointmentToken.Minutes = appointmentTokenRequest.Minutes; 
-            appointmentToken.CompanyId = appointmentTokenRequest.CompanyId; 
+            appointmentToken.CompanyId = _CurrentUserCompanyID(); 
             appointmentToken.LocationId = appointmentTokenRequest.LocationId; 
             appointmentToken.ClientId = appointmentTokenRequest.ClientId; 
-            appointmentToken.AppUserId = appointmentTokenRequest.AppUserId; 
+            appointmentToken.AppUserId = _CurrentUserID();
+            appointmentToken.WorkplaceId= appointmentTokenRequest.WorkplaceId;
+            appointmentToken.CreatedDate = DateTime.Now;
+            appointmentToken.CreatedUserID= _CurrentUserID();
             //manjka workplace (zaposleni)
             _context.AppointmentTokens.Add(appointmentToken);
                 

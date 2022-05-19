@@ -10,7 +10,7 @@ namespace KdajBi.Web.ViewModels
     public class vmAppointments : _BaseViewModel
     {
         public Location Location;
-        public Dictionary<string,string> GoogleCalendars = new Dictionary<string, string>();
+        public List<Tuple<string, string, long>> GoogleCalendars = new List<Tuple<string, string, long>>(); //new Dictionary<string, string>();
         public string calEvents = "";
         public string ClientsJson;
 

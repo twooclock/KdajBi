@@ -15,7 +15,20 @@
     <link href='~/lib/fullcalendar-scheduler-5.10.1/lib/main.min.css' rel='stylesheet' />
 
     <style>
-
+        .fc-fullscreen-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f065";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 900;
+        }
+        .fc-linkcreator-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f0c1";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 900;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -134,7 +147,13 @@
                                 </label>
                                 <input type="text" id="txtNotes" name="txtNotes" class="form-control ">
                             </div>
-                            <div class="form-row">
+                            <div id="rowMinDuration" class="form-group">
+                                <label for="txtMinDuration">
+                                    Trajanje (min):
+                                </label>
+                                <input type="number" min="1" id="txtMinDuration" name="txtMinDuration" class="form-control ">
+                            </div>
+                            <div id="rowDT" class="form-row">
                                 <div class="form-group pr-2 col-9 ">
                                     <label for="txtStartTime">
                                         Datum ura:
@@ -164,7 +183,7 @@
                                 <select id="cboGooCal" name="cboGooCal" class="selectpicker custom-select custom-select-sm form-control">
                                     @foreach (var item in Model.GoogleCalendars)
                                     {
-                                        <option value="@item.Key">@Html.Raw(item.Value)</option>
+                                        <option value="@item.Item1" data-workplaceid="@Html.Raw(item.Item3)">@Html.Raw(item.Item2)</option>
                                     }
                                 </select>
                             </div>
@@ -173,6 +192,9 @@
                         </form>
                     </div>
                     <div class="modal-footer">
+                        <button type="button" class="btn btn-default" id="cmdSendLink">
+                            Pošlji
+                        </button>
                         <button type="button" class="btn btn-default" id="cmdDelete">
                             Zbriši
                         </button>
@@ -622,14 +644,18 @@
                             headerToolbar: {
                                 left: 'prev,next today',
                                 center: 'title',
-                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth fullscreen'
+                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth linkcreator,fullscreen'
                             },
                             customButtons: {
                                 fullscreen: {
-                                    text:'¤',
                                     click: function () {
                                         if (isFullScreen) { exitFullScreen(); } else { goFullScreen('fs'); }
 
+                                    }
+                                },
+                                linkcreator: {
+                                    click: function () {
+                                        showSendLink();
                                     }
                                 }
                             },
@@ -841,6 +867,10 @@
                     document.addEventListener('fullscreenchange', exitHandler, false);
                     document.addEventListener('MSFullscreenChange', exitHandler, false);
                 }
+
+                $("#cmdSendLink").click(function (evt) {
+                    if (SendLink() != false) { $("#myModal").modal("hide"); }
+                });
             });
 
 
@@ -864,6 +894,7 @@
 
 
         function newEvent(arg) {
+            PrepareModal('event');
             //clear form
             $("#txtClientsearch").val('');
             $("#txtClientMobile").val('');
@@ -887,8 +918,9 @@
         }
 
         function showEvent(info) {
+            PrepareModal('event');
                 //show Event info
-                if (typeof info.event?.extendedProps?.client === "undefined") {
+            if (typeof info.event?.extendedProps?.client === "undefined") {
                 $("#txtClientsearch").val('');
                 $("#txtClientMobile").val('');
             }
@@ -1028,7 +1060,8 @@
                     if (cas[1] != undefined) { endDate.setMinutes(cas[1]); }
                     var eventSummary = $("#txtClientsearch").val();
                     if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
-                    if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
+                    var selServices = getSelectedServicesNames();
+                    if (selServices.length > 0) { eventSummary = eventSummary + "\n" + selServices.join(' '); }
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
                         end: { 'dateTime': endDate },
@@ -1036,7 +1069,7 @@
                         "extendedProperties": {
                             "private": {
                                 client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                notes: JSON.stringify($("#txtNotes").val())
+                                notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
                         }
                     };
@@ -1060,7 +1093,7 @@
                                 resourceId: getResourceIdByGid(calid),
                                 extendedProps: {
                                     client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                    notes: JSON.stringify($("#txtNotes").val())
+                                    notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                 }
                             });
                         }
@@ -1086,7 +1119,8 @@
 
                     var eventSummary = $("#txtClientsearch").val();
                     if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
-                    if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
+                    var selServices = getSelectedServicesNames();
+                    if (selServices.length > 0) { eventSummary = eventSummary + "\n" + selServices.join(' '); }
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
                         end: { 'dateTime': endDate },
@@ -1094,7 +1128,7 @@
                         "extendedProperties": {
                             "private": {
                                 client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                notes: JSON.stringify($("#txtNotes").val())
+                                notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
                         }
                     };
@@ -1119,7 +1153,7 @@
                                 resourceId: getResourceIdByGid(calid),
                                 extendedProps: {
                                     client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                    notes: JSON.stringify($("#txtNotes").val())
+                                    notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                 }
                             });
                         }
@@ -1150,9 +1184,7 @@
 
         //init services tags
         function initServicesTags() {
-
             //get tags
-            var myTags = [];
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
@@ -1164,18 +1196,28 @@
                     success: function (result) {
                         var retval = [];
                         result.forEach(function (item) {
-                            retval.push(item.name)
+                            var token = {};
+                            token.value = item.id;
+                            token.minutes = item.minutes;
+                            token.label = item.name;
+                            if (item.minutes > 0) { token.label=token.label+' ('+item.minutes+' min)'}
+                            retval.push(token)
                         });
-                        myTags = retval;
 
                         $("#txtNotes").tokenfield({
                             autocomplete: {
-                                source: myTags,
+                                source: retval,
                                 delay: 100
                             },
                             showAutocompleteOnFocus: true, createTokensOnBlur: true
                         })
 
+                      $('#txtNotes').on('tokenfield:createdtoken', function (e) {
+                          $('#txtMinDuration').val(getServiceMaxDuration());
+                      })
+                        $('#txtNotes').on('tokenfield:removedtoken', function (e) {
+                          $('#txtMinDuration').val(getServiceMaxDuration());
+                      })
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Error getting data:" + error);
@@ -1183,7 +1225,90 @@
                 });
             });
         }
+        function getServiceMaxDuration() {
+            var maxDur = 0;
+            $('#txtNotes').tokenfield('getTokens').forEach(function (arrayItem, idx) {
+                if (arrayItem.hasOwnProperty('minutes')) {
+                    maxDur=Math.max(maxDur,arrayItem.minutes);
+                } 
+            });
+            return maxDur;
+        }
+        function getSelectedServicesNames()
+        {
+            var retval = [];
+            $('#txtNotes').tokenfield('getTokens').forEach(function (arrayItem, idx) {
+                if (arrayItem.hasOwnProperty('minutes')) {
+                    retval.push(arrayItem.label.replace('('+arrayItem.minutes+' min)',''));
+                } else { retval.push(arrayItem.label); }
+            });
+            return retval;
+        }
+
+
     //#endregion
 
+        function showSendLink() {
+            PrepareModal('link');
+            $("#myModal").modal("show");
+        }
+
+        function PrepareModal(p_prepareFor) {
+            if (p_prepareFor == 'event') {
+                $('#cmdDelete').show();
+                $('#cmdSave').show();
+                $('#cmdSendLink').hide();
+                $('#rowMinDuration').hide();
+                $('#rowDT').show();
+                $("#cboGooCal option[value='0']").remove();
+                $('#cboGooCal').selectpicker('refresh');
+            }
+            else {
+                $('#cmdSendLink').show();
+                $('#cmdDelete').hide();
+                $('#cmdSave').hide();
+                $('#rowMinDuration').show();
+                $('#rowDT').hide();
+                $("#cboGooCal").prepend("<option value='0' selected='selected'>Kdorkoli</option>");
+                $('#cboGooCal').selectpicker('refresh');
+
+            }
+        }
+
+        function SendLink(p_event) {
+            if ($('#formEvent').valid()) {
+                //send Link
+                var appointmentToken = {};
+                appointmentToken.Token = '';
+                appointmentToken.Service = getSelectedServicesNames().join(' ');
+                appointmentToken.Minutes = $('#txtMinDuration').val(); 
+                appointmentToken.CompanyId = 0; 
+                appointmentToken.LocationId = parseInt($("#cboLocations").val());; 
+                appointmentToken.ClientId = SelectedClientID; 
+                appointmentToken.AppUserId = 0;
+                appointmentToken.WorkplaceId = $('#cboGooCal').find('option:selected').attr('data-workplaceid');
+                getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(appointmentToken),
+                    url: apiURL + "/api/appointment-tokens/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (retval) {
+                        if (retval.hasOwnProperty('id')) { toastr.success("Link sent!"); }
+                        else { toastr.error("Link NOT sent!"); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Error saving client:" + error.toString());
+                        return false;
+                    }
+                });
+                });
+
+                
+
+            } else { return false; }
+        }
     </script>
 }
