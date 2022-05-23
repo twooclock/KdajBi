@@ -175,9 +175,9 @@ namespace KdajBi.Web
             }
             string rrule = "DTSTART:" + dt.ToString("yyyyMMdd") + "T" + p_StartTime.Replace(":", "") + "00";
             rrule += "\nRRULE:FREQ=WEEKLY;INTERVAL=" + interval + ";";
-            CultureInfo ci = new CultureInfo("en-US");
-            DateTimeFormatInfo dtfi = ci.DateTimeFormat;
-            rrule += "BYDAY=" + dtfi.GetShortestDayName((DayOfWeek)int.Parse(p_dayoftheweek)).ToUpper();
+            //CultureInfo ci = new CultureInfo("en-US");
+            //DateTimeFormatInfo dtfi = ci.DateTimeFormat;
+            rrule += "BYDAY=" + ((DayOfWeek)int.Parse(p_dayoftheweek)).ToString().Substring(0, 2).ToUpper();
             return rrule;
         }
 

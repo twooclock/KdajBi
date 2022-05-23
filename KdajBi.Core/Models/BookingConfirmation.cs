@@ -19,6 +19,7 @@ namespace KdajBi.Core.Models
 
         public DateTime End { get; set; }
 
+        [MaxLength(1024)]
         public string GCalId { get; set; }
 
     }

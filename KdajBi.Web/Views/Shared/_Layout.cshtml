@@ -323,6 +323,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script>
         
         $(document).ready(function () {
+            console.info('$(document).ready(function');
             $('#booking-confirmation .btn-danger').click(function () {
                 var card = $(this).closest('.card');
                 var id = card.attr('data-id');

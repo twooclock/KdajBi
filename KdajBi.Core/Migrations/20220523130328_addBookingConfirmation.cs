@@ -7,20 +7,22 @@ namespace KdajBi.Core.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+
             migrationBuilder.CreateTable(
                 name: "BookingConfirmations",
                 columns: table => new
                 {
-                    Id = table.Column<long>(nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CreatedDate = table.Column<DateTime>(nullable: true),
-                    CreatedUserID = table.Column<int>(nullable: true),
-                    UpdatedDate = table.Column<DateTime>(nullable: true),
-                    UpdatedUserID = table.Column<int>(nullable: true),
-                    Active = table.Column<bool>(nullable: true),
-                    AppointmentTokenId = table.Column<long>(nullable: false),
-                    Start = table.Column<DateTime>(nullable: false),
-                    End = table.Column<DateTime>(nullable: false)
+                    AppointmentTokenId = table.Column<long>(type: "bigint", nullable: false),
+                    Start = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    End = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    GCalId = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    CreatedDate = table.Column<DateTime>(nullable: true, defaultValueSql: "GETDATE()"),
+                    CreatedUserID = table.Column<int>(type: "int", nullable: true),
+                    UpdatedDate = table.Column<DateTime>(nullable: true, defaultValueSql: "GETDATE()"),
+                    UpdatedUserID = table.Column<int>(type: "int", nullable: true),
+                    Active = table.Column<bool>(nullable: true, defaultValueSql: "1")
                 },
                 constraints: table =>
                 {
@@ -43,6 +45,7 @@ namespace KdajBi.Core.Migrations
         {
             migrationBuilder.DropTable(
                 name: "BookingConfirmations");
+
         }
     }
 }

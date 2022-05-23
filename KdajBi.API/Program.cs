@@ -22,7 +22,7 @@ namespace KdajBi
             try
             {
                 //logger.Debug("init main");
-                CreateWebHostBuilder(args).Build().Run();
+               CreateWebHostBuilder(args).Build().Run();
             }
             catch (Exception ex)
             {
