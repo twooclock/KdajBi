@@ -220,7 +220,7 @@ namespace KdajBi.API.Controllers
                         //get all GOO campaigns for companyid and date
                         //except ones that were individualy approved/canceled
                         myCampaigns = _context.SmsCampaigns.Where(c => c.Name == "GOO" && c.Company.Id == myCampaign.Company.Id && c.Date.Value.Date == myCampaign.Date.Value.Date && c.CanceledAt == null && c.ApprovedAt == null).ToList();
-                        _logger.LogInformation("APPROVEALL " + myCampaigns.Count.ToString() + " GOO sms campaigns for " + myCampaign.Company.Name + " on " + myCampaign.Date.Value.Date.ToString("dd.MM.yyyy"));
+                        _logger.LogInformation("APPROVEALL " + myCampaigns.Count.ToString() + " GOO sms campaigns for " + myCampaign.Company.Name + " ("+guid+") on " + myCampaign.Date.Value.Date.ToString("dd.MM.yyyy"));
                         foreach (var item in myCampaigns)
                         {
                             item.ApprovedAt = DateTime.Now;
@@ -236,7 +236,7 @@ namespace KdajBi.API.Controllers
                         //get all GOO campaigns for companyid and date
                         //except ones that were individualy approved/canceled
                         myCampaigns = _context.SmsCampaigns.Where(c => c.Name == "GOO" && c.Company.Id == myCampaign.Company.Id && c.Date.Value.Date == myCampaign.Date.Value.Date && c.CanceledAt==null && c.ApprovedAt==null).ToList();
-                        _logger.LogInformation("CANCELALL " + myCampaigns.Count.ToString() + " GOO sms campaigns for " + myCampaign.Company.Name + " on " + myCampaign.Date.Value.Date.ToString("dd.MM.yyyy"));
+                        _logger.LogInformation("CANCELALL " + myCampaigns.Count.ToString() + " GOO sms campaigns for " + myCampaign.Company.Name + " (" + guid + ") on " + myCampaign.Date.Value.Date.ToString("dd.MM.yyyy"));
                         foreach (var item in myCampaigns)
                         {
                             item.CanceledAt = DateTime.Now;

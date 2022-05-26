@@ -442,8 +442,8 @@
                     contentType: "application/json; charset=utf-8",
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
-                    success: function (result) {
-                         if (result == "OK") { toastr.success("Shranjeno"); GetClientsTable(); return true; }
+                    success: function (retval) {
+                         if (retval.result == "OK") { toastr.success("Shranjeno"); GetClientsTable(); return true; }
                         else { toastr.error("Napaka:" + result); return false; }
                     },
                     error: function (xhr, status, error) {

@@ -29,6 +29,7 @@
             padding-right: 3px;
             font-weight: 900;
         }
+        
         body {
             margin: 0;
             padding: 0;
@@ -673,6 +674,9 @@
         }
 
         function loadCalendar() {
+            var mySlot = localStorage.getItem("Slot");
+            var cancelSwipe = false;
+            if (mySlot == null) { mySlot = "00:30"; }
                 loadLocale(navigator.language.slice(0, 2))
                     .then(function () {
                         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
@@ -683,19 +687,19 @@
                             stickyHeaderDates: true,
                             initialView: 'resourceTimeGridDay',
                             //initialDate: 'today',
+                            allDaySlot: false,
                             slotMinTime: "@Html.Raw(Model.Location.Schedule.minTime())", //"7:00:00",
                             slotMaxTime: "@Html.Raw(Model.Location.Schedule.maxTime())", //"21:00:00",
-                            slotDuration: '00:30',
-                            allDaySlot: false,
-                            //scrollTime: getScrollTime(), //"8:00:00",
-                            slotLabelFormat: {
-                                hour: 'numeric',
-                                hour12: false,
-                                minute: '2-digit',
-                                omitZeroMinute: true,
-                                meridiem: false
+                            slotDuration: mySlot,
+                            slotLabelInterval: mySlot,
+                            slotLabelFormat: function (date)
+                            {
+                                if (date.date.minute == 0)
+                                    return date.date.hour.toString().padStart(2, '0') + ':00';
+
+                                return date.date.minute;
                             },
-                            slotLabelInterval: "00:30",
+                                                        //scrollTime: getScrollTime(), //"8:00:00",
                             height:'auto',
                             expandRows: true,
                             editable: true,
@@ -705,7 +709,7 @@
                             headerToolbar: {
                                 left: 'prev,next today',
                                 center: 'title',
-                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth linkcreator,fullscreen'
+                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth slotinterval,linkcreator,fullscreen'
                             },
                             customButtons: {
                                 fullscreen: {
@@ -717,6 +721,16 @@
                                 linkcreator: {
                                     click: function () {
                                         showSendLink();
+                                    }
+                                },
+                                slotinterval: {
+                                    text:  "",
+                                    click: function (a) {
+                                        if (mySlot == "00:30") { mySlot = "00:15"; this.innerText = "30'"; } else { mySlot = "00:30"; $(this).attr("title", "15'"); this.innerText="15'"; }
+                                        localStorage.setItem("Slot", mySlot);
+                                        calendar.setOption('slotDuration', mySlot);
+                                        calendar.setOption('slotLabelInterval', mySlot) 
+                                        
                                     }
                                 }
                             },
@@ -768,7 +782,8 @@
                                 showEvent(info);
                             },
                             eventDrop: function (info) {
-                                //console.info("eventDrop: info:", info);
+                                console.info("eventDrop: info:", info);
+                                cancelSwipe = true;
                                 SaveDragedEvent(info).catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); });
                             },
                             eventResize: function (event, dayDelta, minuteDelta) {
@@ -784,6 +799,7 @@
                                     newEvent(arg);
                                 }
                             },
+                            longPressDelay: 300,
                             datesSet: function (dateInfo) {
                                 console.info("date changes to:", dateInfo.start);
                                 FetchRenderEvents(calendar, dateInfo.start).then(result => { FetchRenderEvents(calendar, dateInfo.end) });
@@ -798,17 +814,22 @@
 
                             });
                         calendar.render();
+                        //setTimeout(() => {
+                            if (mySlot == "00:30") { $(".fc-slotinterval-button").text("15'"); } else { $(".fc-slotinterval-button").text("30'"); }
+                        //}, 400);
                         //calendar.setOption("height", "1450px");
 
                         // gestures
                         var af = new AlloyFinger(document.getElementById('calendar'), {
                             swipe: function (evt) {
-                                switch (evt.direction) {
-                                    case "Left": calendar.next();
-                                        break;
-                                    case "Right": calendar.prev();
-                                        break;
-                                }
+                                if (cancelSwipe == false) {
+                                    switch (evt.direction) {
+                                        case "Left": calendar.next();
+                                            break;
+                                        case "Right": calendar.prev();
+                                            break;
+                                    }
+                                } else { cancelSwipe = false; }
                             }
                         });
                     });
@@ -821,6 +842,8 @@
                     .then(function () {
                         dayjs.locale(navigator.language.slice(0, 2));
                         loadCalendar();
+                        
+                        
                         loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
                             .then(function () {
                                 fp = $(".flatpickr").flatpickr({
@@ -1274,9 +1297,13 @@
 
                       $('#txtNotes').on('tokenfield:createdtoken', function (e) {
                           $('#txtMinDuration').val(getServiceMaxDuration());
+                          setEndTime("#txtEndTime", getServiceMaxDuration());
+
                       })
                         $('#txtNotes').on('tokenfield:removedtoken', function (e) {
-                          $('#txtMinDuration').val(getServiceMaxDuration());
+                            $('#txtMinDuration').val(getServiceMaxDuration());
+                            setEndTime("#txtEndTime", getServiceMaxDuration());
+
                       })
                     },
                     error: function (xhr, status, error) {
@@ -1285,6 +1312,17 @@
                 });
             });
         }
+        function setEndTime(p_selector, p_Minutes) {
+            if (p_Minutes != 0) {
+                var endDate = new Date(fp.selectedDates[0]);
+                var newEndTime = new Date(endDate.getTime() + p_Minutes * 60000);
+                var cHour = newEndTime.getHours();
+                var cMinuts = newEndTime.getMinutes();
+                var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+                $(p_selector).val(outStr);
+            }
+        }
+
         function getServiceMaxDuration() {
             var maxDur = 0;
             $('#txtNotes').tokenfield('getTokens').forEach(function (arrayItem, idx) {

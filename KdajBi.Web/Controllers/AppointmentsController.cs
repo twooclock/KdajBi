@@ -97,7 +97,12 @@ namespace KdajBi.Web.Controllers
                                                         {
                                                             try
                                                             {
-                                                                newEvent.title = newEvent.title + "\r\n" + JsonConvert.DeserializeObject<string>(newEvent.extendedProps["notes"]);
+                                                                dynamic myNotes = JsonConvert.DeserializeObject<dynamic>(newEvent.extendedProps["notes"]);
+                                                                if (myNotes[0].minutes != null)
+                                                                { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value.Replace("(" + myNotes[0].minutes.Value + " min)", ""); }
+                                                                else
+                                                                { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value; }
+
                                                             }
                                                             catch (Exception)
                                                             {
