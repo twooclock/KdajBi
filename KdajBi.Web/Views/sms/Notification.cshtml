@@ -350,6 +350,7 @@
 
             var smsc={};
             smsc.CampaignType = notifyType;
+            smsc.LocationId = $("#cboLocations").val();
             smsc.MsgTxt = $('#txtMessage').val();
             if (fp!=undefined)
             { smsc.SendAfter = new Date(dayjs(fp.selectedDates[0]).utc()); }

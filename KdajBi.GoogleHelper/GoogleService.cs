@@ -90,7 +90,7 @@ namespace KdajBi.GoogleHelper
                 {
                     var request = calendarService.CalendarList.List();
                     request.OauthToken = googleAuthToken.access_token;
-                    request.MinAccessRole = CalendarListResource.ListRequest.MinAccessRoleEnum.Writer;
+                    request.MinAccessRole = CalendarListResource.ListRequest.MinAccessRoleEnum.Reader;
                     retval = request.Execute();
                 }
                 catch (Exception ex)

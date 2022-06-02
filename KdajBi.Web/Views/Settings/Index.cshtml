@@ -25,7 +25,7 @@
 
                 <div class="row x_title">
                     <div class="col-md-6">
-                        <h3>Nastavitve <small>&nbsp;</small></h3>
+                        <h3>Nastavitve</h3>
                     </div>
 
                 </div>
@@ -37,7 +37,6 @@
                             <div class="card-header p-0 border-bottom-0">
                                 <ul class="nav nav-tabs" role="tablist">
                                     <li class="nav-item"><a class="nav-link active" id="general-tab" data-toggle="pill" href="#general" role="tab" aria-controls="general" aria-selected="true">Splošno</a></li>
-                                    <li class="nav-item"><a class="nav-link" id="sms-tab" data-toggle="pill" href="#sms" role="tab" aria-controls="sms">SMS obveščanje</a></li>
                                 </ul>
                                 <div class="card-body">
                                     <div class="tab-content" id="custom-tabs-four-tabContent">
@@ -58,93 +57,7 @@
                                                 </div>
                                             </form>
                                         </div>
-                                        <!-- /.tab-pane sms -->
-                                        <div class="tab-pane" id="sms" role="tabpanel" aria-labelledby="sms-tab">
-                                            <form class="form-horizontal">
-                                                <div class="form-group">
-                                                    <label for="SMS_SenderName" class="col-sm-2 control-label">Ime pošiljatelja</label>
-                                                    <div class="col-sm-10">
-                                                        <input type="text" class="form-control" id="SMS_SenderName" placeholder="2929" value="">
-                                                    </div>
-                                                </div>
-                                                <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
-                                                    <div class="form-check">
-                                                        <input type="checkbox" class="form-check-input" id="SMS_genRDsms" onclick="$('#SMS_RD_Props').toggle(1000);">
-                                                        <label class="form-check-label" for="SMS_genRDsms">Generiraj sporočila za rojstni dan stranke</label>
-                                                    </div>
-                                                </div>
-                                                <div id="SMS_RD_Props" style="display: none;" class="ml-4">
-                                                    <div class="form-group">
-                                                        <label for="SMS_RD_Time" class="col-sm-2 control-label">Ob:</label>
-                                                        <div class="col-sm-10">
-                                                            <input type="text" class="form-control" id="SMS_RD_Time" placeholder="8:00" value="">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label id="lblMessage" for="SMS_RD_Msg" class="col-sm-2 control-label">Sporočilo:</label>
-                                                        <div class="col-sm-10">
-                                                            <textarea rows="2" id="SMS_RD_Msg" name="SMS_RD_Msg" class="form-control" placeholder="Voščilo..."></textarea>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
-                                                    <div class="form-check">
-                                                        <input type="checkbox" class="form-check-input" id="SMS_genGOOsms" onclick="$('#SMS_GOO_Props').toggle(1000);">
-                                                        <label class="form-check-label" for="SMS_genGOOsms">Generiraj sporočila iz naročil</label>
-                                                    </div>
-                                                </div>
-                                                <div id="SMS_GOO_Props" style="display: none;" class="ml-4">
-                                                    <div class="row">
-                                                        <div class="form-group">
-                                                            <label for="SMS_GOO_Time" class="col-sm-2 control-label">Ob:</label>
-                                                            <div class="col-sm-10">
-                                                                <input type="text" class="form-control" id="SMS_GOO_Time" placeholder="8:00" value="">
-                                                            </div>
-                                                        </div>
-                                                        <div class="form-group mt-auto">
-                                                            <div class="custom-control custom-radio ">
-                                                                <input class="custom-control-input" type="radio" id="rbGOODayCurrent" name="rbForDay">
-                                                                <label for="rbGOODayCurrent" class="custom-control-label ">za tekoči dan</label>
-                                                            </div>
-                                                            <div class="custom-control custom-radio ">
-                                                                <input class="custom-control-input" type="radio" id="rbGOODayNext" name="rbForDay">
-                                                                <label for="rbGOODayNext" class="custom-control-label ">za naslednji dan</label>
-                                                            </div>
-
-                                                        </div>
-                                                    </div>
-                                                    <div id="goo-cals" class="form-group">
-                                                        <label for="SMS_SenderName" class="col-sm-2 control-label">Za koledarje:</label>
-                                                        @foreach (var item in Model.GoogleCalendars)
-                                                        {
-                                                            <div class="form-check">
-                                                              <label class="form-check-label">
-                                                                <input type="checkbox" class="form-check-input goocal" value="@item.Key">@Html.Raw(item.Value)
-                                                              </label>
-                                                            </div>
-                                                        }
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label id="lblMessage" for="SMS_GOO_Msg" class="col-sm-2 control-label">Sporočilo:</label>
-                                                        <div class="col-sm-10">
-                                                            <textarea rows="2" id="SMS_GOO_Msg" name="SMS_GOO_Msg" class="form-control" placeholder="Pozdravljeni naročeni ste..."></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
-                                                    <div class="form-check">
-                                                        <input type="checkbox" class="form-check-input" id="SMS_GOO_AutoApprove" >
-                                                        <label class="form-check-label" for="SMS_GOO_AutoApprove">Pred pošiljanjem želim sporočila pregledati in potrditi pošiljanje</label>
-                                                    </div>
-                                                </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <div class="col-sm-offset-2 col-sm-10">
-                                                        <button type="button" class="btn btn-danger" onclick="saveSMS()">Shrani</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <!-- /.tab-pane sms-->
+                                        
 
 
                                     </div>
@@ -221,13 +134,6 @@
             toastr.options.preventDuplicates = true;
             toastr.options.timeOut = 1000;
 
-            loadSMS();
-
-            //count message characters
-            document.getElementById('SMS_RD_Msg').onkeyup = function () {
-                document.getElementById('lblMessage').innerHTML = "Sporočilo (" + (640 - this.value.length)+"/640):";
-            };
-
             $('#dataform').validate({
                 rules: {
                     txtName: {
@@ -253,7 +159,7 @@
                     } else { error.insertAfter(element); }
                 }
             });
-            
+
             $('#myModal').on('hidden.bs.modal', function (e) {
                 CancelModal();
             });
@@ -384,114 +290,8 @@
             } else { return false; }
         }
 
-        function addGoogleCalendar(p_value)
-        {
-            $('.goocal').each(function() {
-                if ($(this).val() == p_value) { $(this).prop("checked", true); }
-             });
-        }
+        
 
-        function saveSMS() {
-            var settings = new Object();
-
-
-            settings["SMS_SenderName"] = $("#SMS_SenderName").val();
-            if ($("#SMS_genRDsms").prop("checked") == false) { settings["SMS_RD_Time"] = ''; }
-            else { settings["SMS_RD_Time"] = $("#SMS_RD_Time").val(); }
-            settings["SMS_RD_Msg"] = $("#SMS_RD_Msg").val();
-
-            let data = $('.goocal:checked').map(function () {
-                return $(this).val();
-            }).get();
-            settings["SMS_GOO_Cals"] = JSON.stringify(data);
-            if ($("#SMS_genGOOsms").prop("checked") == false) { settings["SMS_GOO_Time"] = ''; }
-            else { settings["SMS_GOO_Time"] = $("#SMS_GOO_Time").val(); }
-            if ($("#rbGOODayCurrent").prop("checked")) { settings["SMS_GOO_Day"] = "CURR"; }
-            if ($("#rbGOODayNext").prop("checked")) { settings["SMS_GOO_Day"] = "NEXT"; }
-            settings["SMS_GOO_Msg"] = $("#SMS_GOO_Msg").val();
-            settings["SMS_GOO_AutoApprove"] = !$("#SMS_GOO_AutoApprove").prop("checked");
-
-            getAPIToken().then((result) => {
-                $.ajax({
-                    type: "post",
-                    data: JSON.stringify(settings),
-                    url: apiURL + "/api/Settings/Save",
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                        if (result == "OK") { toastr.success("Shranjeno"); return true; }
-                        else { toastr.error("Napaka:" + result); return false; }
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Napaka:" + error.toString());
-                        return false;
-                    }
-                });
-            });
-        }
-
-        function loadSMS() {
-            var settings = new Object();
-            settings["SMS_SenderName"] = $("#SMS_SenderName").val();
-            settings["SMS_RD_Time"] = $("#SMS_RD_Time").val();
-            settings["SMS_RD_Msg"] = $("#SMS_RD_Msg").val();
-            settings["SMS_GOO_Time"] = $("#SMS_GOO_Time").val();
-            settings["SMS_GOO_Msg"] = $("#SMS_GOO_Msg").val();
-            settings["SMS_GOO_Day"] = '';
-            settings["SMS_GOO_Cals"] = '';
-            settings["SMS_GOO_AutoApprove"] = 'false';
-            getAPIToken().then((result) => {
-            $.ajax({
-                type: "post",
-                data: JSON.stringify(settings),
-                url: apiURL+"/api/Settings/Load",
-                contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                dataType: "json",
-                 success: function (result) {
-                     $("#SMS_SenderName").val(result["SMS_SenderName"]);
-                     if (result["SMS_RD_Time"] != '') {
-                         $("#SMS_genRDsms").prop("checked", true);
-                         $("#SMS_RD_Props").show();
-                     } else {
-                         $("#SMS_genRDsms").prop("checked", false);
-                         $("#SMS_RD_Props").hide();
-                     }
-                     $("#SMS_RD_Time").val(result["SMS_RD_Time"]);
-                     $("#SMS_RD_Msg").val(result["SMS_RD_Msg"]);
-
-                     if (result["SMS_GOO_Time"] != '') {
-                         $("#SMS_genGOOsms").prop("checked", true);
-                         $("#SMS_GOO_Props").show();
-                     } else {
-                         $("#SMS_genGOOsms").prop("checked", false);
-                         $("#SMS_GOO_Props").hide();
-                     }
-                     $("#SMS_GOO_Time").val(result["SMS_GOO_Time"]);
-                     $("#SMS_GOO_Msg").val(result["SMS_GOO_Msg"]);
-                     if (result["SMS_GOO_Day"] != undefined) {
-                         if (result["SMS_GOO_Day"] == "CURR") { $('#rbGOODayCurrent').prop('checked', true);}
-                         if (result["SMS_GOO_Day"] == "NEXT") { $('#rbGOODayNext').prop('checked', true); }
-                     }
-                     if (result["SMS_GOO_Cals"] != undefined && result["SMS_GOO_Cals"]!="")
-                     {
-                         var data = JSON.parse(result["SMS_GOO_Cals"]);
-                         data.forEach(function(entry) {
-                                addGoogleCalendar(entry);
-                            });
-                     }
-                     if (result["SMS_GOO_AutoApprove"] != undefined) {
-                         if (result["SMS_GOO_AutoApprove"] == "false") { $('#SMS_GOO_AutoApprove').prop('checked', true);}
-                     }
-                },
-                error: function (xhr, status, error) {
-                    toastr.error("Napaka:" + error.toString());
-                    return false;
-                }
-            });
-            });
-        }
 
     </script>
 }

@@ -56,9 +56,10 @@ namespace KdajBi.Web.Controllers
                                         for (int i = myVM.Location.Workplaces.Count - 1; i >= 0; i--)
                                         {
                                             var item = myVM.Location.Workplaces.ElementAt(i);
+                                            if (cals.Where(c => c.Id == item.GoogleCalendarID).Count() == 0) { item.GoogleCalendarID = null; }
                                             if (item.GoogleCalendarID != null)
                                             {
-                                                myVM.GoogleCalendars.Add(new Tuple<string,string,long>(item.GoogleCalendarID, item.Name, item.Id));
+                                                myVM.GoogleCalendars.Add(new Tuple<string, string, long>(item.GoogleCalendarID, item.Name, item.Id));
                                                 //get calendar events
                                                 List<Event> calEvents = service.GetEvents(item.GoogleCalendarID, DateTime.Now);
 
@@ -78,35 +79,38 @@ namespace KdajBi.Web.Controllers
                                                     };
                                                     if (calEvent.ExtendedProperties != null)
                                                     {
-                                                        newEvent.extendedProps = (Dictionary<string, string>)calEvent.ExtendedProperties.Private__;
-                                                        if (newEvent.extendedProps.ContainsKey("client"))
+                                                        newEvent.extendedProps = (Dictionary<string, string>)calEvent.ExtendedProperties.Shared;
+                                                        if (newEvent.extendedProps != null)
                                                         {
-                                                            var client = newEvent.extendedProps["client"];
-                                                            try
+                                                            if (newEvent.extendedProps.ContainsKey("client"))
                                                             {
-                                                                dynamic myClient = JsonConvert.DeserializeObject<dynamic>(client);
-                                                                newEvent.title = myClient.label;
-                                                                if (myClient.mobile.ToString().Length > 0) { newEvent.title = newEvent.title + " (" + myClient.mobile + ")"; }
+                                                                var client = newEvent.extendedProps["client"];
+                                                                try
+                                                                {
+                                                                    dynamic myClient = JsonConvert.DeserializeObject<dynamic>(client);
+                                                                    newEvent.title = myClient.label;
+                                                                    if (myClient.mobile.ToString().Length > 0) { newEvent.title = newEvent.title + " (" + myClient.mobile + ")"; }
+                                                                }
+                                                                catch (Exception ex)
+                                                                {
+                                                                    newEvent.title = client;
+                                                                }
                                                             }
-                                                            catch (Exception ex)
+                                                            if (newEvent.extendedProps.ContainsKey("notes"))
                                                             {
-                                                                newEvent.title = client;
-                                                            }
-                                                        }
-                                                        if (newEvent.extendedProps.ContainsKey("notes"))
-                                                        {
-                                                            try
-                                                            {
-                                                                dynamic myNotes = JsonConvert.DeserializeObject<dynamic>(newEvent.extendedProps["notes"]);
-                                                                if (myNotes[0].minutes != null)
-                                                                { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value.Replace("(" + myNotes[0].minutes.Value + " min)", ""); }
-                                                                else
-                                                                { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value; }
+                                                                try
+                                                                {
+                                                                    dynamic myNotes = JsonConvert.DeserializeObject<dynamic>(newEvent.extendedProps["notes"]);
+                                                                    if (myNotes[0].minutes != null)
+                                                                    { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value.Replace("(" + myNotes[0].minutes.Value + " min)", ""); }
+                                                                    else
+                                                                    { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value; }
 
-                                                            }
-                                                            catch (Exception)
-                                                            {
-                                                                newEvent.title = newEvent.title + "\r\n" + newEvent.extendedProps["notes"];
+                                                                }
+                                                                catch (Exception)
+                                                                {
+                                                                    newEvent.title = newEvent.title + "\r\n" + newEvent.extendedProps["notes"];
+                                                                }
                                                             }
                                                         }
 
@@ -117,15 +121,17 @@ namespace KdajBi.Web.Controllers
                                                 setBGEvents(myVM, item.Id, scheduletype);
                                                 myVM.AddcalEvents(myVM.calBGEvents);
                                             }
-                                            else { 
-                                                myVM.Location.Workplaces.Remove(item); }
+                                            else
+                                            {
+                                                myVM.Location.Workplaces.Remove(item);
+                                            }
                                             //get calendar color
                                             foreach (var cal in cals)
                                             {
                                                 if (cal.Id == item.GoogleCalendarID) { item.GoogleCalendarColor = cal.BackgroundColor; }
                                             }
                                         }
-                                        
+
                                     }
 
                                     myVM.AddcalEvents(Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray()));
@@ -153,7 +159,8 @@ namespace KdajBi.Web.Controllers
                 else
                 {
                     _logger.LogError("Error User.identity is NOT Authenticated!");
-                    return Redirect("~/LandingPage/index.html"); }
+                    return Redirect("~/LandingPage/index.html");
+                }
             }
             catch (Exception ex)
             {

@@ -10,7 +10,10 @@ var DISCOVERY_DOCS = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/r
       gapiLoadFail = reject;
     });
 
-    (async () => {
+
+ function initializeGapi() {
+    return new Promise(async function(resolve, reject) { 
+    try {
       // First, load and initialize the gapi.client
       await gapiLoadPromise;
       await new Promise((resolve, reject) => {
@@ -25,8 +28,11 @@ var DISCOVERY_DOCS = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/r
       })
          .then(function() {  // Load the token.
         gapi.client.setToken({ access_token: gooToken.access_token, expires_at:gooToken.expires_at });
+resolve();
       });
-    })().catch((error) => { toastr.error("Napaka:" + JSON.stringify(error)); });
+    } catch(error) { reject(error); }
+})
+}
 
  async function getGAPIToken() {
     return new Promise(function(resolve, reject) {

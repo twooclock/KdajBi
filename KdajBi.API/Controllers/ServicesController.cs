@@ -13,7 +13,8 @@ using System.Threading.Tasks;
 
 namespace KdajBi.API.Controllers
 {
-    [Authorize(Roles = "Super,Admin")]
+    //[Authorize(Roles = "Super,Admin")]
+    [Authorize]
     [ApiController]
     public class ServicesController : _BaseController
     {
@@ -48,7 +49,7 @@ namespace KdajBi.API.Controllers
         [HttpGet("/api/Services/{locationid}")]
         public async Task<ActionResult<List<Service>>> GetServices(long locationid)
         {
-            List<Service> Service;
+            List<Service> Service=new List<Service>();
             try
             {
                 Service = _context.Services.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId ==locationid).OrderBy(t=>t.Name).ToList(); ;
@@ -56,11 +57,6 @@ namespace KdajBi.API.Controllers
             catch (Exception ex)
             {
                 throw;
-            }
-
-            if (Service == null)
-            {
-                return NotFound();
             }
 
             return Service;

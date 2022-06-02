@@ -355,14 +355,8 @@
         $(document).ready(function () {
             //swal inside modal!
             $.fn.modal.Constructor.prototype._enforceFocus = function() {};
-
-            gapi.load('client:auth2', function () {
-                gapi.client.load(DISCOVERY_DOCS, 'v3').then(function () {
-                    gapi.auth.setToken({ access_token: gooToken.access_token })
-                    //fill goo calendar combo
-                    //LoadCalendars();
-                })
-            })
+            //gapi init
+            initializeGapi().catch((err) => { toastr.error("Napaka pri komunikaciji z Googlom!\nPoskusite se odjaviti in ponovno prijaviti."); });
 
             //bind cboLocations
             $("#cboLocations").val( @Html.Raw(@Model.Location.Id));

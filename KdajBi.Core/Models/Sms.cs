@@ -21,6 +21,9 @@ namespace KdajBi.Core.Models
         [ForeignKey("CompanyId"), Required]
         public virtual Company Company { get; set; }
 
+        [ForeignKey("Location")]
+        public long? LocationId { get; set; }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Guid { get; set; }
 

@@ -79,6 +79,7 @@
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
     <!-- dayjs -->
     <script src="~/plugins/dayjs/dayjs.min.js"></script>
     <script src="~/plugins/dayjs/plugin/utc.js"></script>
@@ -116,11 +117,16 @@
         }
 
         $(document).ready(function () {
-            //bind cboLocations
             loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
                 .then(function () {
                     dayjs.locale(navigator.language.slice(0, 2));
                 });
+
+            //bind cboLocations
+            $("#cboLocations").off('change').change(function (evt) {
+                Cookies.set('DefaultLocation', $(this).val());
+                GetSmsTable();
+            });
 
             GetSmsTable();
 
@@ -149,7 +155,7 @@
                 'processing': true,
                 'serverSide': true,
                 'ajax': {
-                    'url':  apiURL + "/api/Sms/SmsTable",
+                    'url':  apiURL + "/api/Sms/SmsTable/"+$("#cboLocations").val(),
                     type: 'POST', dataType: 'json',
                     data: function (dtParms) {
                         return JSON.stringify(dtParms);

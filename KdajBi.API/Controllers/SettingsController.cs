@@ -35,18 +35,23 @@ namespace KdajBi.API.Controllers
 
 
         [HttpPost]
-        [Route("/api/Settings/Save")]
-        public JsonResult PostSave(Dictionary<string, string> p_settings)
+        [Route("/api/Settings/Save/{LocationId?}")]
+        public JsonResult PostSave(long? locationid, Dictionary<string, string> p_settings)
         {
+            Setting settingIndb;
             foreach (var item in p_settings)
             {
-                var settingIndb = _context.Settings.SingleOrDefault(c => c.CompanyId == _CurrentUserCompanyID() && c.Key == item.Key);
+                if (locationid.HasValue == true)
+                { settingIndb = _context.Settings.SingleOrDefault(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId==locationid && c.Key == item.Key); }
+                else
+                { settingIndb = _context.Settings.SingleOrDefault(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == null && c.Key == item.Key); }
                 if (settingIndb == null)
                 {
                     Setting newSetting = new Setting();
                     newSetting.UserId = _CurrentUserID();
                     newSetting.CreatedUserID = _CurrentUserID();
                     newSetting.CompanyId = _CurrentUserCompanyID();
+                    newSetting.LocationId = locationid;
                     newSetting.Key = item.Key;
                     newSetting.Value = item.Value;
                     _context.Settings.Add(newSetting);
@@ -56,6 +61,7 @@ namespace KdajBi.API.Controllers
                     settingIndb.UserId = _CurrentUserID();
                     settingIndb.UpdatedUserID = _CurrentUserID();
                     settingIndb.CompanyId = _CurrentUserCompanyID();
+                    settingIndb.LocationId = locationid;
                     settingIndb.UpdatedDate = DateTime.Now;
                     settingIndb.Value = item.Value;
                     _context.Entry(settingIndb).State = EntityState.Modified;
@@ -90,12 +96,20 @@ namespace KdajBi.API.Controllers
 
 
         [HttpPost]
-        [Route("/api/Settings/Load")]
-        public JsonResult PostLoad(Dictionary<string, string> p_settings)
+        [Route("/api/Settings/Load/{LocationId?}")]
+        public JsonResult PostLoad(long? locationid, Dictionary<string, string> p_settings)
         {
+            
             string[] keys = p_settings.Keys.ToArray();
 
-            var mySettings = _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && keys.Contains(a.Key)).ToList();
+            List<Setting> mySettings;
+            if (locationid.HasValue == true)
+            {
+                 mySettings = _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == locationid && keys.Contains(a.Key)).ToList();
+            }
+            else
+            { mySettings = _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == null && keys.Contains(a.Key)).ToList(); }
+
             foreach (var item in mySettings)
             {
                 p_settings[item.Key] = item.Value;

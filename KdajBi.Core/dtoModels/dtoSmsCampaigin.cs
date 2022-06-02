@@ -8,6 +8,7 @@ namespace KdajBi.Core.dtoModels
     public class dtoSmsCampaigin
     {
         public int CampaignType { get; set; } //0-individual mobiles, 1-individual locations, 2-sex
+        public long LocationId { get; set; } 
         public string MsgTxt { get; set; }
         public ICollection<string> Recipients { get; set; } //could be mobiles, locationid or sex
 

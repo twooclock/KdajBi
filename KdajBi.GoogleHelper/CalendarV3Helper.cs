@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static Google.Apis.Calendar.v3.EventsResource.ListRequest;
 
 namespace KdajBi.GoogleHelper
 {
@@ -62,6 +63,7 @@ namespace KdajBi.GoogleHelper
                 if (endData != null) { request.TimeMax = endData.Value; }
 
                 request.ShowDeleted = false;
+                request.OrderBy =OrderByEnum.StartTime;
                 request.SingleEvents = true;
                 request.MaxResults = 2500;
                 Events events;

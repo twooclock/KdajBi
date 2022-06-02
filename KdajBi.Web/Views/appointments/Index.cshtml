@@ -22,6 +22,13 @@
             padding-right: 3px;
             font-weight: 900;
         }
+        .fc-datepicker-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f073";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 900;
+        }
         .fc-linkcreator-button:before {
             font-family: "Font Awesome 5 Free";
             content: "\f0c1";
@@ -207,6 +214,36 @@
             </div>
         </div>
         <!-- /modal content-->
+
+
+        <!-- DatePick modal content-->
+        <div id="myDatePickModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: fit-content;">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">skoči na datum</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body ui-front">
+                        <form>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="datepick" style="visibility: hidden" aria-describedby="emailHelp">
+                        </div>
+                    </form>
+                    </div>
+                    <div class="modal-footer">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /modal content-->
+
+
+
+
+
     </div>
 </div>
 <!-- /page content -->
@@ -334,7 +371,7 @@
         }
 
         var calendar;
-        var fp;
+        var fp; var dp;
         var SelectedClientID = 0;
 
         //#region events
@@ -347,44 +384,11 @@
                     var firstDayOfMonth = new Date(p_date.getFullYear(), p_date.getMonth(), 1);
                     var lastDayOfMonth = new Date(p_date.getFullYear(), p_date.getMonth() + 1, 0);
 
-                    refreshGAPIToken().then(() => {
-                        p_calendar.getResources().forEach(function (aResource) {
+                    refreshGAPIToken().then(async () => {
+                        p_calendar.getResources().forEach(async function (aResource) {
                             //for each goo calendar
-                            var pageToken = null;
-                            do {
-                                //get events
-                                gapi.client.calendar.events.list({
-                                    "calendarId": aResource.extendedProps.gid,
-                                    "timeMin": firstDayOfMonth.toISOString(),
-                                    "timeMax": lastDayOfMonth.toISOString(),
-                                    "showDeleted": false,
-                                    "singleEvents": true,
-                                    "pageToken": pageToken
-                                }).execute(function (response) {
-                                    if (response.error || response == false) {
-                                        toastr.error("Napaka:gapi.client.calendar.events.list");
-                                        reject(); return;
-                                    }
-                                    else {
-                                        response.items.forEach(function (item) {
-                                            //put on calendar
-                                            calendar.addEvent({
-                                                id: item.id,
-                                                title: item.summary,
-                                                start: item.start.dateTime,
-                                                end: item.end.dateTime,
-                                                resourceId: getResourceIdByGid(aResource.extendedProps.gid),
-                                                extendedProps: ((typeof item.extendedProperties === "undefined") ? {} : item.extendedProperties.private)
-                                            });
-                                        });
-                                        pageToken = ((typeof response.nextPageToken === "undefined") ? null : response.nextPageToken);
-                                        pageToken = pageToken;
-                                    }
-
-                                });
-                            } while (pageToken != null);
-
-
+                            console.log(aResource.extendedProps.gid)
+                            await getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,"").catch(e => { console.log(e); eventsMonths = eventsMonths.filter(function(item) { return item !== dayjs(p_date).format("YYYYMM")})});
                         });
 
                         eventsMonths.push(dayjs(p_date).format("YYYYMM"));
@@ -395,6 +399,50 @@
             });
 
         }
+        async function getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,pageToken) {
+            return new Promise(function (resolve, reject) {
+                if (typeof pageToken === "undefined") { console.log('no next page'); reject(); return; }
+                let calId = getResourceIdByGid(aResource.extendedProps.gid);
+                gapi.client.calendar.events.list({
+                    "calendarId": aResource.extendedProps.gid,
+                    "timeMin": firstDayOfMonth.toISOString(),
+                    "timeMax": lastDayOfMonth.toISOString(),
+                    "showDeleted": false,
+                    "singleEvents": true,
+                    "pageToken": pageToken
+                }).execute(function (response) {
+                    if (response.error || response == false) {
+                        toastr.error("Napaka pri komunikaciji z Googlom!");
+                        reject(response.error); return;
+                    }
+                    else {
+                        getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,response.nextPageToken).catch(e => { console.log(e); });
+                        //var myEvents=[];
+                        calendar.batchRendering(function() {
+                            response.items.forEach(function (item) {
+                                calendar.addEvent({
+                                    id: item.id,
+                                    title: item.summary,
+                                    start: item.start.dateTime,
+                                    end: item.end.dateTime,
+                                    display: null,
+                                    backgroundColor:aResource.eventBackgroundColor,
+                                    borderColor:aResource.eventBackgroundColor,
+                                    resourceId: calId,
+                                    extendedProps: ((typeof item.extendedProperties === "undefined") ? {} : item.extendedProperties.shared)
+                                });
+                            });
+                          });
+
+                        //put on calendar
+                          
+                        
+                    }
+                });
+            });
+        }
+
+
         //#endregion
 
     //#region background events
@@ -672,10 +720,11 @@
                 } else { resolve(); }
             });
         }
-
+        var resourceA=null;
         function loadCalendar() {
             var mySlot = localStorage.getItem("Slot");
             var cancelSwipe = false;
+            var calEvents=@Html.Raw(Model.calEvents);
             if (mySlot == null) { mySlot = "00:30"; }
                 loadLocale(navigator.language.slice(0, 2))
                     .then(function () {
@@ -707,9 +756,9 @@
                             dayMaxEvents: true, // allow "more" link when too many events
                             //dayMinWidth: 200,
                             headerToolbar: {
-                                left: 'prev,next today',
+                                left: 'datepicker prev,next today',
                                 center: 'title',
-                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth slotinterval,linkcreator,fullscreen'
+                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth mnuResources,slotinterval,linkcreator,fullscreen'
                             },
                             customButtons: {
                                 fullscreen: {
@@ -732,7 +781,23 @@
                                         calendar.setOption('slotLabelInterval', mySlot) 
                                         
                                     }
-                                }
+                                },
+                                mnuResources: {
+                                    text: "R",
+                                    click: function () {
+                                        console.log('remove resource...');
+                                        if (resourceA == null) {
+                                            resourceA = calendar.getResourceById('2');
+                                            resourceA.remove();
+                                        } else { calendar.addResource(resourceA); resourceA = null; calendar.render(); }
+                                        
+                                        calendar.refetchEvents();
+                                    }
+                                },
+                                datepicker: {
+                                    click: function () {
+                                        $("#myDatePickModal").modal("show"); }
+                                },
                             },
                             views: {
                                 resourceTimeGridDay: {
@@ -768,7 +833,20 @@
                                 @Html.Raw(myResource.ToJson() + ",")
                             }
                             ],
-                            events:@Html.Raw(Model.calEvents),
+                            //events:@Html.Raw(Model.calEvents),
+                            events: function (info, successCallback, failureCallback) {
+                                if (resourceA == null) { successCallback(calEvents); return; }
+                                else {
+                                    var novi = [];
+                                    
+                                    calEvents.forEach(function (item) {
+                                        if (item.display == 'background') { novi.push(item); }
+                                        else {
+                                            if (item.resourceId!= '2') {novi.push(item);  } }
+                                    });
+                                    successCallback(novi);
+                                }
+                            },
                             eventTimeFormat: {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -776,8 +854,6 @@
                             },
                             eventClick: function (info) {
                                 console.info("eventClick: info:", info);
-
-                                //info.event.setProp("title", "test666");
 
                                 showEvent(info);
                             },
@@ -802,15 +878,24 @@
                             longPressDelay: 300,
                             datesSet: function (dateInfo) {
                                 console.info("date changes to:", dateInfo.start);
-                                FetchRenderEvents(calendar, dateInfo.start).then(result => { FetchRenderEvents(calendar, dateInfo.end) });
+                                let dateE = dateInfo.end;
+                                var datum =dayjs(dateInfo.start).add(1, 'month').toDate()
+                                FetchRenderEvents(calendar, dateInfo.start)
+                                    .then(result => { if (dateE.getMonth() > datum.getMonth()) { FetchRenderEvents(calendar, datum ) } })
+                                    .then(result => { FetchRenderEvents(calendar, dateInfo.end) });
+
                                 @if (nakaziUrnike == true)
                                 {
                                 <text>
-                                    FetchRenderExceptions(calendar, dateInfo.start).then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
+                                FetchRenderExceptions(calendar, dateInfo.start)
+                                    .then(result => { if (dateE.getMonth() > datum.getMonth()) { FetchRenderExceptions(calendar, datum ) } })
+                                    .then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
                                 </text>
                                 }
                                 
                             }
+                            
+                            
 
                             });
                         calendar.render();
@@ -832,16 +917,34 @@
                                 } else { cancelSwipe = false; }
                             }
                         });
+                        var af = new AlloyFinger(document.getElementById('myDatePickModal'), {
+                            swipe: function (evt) {
+                                switch (evt.direction) {
+                                    case "Left": dp.changeMonth(1);
+                                        break;
+                                    case "Right": dp.changeMonth(-1);
+                                        break;
+                                }
+                            }
+                        });
                     });
         }
+
+
+
+
+
+
+
 
             document.addEventListener('DOMContentLoaded', function() {
                 // load locale and Get flatpicker localized instance
                 console.info("loading dayjs,fp:", navigator.language.slice(0, 2));
                 loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
-                    .then(function () {
+                    .then(async function () {
                         dayjs.locale(navigator.language.slice(0, 2));
-                        loadCalendar();
+                        await initializeGapi().then((result) => { loadCalendar(); }).catch((err) => { toastr.error("Napaka pri komunikaciji z Googlom!\nPoskusite se odjaviti in ponovno prijaviti."); });
+                        
                         
                         
                         loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
@@ -869,6 +972,17 @@
                                         if (format != 'F j, Y') {
                                             return dayjs(date).format(format);
                                         }
+                                    }
+                                });
+
+                                dp = $("#datepick").flatpickr({
+                                    dateFormat: "d.m.Y",
+                                    defaultDate: new Date(),
+                                    time_24hr: true, inline: true,
+                                    onChange: function(selectedDates, dateStr, instance) {
+                                        console.log(selectedDates);
+                                        calendar.gotoDate(selectedDates[0]);
+                                        $("#myDatePickModal").modal("hide");
                                     }
                                 });
 

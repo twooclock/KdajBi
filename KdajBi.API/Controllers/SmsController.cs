@@ -37,13 +37,16 @@ namespace KdajBi.API.Controllers
 
 
         [HttpPost]
-        [Route("/api/Sms/SmsTable")]
-        public JsonResult SmsTable([FromBody] DataTableAjaxPostModel param)
+        [Route("/api/Sms/SmsTable/{LocationId?}")]
+        public JsonResult SmsTable(long? locationid, [FromBody] DataTableAjaxPostModel param)
         {
             int recordsTotal = 0;
 
             var v = from a in _context.SmsCampaigns select a;
-            v = v.Where(w => w.Company.Id == _CurrentUserCompanyID());
+            if (locationid.HasValue == true)
+            { v = v.Where(w => w.Company.Id == _CurrentUserCompanyID() && w.LocationId== locationid); }
+            else
+            { v = v.Where(w => w.Company.Id == _CurrentUserCompanyID()); }
             v = v.Include(w => w.Recipients);
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
@@ -259,6 +262,7 @@ namespace KdajBi.API.Controllers
         {
             SmsCampaign newSmsCampaign = new SmsCampaign();
             newSmsCampaign.Company.Id = _CurrentUserCompanyID();
+            newSmsCampaign.LocationId = p_SmsCampaigin.LocationId;
             newSmsCampaign.AppUser.Id = _CurrentUserID();
             newSmsCampaign.MsgTxt = p_SmsCampaigin.MsgTxt;
             newSmsCampaign.SendAfter = p_SmsCampaigin.SendAfter;
