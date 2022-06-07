@@ -43,7 +43,7 @@ namespace KdajBi.Web.Controllers
                         {
                             vmAppointments myVM = new vmAppointments();
                             myVM.Location = _context.Locations.Include(s => s.Schedule).Include(w => w.Workplaces).FirstOrDefault(x => x.Id == DefaultLocationId());
-
+                            myVM.Location.Schedule = _context.Schedules.Find(myVM.Location.ScheduleId);
                             if (myVM.Location != null)
                             {
                                 var gt = _CurrentUserGooToken();
@@ -181,7 +181,7 @@ namespace KdajBi.Web.Controllers
                 myVM.Workplace = _context.Workplaces.Where(w => w.Id == p_WorkplaceId).SingleOrDefault();
                 myVM.Workplace.WorkplaceSchedules = _context.WorkplaceSchedules.Include(s => s.Schedule).Where(wps => wps.WorkplaceId == p_WorkplaceId).ToList();
                 myVM.Location = _context.Locations.Include(s => s.Schedule).Where(l => l.Id == myVM.Workplace.LocationId).SingleOrDefault();
-
+                myVM.Location.Schedule = _context.Schedules.Find(myVM.Location.ScheduleId);
                 var events = new List<FullCalendar.rEventShow>();
                 var events2 = new List<FullCalendar.rEventShow>();
 

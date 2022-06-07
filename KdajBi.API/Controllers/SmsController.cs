@@ -145,16 +145,21 @@ namespace KdajBi.API.Controllers
                 {
                     await _context.SaveChangesAsync();
                     //_logger.LogInformation("kampanija shranjena, sedaj pa še pošljem mail na naslov " + _CurrentUserEmail());
-                    //notify user
-                    string myMail = "<p>Pozdravljeni! <br />SMS sporočila zahtevajo vašo pozornost.<br />";
-                    myMail += "Če potrdite, bo " + myWhen + " poslanih " + newSmsCampaign.RecipientsCount.ToString() + " sporočil:<br />";
-                    myMail += "<pre>" + newSmsCampaign.MsgTxt + "</pre>";
-                    myMail += @"Prosimo, <a href=""" + AppBaseUrl + @"/api/Sms?guid=" + newSmsCampaign.Guid.ToString() + @"&action=approve"" target=""_blank"">POTRDITE</a> ";
-                    myMail += @"    ali    ";
-                    myMail += @"<a href=""" + AppBaseUrl + @"/api/Sms?guid=" + newSmsCampaign.Guid.ToString() + @"&action=cancel"" target=""_blank"">PREKLIČITE</a> ";
-                    myMail += @" pošiljanje.<br /> Hvala.</p>";
+                    if (p_SmsCampaigin.CampaignType != 3)
+                    {
+                        //notify user
+                        string myMail = "<p>Pozdravljeni! <br />SMS sporočila zahtevajo vašo pozornost.<br />";
+                        myMail += "Če potrdite, bo " + myWhen + " poslanih " + newSmsCampaign.RecipientsCount.ToString() + " sporočil:<br />";
+                        myMail += "<pre>" + newSmsCampaign.MsgTxt + "</pre>";
+                        myMail += @"Prosimo, <a href=""" + AppBaseUrl + @"/api/Sms?guid=" + newSmsCampaign.Guid.ToString() + @"&action=approve"" target=""_blank"">POTRDITE</a> ";
+                        myMail += @"    ali    ";
+                        myMail += @"<a href=""" + AppBaseUrl + @"/api/Sms?guid=" + newSmsCampaign.Guid.ToString() + @"&action=cancel"" target=""_blank"">PREKLIČITE</a> ";
+                        myMail += @" pošiljanje.<br /> Hvala.</p>";
 
-                    await _emailSender.SendEmailAsync(_CurrentUserEmail(), "SMS obveščanje", myMail);
+                        await _emailSender.SendEmailAsync(_CurrentUserEmail(), "SMS obveščanje", myMail);
+                    }
+                    else
+                    { return Json(newSmsCampaign.Id); }
                     //_logger.LogInformation("mail poslan...?");
 
                 }
@@ -196,6 +201,7 @@ namespace KdajBi.API.Controllers
         {
             List<SmsCampaign> myCampaigns;
             var myCampaign = _context.SmsCampaigns.Include(s => s.Company).Where(c => c.Guid.ToString() == guid).FirstOrDefault();
+            myCampaign.Company = _context.Companies.Find(myCampaign.CompanyId);
             if (myCampaign != null && guid.Length > 0)
             {
                 string AppBaseUrl = Request.Scheme + @"://" + Request.Host + Request.PathBase;
@@ -295,6 +301,13 @@ namespace KdajBi.API.Controllers
                     {
                         newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile));
                     }
+                    break;
+                case 3: //direct message
+                    foreach (var item in p_SmsCampaigin.Recipients)
+                    {
+                        newSmsCampaign.Recipients.Add(new SmsMsg(item));
+                    }
+                    newSmsCampaign.ApprovedAt = DateTime.Now;
                     break;
                 default:
                     break;

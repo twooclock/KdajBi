@@ -443,7 +443,7 @@
         $.validator.addMethod("greaterThan",
         function (value, element, param) {
               var $otherElement = $(param);
-              return (new Date("01/01/0001 "+value) > new Date("01/01/0001 "+$otherElement.val()));
+              return (new Date("01/01/0001 "+value) >= new Date("01/01/0001 "+$otherElement.val()));
         }, "Konec mora biti večji od začetka.");
 
         $(document).ready(function () {

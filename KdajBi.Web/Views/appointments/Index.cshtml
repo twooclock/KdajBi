@@ -860,11 +860,25 @@
                             eventDrop: function (info) {
                                 console.info("eventDrop: info:", info);
                                 cancelSwipe = true;
-                                SaveDragedEvent(info).catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); });
+                                SaveDragedEvent(info)
+                                    .catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); })
+                                    .then(() => {
+                                        if (typeof info.event?.extendedProps?.client != "undefined") {
+                                            var client = JSON.parse(info.event.extendedProps.client);
+                                            notifyClient(info.event.start.dateTime, client.mobile);
+                                        }
+                                    });
                             },
                             eventResize: function (event, dayDelta, minuteDelta) {
                                 //console.info("eventResize: ", event);
-                                SaveResizedEvent(event).catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); });
+                                SaveResizedEvent(event)
+                                    .catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); })
+                                    .then(() => {
+                                        if (typeof event?.event?.extendedProps?.client != "undefined") {
+                                            var client = JSON.parse(event.event.extendedProps.client);
+                                            notifyClient(event?.event.start.dateTime, client.mobile);
+                                        }
+                                    });
                             },
                             select: function (arg) {
                                 if (typeof arg.resource === "undefined") {
@@ -1263,7 +1277,7 @@
                         end: { 'dateTime': endDate },
                         summary: eventSummary,
                         "extendedProperties": {
-                            "private": {
+                            "shared": {
                                 client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
                                 notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
@@ -1290,9 +1304,11 @@
                                     resourceId: getResourceIdByGid(calid),
                                     extendedProps: {
                                         client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                        notes: JSON.stringify($("#txtNotes").val())
+                                        notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                     }
                                 });
+                                //notify client
+                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val());
                             }
                         });
                     });
@@ -1323,7 +1339,7 @@
                         end: { 'dateTime': endDate },
                         summary: eventSummary,
                         "extendedProperties": {
-                            "private": {
+                            "shared": {
                                 client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
                                 notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
@@ -1350,9 +1366,11 @@
                                     resourceId: getResourceIdByGid(calid),
                                     extendedProps: {
                                         client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                        notes: JSON.stringify($("#txtNotes").val())
+                                        notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                     }
                                 });
+                                //notify client
+                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val());
                             }
                             //delete previous event
                             gapi.client.calendar.events.delete({
@@ -1521,6 +1539,53 @@
                 
 
             } else { return false; }
+        }
+
+        function QueueSMS(p_Start, p_Mobile) {
+            var smsc = {};
+            smsc.CampaignType = 3; //direct withowt approval
+            smsc.LocationId = $("#cboLocations").val();
+            smsc.MsgTxt = "Pozdravljeni! Naročili smo vas... ";
+            smsc.SendAfter = new Date();
+            smsc.Recipients = [p_Mobile];
+            
+            return;
+            //TODO:send
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(smsc),
+                    url: apiURL + "/api/Sms/QueueSmsCampaign",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") {
+                            toastr.success('SMS uspešno poslan');
+                        }
+                        else { toastr.error("Napaka pri pošiljanju:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka pri pošiljanju:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+        }
+
+        function notifyClient(p_Start, p_Mobile) {
+            if (p_Mobile != "") {
+                let cancelsms = false;
+                let toast = toastr.warning("Poslal bom SMS " + p_Mobile + ". <br\>Še ne deluje!<br\><small>(Klik za preklic)</small>", "",
+                    {
+                        timeOut: 7000, extendedTimeOut: 7000,
+                        progressBar: true,
+                        closeButton: true,
+                        onHidden: function () { if (cancelsms == false) { QueueSMS(p_Start, p_Mobile); } },
+                        onclick: function () { cancelsms = true; }
+                    });
+            }
+
         }
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoadOkay()" onerror="gapiLoadFail(event)"></script>
