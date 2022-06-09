@@ -166,8 +166,8 @@
                                     <label for="txtStartTime">
                                         Datum ura:
                                     </label>
-                                    <div class="input-group flatpickr  p-0">
-                                        <input type="text" id="txtStartTime" name="txtStartTime" class="form-control " aria-describedby="basic-addonY" data-input />
+                                    <div id="dpstart" class="input-group flatpickr p-0">
+                                        <input type="text" id="txtStartTime" name="txtStartTime" class="form-control" aria-describedby="basic-addonY" data-input />
                                         <div class="input-group-append">
                                             <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
                                                 <i class="fas fa-calendar"></i>
@@ -179,9 +179,7 @@
                                     <label for="txtEndTime">
                                         Do (ura):
                                     </label>
-                                    <div class="input-group  p-0">
-                                        <input type="text" id="txtEndTime" name="txtEndTime" class="form-control " />
-                                    </div>
+                                    <input type="text" id="txtEndTime" class="form-control flatpickr flatpickr-input" data-id="timePicker24" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -371,7 +369,7 @@
         }
 
         var calendar;
-        var fp; var dp;
+        var fp; var dp; var tp;
         var SelectedClientID = 0;
 
         //#region events
@@ -963,9 +961,9 @@
                         
                         loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
                             .then(function () {
-                                fp = $(".flatpickr").flatpickr({
+                                fp = $("#dpstart").flatpickr({
                                     altInput: true,
-                                    //defaultDate: new Date(),
+                                    wrap:true,
                                     minDate: new Date(),
                                     locale: dayjs.locale(),
                                     plugins: [new confirmDatePlugin({ showAlways: true })],
@@ -999,7 +997,17 @@
                                         $("#myDatePickModal").modal("hide");
                                     }
                                 });
-
+                                tp = $("#txtEndTime").flatpickr({
+                                    allowInput: true,
+                                    enableTime: true,
+                                    noCalendar: true,
+                                    dateFormat: "H:i",
+                                    time_24hr: true,
+                                    onOpen: [
+                                        function (selectedDates, dateStr, instance) {
+                                            instance.setDate($("#txtEndTime").val());
+                                    }]
+                                });
                             });
                     });
 

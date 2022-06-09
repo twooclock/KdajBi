@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\AccountController.cs" />
     <Compile Remove="SecurityCore\Services\IUserService.cs" />
     <Compile Remove="Services\EmailSettings.cs" />
     <Compile Remove="Services\UserService.cs" />

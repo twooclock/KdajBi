@@ -1,22 +1,13 @@
 ﻿using KdajBi.Core;
 using KdajBi.Core.Models;
+using KdajBi.Models;
 using KdajBi.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using KdajBi.Web.ViewModels;
-using Microsoft.EntityFrameworkCore;
-using KdajBi.Models;
 using System.Diagnostics;
-using KdajBi.GoogleHelper;
-using Google.Apis.Calendar.v3.Data;
-using System.Globalization;
-using Newtonsoft.Json;
 
 namespace KdajBi.Web.Controllers
 {
