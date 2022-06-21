@@ -11,6 +11,7 @@ namespace KdajBi.Web.ViewModels
     {
         public Location Location;
         public List<Tuple<string, string, long>> GoogleCalendars = new List<Tuple<string, string, long>>(); //new Dictionary<string, string>();
+        public Dictionary<string, string> Settings = new Dictionary<string, string>();
         public string calEvents = "";
         public string ClientsJson;
 

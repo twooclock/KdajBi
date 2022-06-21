@@ -394,6 +394,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         function SendMail() {
             if (JSON.stringify($("#txtMessage").val().length > 0)) {
+                document.getElementById("cmdSend").disabled = true;
                 var companyID = $("#cboLocations").val();
                 $.ajax({
                     type: "post",
@@ -408,6 +409,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Error sending message:" + " - " + error);
+                        document.getElementById("cmdSend").disabled = false;
                     }
                 });
             }
@@ -420,6 +422,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         function CancelMessage() {
             $("#txtMessage").val('');
+            document.getElementById("cmdSend").disabled = false;
             $("#myContactModal").modal('hide');
         }
 

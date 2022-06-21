@@ -46,6 +46,13 @@ namespace KdajBi.Web.Controllers
                             myVM.Location.Schedule = _context.Schedules.Find(myVM.Location.ScheduleId);
                             if (myVM.Location != null)
                             {
+                                //load appropriate settings
+                                myVM.Settings = new Dictionary<string, string>();
+                                myVM.Settings.Add("SMS_AppointmentSMS", "true");
+                                myVM.Settings.Add("SMS_GOO_Msg", "Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA>. Veselimo se vašega obiska!");
+                                SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), DefaultLocationId(), myVM.Settings);
+                                myVM.Settings.Add("cbUseSingleListOfServices", SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbUseSingleListOfServices","false"));
+                                //load google calendars
                                 var gt = _CurrentUserGooToken();
                                 if (gt != null)
                                 {
@@ -138,7 +145,14 @@ namespace KdajBi.Web.Controllers
 
                                     //myVM.calEvents = Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray());
                                 }
-                                myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName, mobile = p.Mobile }).ToList()).Replace(@"\", @"\\");
+
+                                Dictionary<string, string>  mySettings = new Dictionary<string, string>();
+                                mySettings.Add("cbUseSingleListOfClients", "false");
+                                SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), null, mySettings);
+                                if (mySettings["cbUseSingleListOfClients"] == "false")
+                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName, mobile = p.Mobile }).ToList()).Replace(@"\", @"\\"); }
+                                else
+                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName, mobile = p.Mobile }).ToList()).Replace(@"\", @"\\"); }
 
                                 myVM.Token = _GetToken();
                                 return View(myVM);

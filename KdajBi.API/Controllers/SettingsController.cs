@@ -99,21 +99,7 @@ namespace KdajBi.API.Controllers
         [Route("/api/Settings/Load/{LocationId?}")]
         public JsonResult PostLoad(long? locationid, Dictionary<string, string> p_settings)
         {
-            
-            string[] keys = p_settings.Keys.ToArray();
-
-            List<Setting> mySettings;
-            if (locationid.HasValue == true)
-            {
-                 mySettings = _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == locationid && keys.Contains(a.Key)).ToList();
-            }
-            else
-            { mySettings = _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == null && keys.Contains(a.Key)).ToList(); }
-
-            foreach (var item in mySettings)
-            {
-                p_settings[item.Key] = item.Value;
-            }
+            SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), locationid, p_settings);
             return Json(p_settings);
         }
 

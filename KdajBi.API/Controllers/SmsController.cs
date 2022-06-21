@@ -159,7 +159,7 @@ namespace KdajBi.API.Controllers
                         await _emailSender.SendEmailAsync(_CurrentUserEmail(), "SMS obveščanje", myMail);
                     }
                     else
-                    { return Json(newSmsCampaign.Id); }
+                    { return Json("OK"); }
                     //_logger.LogInformation("mail poslan...?");
 
                 }
@@ -307,6 +307,7 @@ namespace KdajBi.API.Controllers
                     {
                         newSmsCampaign.Recipients.Add(new SmsMsg(item));
                     }
+                    newSmsCampaign.SendAfter= DateTime.Now;
                     newSmsCampaign.ApprovedAt = DateTime.Now;
                     break;
                 default:

@@ -371,6 +371,8 @@
         var calendar;
         var fp; var dp; var tp;
         var SelectedClientID = 0;
+        var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
+
 
         //#region events
         @Html.Raw("var eventsMonths = []; eventsMonths.push(dayjs(Date()).format(\"YYYYMM\"));")
@@ -1016,7 +1018,6 @@
 
 
                 //fill client search
-                var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
                 $("#txtClientsearch").autocomplete({
                     minlength: 3,
                     delay: 200,
@@ -1250,7 +1251,7 @@
                                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                                     dataType: "json",
                                     success: function (retval) {
-                                        if (retval.result == "OK") { toastr.info("Saved new client (" + retval.id.toString() + ")"); resolve(retval.id); }
+                                        if (retval.result == "OK") { toastr.info("Shranil novo stranko (" + retval.id.toString() + ")"); myClients.push( {id:retval.id, label:name,mobile:client.Mobile}); resolve(retval.id); }
                                         else { reject(retval.result); return false; }
                                     },
                                     error: function (xhr, status, error) {
@@ -1411,7 +1412,12 @@
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
-                    url: apiURL + "/api/services/@Html.Raw(Model.Location.Id)/",
+                    url: apiURL + "/api/services/@{ string val = "";
+                if (Model.Settings.TryGetValue("cbUseSingleListOfServices", out val) == true)
+                {
+                    if (val.ToLower() == "false") {@Html.Raw(Model.Location.Id+"/"); } else {@Html.Raw("0/"); }
+                }
+            }",
                     contentType: "application/json; charset=utf-8",
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
@@ -1549,16 +1555,42 @@
             } else { return false; }
         }
 
+        function getSMSMessage(p_Start) {
+            @{ string msgTemplate = "";
+                if (Model.Settings.TryGetValue("SMS_GOO_Msg", out msgTemplate) == false)
+                {
+                    msgTemplate = "Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA>. Veselimo se vašega obiska!";
+                }
+                @Html.Raw("var msgTemplate=`"+msgTemplate+"`;");
+            }
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            if (dayjs(p_Start).format("DD-MM-YYYY") == dayjs(today).format("DD-MM-YYYY"))
+            { msgTemplate=msgTemplate.replace("<DANESJUTRI>","danes"); }
+            else
+            {
+                if (dayjs(p_Start).format("DD-MM-YYYY") == dayjs(tomorrow).format("DD-MM-YYYY"))
+            { msgTemplate=msgTemplate.replace("<DANESJUTRI>","jutri"); }
+            else
+                {
+                    msgTemplate = msgTemplate.replace("<DANESJUTRI>", "v "+dayjs.weekdays()[p_Start.getDay()]);
+                }
+            }
+            msgTemplate = msgTemplate.replace("<URA>", dayjs(p_Start).format("LT"));
+            msgTemplate = msgTemplate.replace("<DATUM>", dayjs(p_Start).format("l"));
+            return msgTemplate;
+        }
+
         function QueueSMS(p_Start, p_Mobile) {
+            
             var smsc = {};
-            smsc.CampaignType = 3; //direct withowt approval
+            smsc.CampaignType = 3; //direct without approval
             smsc.LocationId = $("#cboLocations").val();
-            smsc.MsgTxt = "Pozdravljeni! Naročili smo vas... ";
-            smsc.SendAfter = new Date();
+            smsc.MsgTxt = getSMSMessage(p_Start);
+            smsc.SendAfter = dayjs.utc().local();
             smsc.Recipients = [p_Mobile];
             
-            return;
-            //TODO:send
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
@@ -1582,9 +1614,15 @@
         }
 
         function notifyClient(p_Start, p_Mobile) {
+            @{ val = "";
+                if (Model.Settings.TryGetValue("SMS_AppointmentSMS", out val) == true)
+                {
+                    if (val.ToLower() != "true") {@Html.Raw("return;"); }
+                }
+            }
             if (p_Mobile != "") {
-                let cancelsms = false;
-                let toast = toastr.warning("Poslal bom SMS " + p_Mobile + ". <br\>Še ne deluje!<br\><small>(Klik za preklic)</small>", "",
+                    let cancelsms = false;
+                    let toast = toastr.warning("Poslal bom SMS " + p_Mobile + ". <br\><small>(Klik za preklic)</small>", "",
                     {
                         timeOut: 7000, extendedTimeOut: 7000,
                         progressBar: true,
@@ -1592,7 +1630,7 @@
                         onHidden: function () { if (cancelsms == false) { QueueSMS(p_Start, p_Mobile); } },
                         onclick: function () { cancelsms = true; }
                     });
-            }
+                }
 
         }
     </script>

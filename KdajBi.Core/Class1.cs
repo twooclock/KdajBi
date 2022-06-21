@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using KdajBi.Core.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
-
+using System.Linq;
 
 namespace KdajBi.Core
 {
@@ -23,6 +24,43 @@ namespace KdajBi.Core
             return new ApplicationDbContext(optionsBuilder.Options);
         }
     }
+
+    public static class SettingsHelper
+    {
+        public static void getSettings(ApplicationDbContext _context, long companyid,  long? locationid, Dictionary<string, string> p_settings)
+        {
+            string[] keys = p_settings.Keys.ToArray();
+
+            List<Setting> mySettings;
+            if (locationid.HasValue == true)
+            {
+                mySettings = _context.Settings.Where(a => a.CompanyId == companyid && a.LocationId == locationid && keys.Contains(a.Key)).ToList();
+            }
+            else
+            { mySettings = _context.Settings.Where(a => a.CompanyId == companyid && a.LocationId == null && keys.Contains(a.Key)).ToList(); }
+
+            foreach (var item in mySettings)
+            {
+                p_settings[item.Key] = item.Value;
+            }
+        }
+
+        public static string getSetting(ApplicationDbContext p_context, long companyid, long? locationid, string settingName, string defaultValue)
+        {
+            string retval = defaultValue;
+            Setting mySetting;
+            if (locationid.HasValue == true)
+            {
+                mySetting = p_context.Settings.Where(a => a.CompanyId == companyid && a.LocationId == locationid && a.Key==settingName).FirstOrDefault();
+            }
+            else
+            { mySetting = p_context.Settings.Where(a => a.CompanyId == companyid && a.LocationId == null && a.Key == settingName).FirstOrDefault(); }
+            if (mySetting != null)
+            { retval = mySetting.Value; }
+            return retval;
+        }
+    }
+
 
     public class TimeSlot
     {
