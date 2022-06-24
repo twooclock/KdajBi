@@ -273,9 +273,9 @@ namespace KdajBi.API.Controllers
             newSmsCampaign.MsgTxt = p_SmsCampaigin.MsgTxt;
             newSmsCampaign.SendAfter = p_SmsCampaigin.SendAfter;
             newSmsCampaign.Name = "";
+            if (p_SmsCampaigin.CampaignType == 3) { newSmsCampaign.Name = "AppointmentSMS"; }
 
-
-            switch (p_SmsCampaigin.CampaignType)
+                switch (p_SmsCampaigin.CampaignType)
             {
                 case 0: //individual recipients (ClientIDs)
                     foreach (string item in p_SmsCampaigin.Recipients)

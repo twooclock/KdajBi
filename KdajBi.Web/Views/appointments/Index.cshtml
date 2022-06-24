@@ -1574,7 +1574,8 @@
             { msgTemplate=msgTemplate.replace("<DANESJUTRI>","jutri"); }
             else
                 {
-                    msgTemplate = msgTemplate.replace("<DANESJUTRI>", "v "+dayjs.weekdays()[p_Start.getDay()]);
+                    const wd = ['v nedeljo', 'v ponedeljek', 'v torek', 'v sredo','v četrtek', 'v petek', 'v soboto'];
+                    msgTemplate = msgTemplate.replace("<DANESJUTRI>", wd[p_Start.getDay()]);
                 }
             }
             msgTemplate = msgTemplate.replace("<URA>", dayjs(p_Start).format("LT"));

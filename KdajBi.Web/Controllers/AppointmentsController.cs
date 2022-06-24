@@ -51,7 +51,7 @@ namespace KdajBi.Web.Controllers
                                 myVM.Settings.Add("SMS_AppointmentSMS", "true");
                                 myVM.Settings.Add("SMS_GOO_Msg", "Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA>. Veselimo se vašega obiska!");
                                 SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), DefaultLocationId(), myVM.Settings);
-                                myVM.Settings.Add("cbUseSingleListOfServices", SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbUseSingleListOfServices","false"));
+                                myVM.Settings.Add("cbUseSingleListOfServices", SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbUseSingleListOfServices", "false"));
                                 //load google calendars
                                 var gt = _CurrentUserGooToken();
                                 if (gt != null)
@@ -72,57 +72,61 @@ namespace KdajBi.Web.Controllers
 
                                                 foreach (var calEvent in calEvents)
                                                 {
-                                                    var start = calEvent.Start.DateTime.Value;
-                                                    var end = calEvent.End.DateTime.Value;
-                                                    var newEvent = new FullCalendar.Event()
+                                                    //ignore all day events
+                                                    if (calEvent.Start.DateTime != null && calEvent.End.DateTime != null)
                                                     {
-                                                        id = calEvent.Id,
-                                                        resourceId = item.Id.ToString(),
-                                                        title = calEvent.Summary,
-                                                        start = start.ToString("yyyy-MM-ddTHH:mm:ss"),
-                                                        end = end.ToString("yyyy-MM-ddTHH:mm:ss"),
-                                                        allDay = false
-
-                                                    };
-                                                    if (calEvent.ExtendedProperties != null)
-                                                    {
-                                                        newEvent.extendedProps = (Dictionary<string, string>)calEvent.ExtendedProperties.Shared;
-                                                        if (newEvent.extendedProps != null)
+                                                        var start = calEvent.Start.DateTime.Value;
+                                                        var end = calEvent.End.DateTime.Value;
+                                                        var newEvent = new FullCalendar.Event()
                                                         {
-                                                            if (newEvent.extendedProps.ContainsKey("client"))
-                                                            {
-                                                                var client = newEvent.extendedProps["client"];
-                                                                try
-                                                                {
-                                                                    dynamic myClient = JsonConvert.DeserializeObject<dynamic>(client);
-                                                                    newEvent.title = myClient.label;
-                                                                    if (myClient.mobile.ToString().Length > 0) { newEvent.title = newEvent.title + " (" + myClient.mobile + ")"; }
-                                                                }
-                                                                catch (Exception ex)
-                                                                {
-                                                                    newEvent.title = client;
-                                                                }
-                                                            }
-                                                            if (newEvent.extendedProps.ContainsKey("notes"))
-                                                            {
-                                                                try
-                                                                {
-                                                                    dynamic myNotes = JsonConvert.DeserializeObject<dynamic>(newEvent.extendedProps["notes"]);
-                                                                    if (myNotes[0].minutes != null)
-                                                                    { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value.Replace("(" + myNotes[0].minutes.Value + " min)", ""); }
-                                                                    else
-                                                                    { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value; }
+                                                            id = calEvent.Id,
+                                                            resourceId = item.Id.ToString(),
+                                                            title = calEvent.Summary,
+                                                            start = start.ToString("yyyy-MM-ddTHH:mm:ss"),
+                                                            end = end.ToString("yyyy-MM-ddTHH:mm:ss"),
+                                                            allDay = false
 
-                                                                }
-                                                                catch (Exception)
+                                                        };
+                                                        if (calEvent.ExtendedProperties != null)
+                                                        {
+                                                            newEvent.extendedProps = (Dictionary<string, string>)calEvent.ExtendedProperties.Shared;
+                                                            if (newEvent.extendedProps != null)
+                                                            {
+                                                                if (newEvent.extendedProps.ContainsKey("client"))
                                                                 {
-                                                                    newEvent.title = newEvent.title + "\r\n" + newEvent.extendedProps["notes"];
+                                                                    var client = newEvent.extendedProps["client"];
+                                                                    try
+                                                                    {
+                                                                        dynamic myClient = JsonConvert.DeserializeObject<dynamic>(client);
+                                                                        newEvent.title = myClient.label;
+                                                                        if (myClient.mobile.ToString().Length > 0) { newEvent.title = newEvent.title + " (" + myClient.mobile + ")"; }
+                                                                    }
+                                                                    catch (Exception ex)
+                                                                    {
+                                                                        newEvent.title = client;
+                                                                    }
+                                                                }
+                                                                if (newEvent.extendedProps.ContainsKey("notes"))
+                                                                {
+                                                                    try
+                                                                    {
+                                                                        dynamic myNotes = JsonConvert.DeserializeObject<dynamic>(newEvent.extendedProps["notes"]);
+                                                                        if (myNotes[0].minutes != null)
+                                                                        { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value.Replace("(" + myNotes[0].minutes.Value + " min)", ""); }
+                                                                        else
+                                                                        { newEvent.title = newEvent.title + "\r\n" + myNotes[0].label.Value; }
+
+                                                                    }
+                                                                    catch (Exception)
+                                                                    {
+                                                                        newEvent.title = newEvent.title + "\r\n" + newEvent.extendedProps["notes"];
+                                                                    }
                                                                 }
                                                             }
+
                                                         }
-
+                                                        events.Add(newEvent);
                                                     }
-                                                    events.Add(newEvent);
                                                 }
                                                 //get schedule bgEvents
                                                 setBGEvents(myVM, item.Id, scheduletype);
@@ -146,7 +150,7 @@ namespace KdajBi.Web.Controllers
                                     //myVM.calEvents = Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray());
                                 }
 
-                                Dictionary<string, string>  mySettings = new Dictionary<string, string>();
+                                Dictionary<string, string> mySettings = new Dictionary<string, string>();
                                 mySettings.Add("cbUseSingleListOfClients", "false");
                                 SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), null, mySettings);
                                 if (mySettings["cbUseSingleListOfClients"] == "false")
