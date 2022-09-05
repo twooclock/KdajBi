@@ -38,7 +38,9 @@ namespace KdajBi.Web.Controllers
                 {
                     if (LocationIsMine(DefaultLocationId()))
                     {
-                        const long scheduletype = 0;
+                        long scheduletype = 0;
+                        bool alternateWeeks = (SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbEmployee_AlternatingWeeks", "false")) == "true";
+                        if (alternateWeeks == true) { scheduletype = 1; }
                         try
                         {
                             vmAppointments myVM = new vmAppointments();
@@ -51,7 +53,17 @@ namespace KdajBi.Web.Controllers
                                 myVM.Settings.Add("SMS_AppointmentSMS", "true");
                                 myVM.Settings.Add("SMS_GOO_Msg", "Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA>. Veselimo se vašega obiska!");
                                 SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), DefaultLocationId(), myVM.Settings);
-                                myVM.Settings.Add("cbUseSingleListOfServices", SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbUseSingleListOfServices", "false"));
+                                //load setting for null location
+                                var globalSettings = new Dictionary<string, string>();
+                                globalSettings.Add("cbUseSingleListOfServices", "false");
+                                globalSettings.Add("cbAppointments_ShowTimetables", "false");
+                                globalSettings.Add("cbEmployee_AlternatingWeeks", "false");
+                                SettingsHelper.getSettings(_context, _CurrentUserCompanyID(),null, globalSettings);
+                                foreach (var item in globalSettings)
+                                {
+                                    myVM.Settings.Add(item.Key,item.Value);
+                                }
+                                //myVM.Settings.Add("cbUseSingleListOfServices", SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbUseSingleListOfServices", "false"));
                                 //load google calendars
                                 var gt = _CurrentUserGooToken();
                                 if (gt != null)

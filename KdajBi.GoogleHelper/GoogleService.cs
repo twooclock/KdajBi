@@ -65,14 +65,14 @@ namespace KdajBi.GoogleHelper
                 var credential = new UserCredential(flow, p_userid, tokenResponse);
                 var dobil = credential.RefreshTokenAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-                if (credential.Token.RefreshToken != null) { Logger.Info("GOT New token.RefreshToken:{0}", credential.Token.RefreshToken.ToString()); }
-
                 googleAuthToken.access_token = credential.Token.AccessToken;
                 if (credential.Token.RefreshToken != null)
                 {
                     googleAuthToken.refresh_token = credential.Token.RefreshToken;
+                    Logger.Info("GOT New token.RefreshToken:{0}", credential.Token.RefreshToken.ToString());
                 }
-                googleAuthToken.expires_at = credential.Token.IssuedUtc.AddSeconds((double)credential.Token.ExpiresInSeconds);
+                if (credential.Token.ExpiresInSeconds.HasValue)
+                { googleAuthToken.expires_at = credential.Token.IssuedUtc.AddSeconds((double)credential.Token.ExpiresInSeconds); }
             }
         }
 

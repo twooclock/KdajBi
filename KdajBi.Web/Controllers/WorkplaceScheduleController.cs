@@ -29,6 +29,9 @@ namespace KdajBi.Web.Controllers
         public IActionResult wps(long wpid, long scheduletype)
         {
             //edit schedule for a workplace wpid (default scheduleType=0 Alldays)
+            bool alternateWeeks = (SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbEmployee_AlternatingWeeks", "false")) == "true";
+            if (alternateWeeks == true && scheduletype == 0) { scheduletype++; }
+            if (alternateWeeks == false && scheduletype != 0) { scheduletype=0; }
             vmWorkplace myVM = new vmWorkplace();
             myVM.Workplace = _context.Workplaces.Where(w => w.Id == wpid).SingleOrDefault();
             myVM.Workplace.WorkplaceSchedules = _context.WorkplaceSchedules.Include(s => s.Schedule).Where(wps => wps.WorkplaceId == wpid).ToList();
@@ -36,7 +39,8 @@ namespace KdajBi.Web.Controllers
             myVM.Location.Schedule = _context.Schedules.Find(myVM.Location.ScheduleId);
             var events = new List<FullCalendar.rEventShow>();
             var events2 = new List<FullCalendar.rEventShow>();
-
+            myVM.cboScheduleTypeHTML(scheduletype, alternateWeeks);
+            
             Schedule mySchedule = myVM.Workplace.ScheduleByType(scheduletype);
             if (mySchedule == null)
             {

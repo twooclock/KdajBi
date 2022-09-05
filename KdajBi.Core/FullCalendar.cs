@@ -161,15 +161,15 @@ namespace KdajBi.Web
             switch (p_scheduleType)
             {
                 case 1:
-                    dt = new DateTime(2021, 01, 01);
+                    dt = new DateTime(2018, 01, 01);
                     interval = "2";
                     break;
                 case 2:
-                    dt = new DateTime(2021, 01, 01).AddDays(7);
+                    dt = new DateTime(2018, 01, 01).AddDays(7);
                     interval = "2";
                     break;
                 default:
-                    dt = new DateTime(2021, 01, 01);
+                    dt = new DateTime(2018, 01, 01);
                     interval = "1";
                     break;
             }

@@ -146,7 +146,7 @@
                                     <label for="txtClientMobile">
                                         Mobi:
                                     </label>
-                                    <input type="text" id="txtClientMobile" name="txtClientMobile" class="form-control" />
+                                    <input type="tel" id="txtClientMobile" name="txtClientMobile" class="form-control" oninput="CheckMobileNumber(this);" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -278,6 +278,12 @@
     <script type="text/javascript">
         @await Html.PartialAsync("_ApiAccess")
         @await Html.PartialAsync("_GooApiAccess")
+
+        function CheckMobileNumber(el) {
+            var mobi = $(el).val();
+            mobi = mobi.replace(/[^\d\+]/g, '');
+            $(el).val(mobi);
+        }
 
         function hideKeyboard() {
             //this set timeout needed for case when hideKeyborad
@@ -448,7 +454,16 @@
     //#region background events
         @Html.Raw("var resourceswd=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.resourcesWD));
         @Html.Raw("var exMonths = [];")
-        @{const bool nakaziUrnike = false; }
+        
+         @{ string val = "";
+             bool nakaziUrnike = false;
+             if (Model.Settings.TryGetValue("cbAppointments_ShowTimetables", out val) == true)
+             {
+                 nakaziUrnike =bool.Parse(val);
+             }
+             
+            }
+
         function isInArray(array, value) {
             return (array.find(item => { return item == value }) || []).length > 0;
         }
@@ -865,7 +880,7 @@
                                     .then(() => {
                                         if (typeof info.event?.extendedProps?.client != "undefined") {
                                             var client = JSON.parse(info.event.extendedProps.client);
-                                            notifyClient(info.event.start.dateTime, client.mobile);
+                                            notifyClient(info.event.start, client.mobile);
                                         }
                                     });
                             },
@@ -876,7 +891,7 @@
                                     .then(() => {
                                         if (typeof event?.event?.extendedProps?.client != "undefined") {
                                             var client = JSON.parse(event.event.extendedProps.client);
-                                            notifyClient(event?.event.start.dateTime, client.mobile);
+                                            notifyClient(event?.event.start, client.mobile);
                                         }
                                     });
                             },
@@ -1412,7 +1427,7 @@
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
-                    url: apiURL + "/api/services/@{ string val = "";
+                    url: apiURL + "/api/services/@{ val = "";
                 if (Model.Settings.TryGetValue("cbUseSingleListOfServices", out val) == true)
                 {
                     if (val.ToLower() == "false") {@Html.Raw(Model.Location.Id+"/"); } else {@Html.Raw("0/"); }
@@ -1621,6 +1636,7 @@
                     if (val.ToLower() != "true") {@Html.Raw("return;"); }
                 }
             }
+            if (typeof p_Start === "undefined") { console.log('Notify client start is undefined');  return; }
             if (p_Mobile != "") {
                     let cancelsms = false;
                     let toast = toastr.warning("Poslal bom SMS " + p_Mobile + ". <br\><small>(Klik za preklic)</small>", "",
