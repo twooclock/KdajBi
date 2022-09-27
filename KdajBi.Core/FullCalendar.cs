@@ -42,6 +42,7 @@ namespace KdajBi.Web
             public String end { get; set; }
             public bool allDay { get; set; }
             public String display { get; set; }
+            public String color { get; set; }
 
             public Dictionary<string, string> extendedProps = new Dictionary<string, string>();
         }

@@ -22,6 +22,7 @@
             padding-right: 3px;
             font-weight: 900;
         }
+
         .fc-datepicker-button:before {
             font-family: "Font Awesome 5 Free";
             content: "\f073";
@@ -29,6 +30,7 @@
             padding-right: 3px;
             font-weight: 900;
         }
+
         .fc-linkcreator-button:before {
             font-family: "Font Awesome 5 Free";
             content: "\f0c1";
@@ -36,7 +38,7 @@
             padding-right: 3px;
             font-weight: 900;
         }
-        
+
         body {
             margin: 0;
             padding: 0;
@@ -113,136 +115,160 @@
 }
 
 <!-- page content -->
-<div class="right_col col-md-12" role="main">
-    <div id="fs">
-        <div id='calendar'></div>
-        <!-- Workplace modal content-->
-        <div id="myModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title" id="myModalLabel">Naročilo</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
-                    </div>
-                    <div class="modal-body ui-front">
-                        <form id="formEvent" class="formEvent" name="formEvent">
-                            <div class="form-row">
-                                <div class="form-group col-9">
-                                    <label for="txtClientsearch">
-                                        Stranka:
-                                    </label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text" onclick="$('#txtClientsearch').select();$('#txtClientsearch').autocomplete('search')">
-                                                <span class="fas fa-user"></span>
-                                            </div>
-                                        </div>
-                                        <input id="txtClientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#txtClientsearch').select(); $('#txtClientsearch').autocomplete('search')">
-                                    </div>
-                                </div>
 
-                                <div class="form-group col-3">
-                                    <label for="txtClientMobile">
-                                        Mobi:
-                                    </label>
-                                    <input type="tel" id="txtClientMobile" name="txtClientMobile" class="form-control" oninput="CheckMobileNumber(this);" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="txtNotes">
-                                    Naročilo:
-                                </label>
-                                <input type="text" id="txtNotes" name="txtNotes" class="form-control ">
-                            </div>
-                            <div id="rowMinDuration" class="form-group">
-                                <label for="txtMinDuration">
-                                    Trajanje (min):
-                                </label>
-                                <input type="number" min="1" id="txtMinDuration" name="txtMinDuration" class="form-control ">
-                            </div>
-                            <div id="rowDT" class="form-row">
-                                <div class="form-group pr-2 col-9 ">
-                                    <label for="txtStartTime">
-                                        Datum ura:
-                                    </label>
-                                    <div id="dpstart" class="input-group flatpickr p-0">
-                                        <input type="text" id="txtStartTime" name="txtStartTime" class="form-control" aria-describedby="basic-addonY" data-input />
-                                        <div class="input-group-append">
-                                            <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
-                                                <i class="fas fa-calendar"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group col-3 ">
-                                    <label for="txtEndTime">
-                                        Do (ura):
-                                    </label>
-                                    <input type="text" id="txtEndTime" class="form-control flatpickr flatpickr-input" data-id="timePicker24" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="cboGooCal">
-                                    Delovno mesto/zaposleni:
-                                </label>
-                                <select id="cboGooCal" name="cboGooCal" class="selectpicker custom-select custom-select-sm form-control">
-                                    @foreach (var item in Model.GoogleCalendars)
-                                    {
-                                        <option value="@item.Item1" data-workplaceid="@Html.Raw(item.Item3)">@Html.Raw(item.Item2)</option>
-                                    }
-                                </select>
-                            </div>
-
-
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" id="cmdSendLink">
-                            Pošlji
-                        </button>
-                        <button type="button" class="btn btn-default" id="cmdDelete">
-                            Zbriši
-                        </button>
-                        <button type="button" class="btn btn-primary" id="cmdSave">
-                            Shrani
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- /modal content-->
-
-
-        <!-- DatePick modal content-->
-        <div id="myDatePickModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
-            <div class="modal-dialog modal-dialog-centered" style="max-width: fit-content;">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title">skoči na datum</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
-                    </div>
-                    <div class="modal-body ui-front">
-                        <form>
+@{ string val = "";
+    bool Show3Calendars = false;
+    if (Model.Settings.TryGetValue("AppointmentsShow3Calendars", out val) == true)
+    {
+        Show3Calendars = (bool.Parse(val) == true);
+        if (bool.Parse(val) == true)
+        { <text>
+                <div class="right_col row" role="main">
+                    <div id="3calendars" class="col-3 d-none d-md-block">
                         <div class="form-group">
-                            <input type="text" class="form-control" id="datepick" style="visibility: hidden" aria-describedby="emailHelp">
+                            <input type="text" class="form-control" id="datepick1" style="display: none">
+                            <input type="text" class="form-control" id="datepick2" style="display: none">
+                            <input type="text" class="form-control" id="datepick3" style="display: none">
                         </div>
-                    </form>
                     </div>
-                    <div class="modal-footer">
-                        
+                    <div id="fs" class="col">
+        </text>}
+    else
+    { <text>
+            <div class="right_col" role="main">
+                <div id="fs">
+    </text>}
+
+}
+
+}
+
+<div id='calendar'></div>
+<!-- Workplace modal content-->
+<div id="myModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Naročilo</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body ui-front">
+                <form id="formEvent" class="formEvent" name="formEvent">
+                    <div class="form-row">
+                        <div class="form-group col-9">
+                            <label for="txtClientsearch">
+                                Stranka:
+                            </label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text" onclick="$('#txtClientsearch').select();$('#txtClientsearch').autocomplete('search')">
+                                        <span class="fas fa-user"></span>
+                                    </div>
+                                </div>
+                                <input id="txtClientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#txtClientsearch').select(); $('#txtClientsearch').autocomplete('search')">
+                            </div>
+                        </div>
+
+                        <div class="form-group col-3">
+                            <label for="txtClientMobile">
+                                Mobi:
+                            </label>
+                            <input type="tel" id="txtClientMobile" name="txtClientMobile" class="form-control" oninput="CheckMobileNumber(this);" />
+                        </div>
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label for="txtNotes">
+                            Naročilo:
+                        </label>
+                        <input type="text" id="txtNotes" name="txtNotes" class="form-control ">
+                    </div>
+                    <div id="rowMinDuration" class="form-group">
+                        <label for="txtMinDuration">
+                            Trajanje (min):
+                        </label>
+                        <input type="number" min="1" id="txtMinDuration" name="txtMinDuration" class="form-control ">
+                    </div>
+                    <div id="rowDT" class="form-row">
+                        <div class="form-group pr-2 col-9 ">
+                            <label for="txtStartTime">
+                                Datum ura:
+                            </label>
+                            <div id="dpstart" class="input-group flatpickr p-0">
+                                <input type="text" id="txtStartTime" name="txtStartTime" class="form-control" aria-describedby="basic-addonY" data-input />
+                                <div class="input-group-append">
+                                    <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group col-3 ">
+                            <label for="txtEndTime">
+                                Do (ura):
+                            </label>
+                            <input type="text" id="txtEndTime" class="form-control flatpickr flatpickr-input" data-id="timePicker24" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cboGooCal">
+                            Delovno mesto/zaposleni:
+                        </label>
+                        <select id="cboGooCal" name="cboGooCal" class="selectpicker custom-select custom-select-sm form-control">
+                            @foreach (var item in Model.GoogleCalendars)
+                            {
+                                <option value="@item.Item1" data-workplaceid="@Html.Raw(item.Item3)">@Html.Raw(item.Item2)</option>
+                            }
+                        </select>
+                    </div>
+
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="cmdSendLink">
+                    Pošlji
+                </button>
+                <button type="button" class="btn btn-default" id="cmdDelete">
+                    Zbriši
+                </button>
+                <button type="button" class="btn btn-primary" id="cmdSave">
+                    Shrani
+                </button>
             </div>
         </div>
-        <!-- /modal content-->
-
-
-
-
-
     </div>
+</div>
+<!-- /modal content-->
+<!-- DatePick modal content-->
+<div id="myDatePickModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: fit-content;">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">skoči na datum</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body ui-front">
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="datepick" style="visibility: hidden" aria-describedby="emailHelp">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+
+
+
+
+
+</div>
 </div>
 <!-- /page content -->
 
@@ -387,8 +413,8 @@
                 console.info("FetchRenderEvents:", p_date);
                 if (isInArray(eventsMonths, dayjs(p_date).format("YYYYMM")) == false) {
                     console.info("asking for events for ", dayjs(p_date).format("YYYY-MM"));
-                    var firstDayOfMonth = new Date(p_date.getFullYear(), p_date.getMonth(), 1);
-                    var lastDayOfMonth = new Date(p_date.getFullYear(), p_date.getMonth() + 1, 0);
+                    var firstDayOfMonth = dayjs.utc().year(p_date.getFullYear()).month(p_date.getMonth()).startOf('month').local(); //  new Date(p_date.getFullYear(), p_date.getMonth(), 1);
+                    var lastDayOfMonth = dayjs.utc().year(p_date.getFullYear()).month(p_date.getMonth()).endOf('month').local()//new Date(p_date.getFullYear(), p_date.getMonth() + 1, 0);
 
                     refreshGAPIToken().then(async () => {
                         p_calendar.getResources().forEach(async function (aResource) {
@@ -409,6 +435,8 @@
             return new Promise(function (resolve, reject) {
                 if (typeof pageToken === "undefined") { console.log('no next page'); reject(); return; }
                 let calId = getResourceIdByGid(aResource.extendedProps.gid);
+                console.info("first:" + firstDayOfMonth.toString(),firstDayOfMonth.toISOString());
+                console.info("last:" + lastDayOfMonth.toString(),lastDayOfMonth.toISOString());
                 gapi.client.calendar.events.list({
                     "calendarId": aResource.extendedProps.gid,
                     "timeMin": firstDayOfMonth.toISOString(),
@@ -432,8 +460,7 @@
                                     start: item.start.dateTime,
                                     end: item.end.dateTime,
                                     display: null,
-                                    backgroundColor:aResource.eventBackgroundColor,
-                                    borderColor:aResource.eventBackgroundColor,
+                                    eventColor:aResource.eventBackgroundColor,
                                     resourceId: calId,
                                     extendedProps: ((typeof item.extendedProperties === "undefined") ? {} : item.extendedProperties.shared)
                                 });
@@ -441,8 +468,8 @@
                           });
 
                         //put on calendar
-                          
-                        
+
+
                     }
                 });
             });
@@ -454,14 +481,14 @@
     //#region background events
         @Html.Raw("var resourceswd=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.resourcesWD));
         @Html.Raw("var exMonths = [];")
-        
-         @{ string val = "";
+
+         @{
              bool nakaziUrnike = false;
              if (Model.Settings.TryGetValue("cbAppointments_ShowTimetables", out val) == true)
              {
                  nakaziUrnike =bool.Parse(val);
              }
-             
+
             }
 
         function isInArray(array, value) {
@@ -580,8 +607,8 @@
         }
 
 
-        async function SaveDragedEvent(info) { 
-            return new Promise(function (resolve, reject) { 
+        async function SaveDragedEvent(info) {
+            return new Promise(function (resolve, reject) {
                 var res = info.event.getResources();
                 var calid = res[0].extendedProps.gid;
                 var eid = info.event.id;
@@ -604,7 +631,7 @@
                             }
                             else {
                                 console.log("Moved event: %s", info.event.id);
-                                
+
                                 if (info.delta.milliseconds != 0 || info.delta.days != 0 || info.delta.months != 0 || info.delta.years != 0) {
                                     //update event if changed
                                     eid = info.event.id;
@@ -793,8 +820,8 @@
                                         if (mySlot == "00:30") { mySlot = "00:15"; this.innerText = "30'"; } else { mySlot = "00:30"; $(this).attr("title", "15'"); this.innerText="15'"; }
                                         localStorage.setItem("Slot", mySlot);
                                         calendar.setOption('slotDuration', mySlot);
-                                        calendar.setOption('slotLabelInterval', mySlot) 
-                                        
+                                        calendar.setOption('slotLabelInterval', mySlot)
+
                                     }
                                 },
                                 mnuResources: {
@@ -805,7 +832,7 @@
                                             resourceA = calendar.getResourceById('2');
                                             resourceA.remove();
                                         } else { calendar.addResource(resourceA); resourceA = null; calendar.render(); }
-                                        
+
                                         calendar.refetchEvents();
                                     }
                                 },
@@ -853,7 +880,7 @@
                                 if (resourceA == null) { successCallback(calEvents); return; }
                                 else {
                                     var novi = [];
-                                    
+
                                     calEvents.forEach(function (item) {
                                         if (item.display == 'background') { novi.push(item); }
                                         else {
@@ -921,10 +948,10 @@
                                     .then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
                                 </text>
                                 }
-                                
+
                             }
-                            
-                            
+
+
 
                             });
                         calendar.render();
@@ -973,9 +1000,9 @@
                     .then(async function () {
                         dayjs.locale(navigator.language.slice(0, 2));
                         await initializeGapi().then((result) => { loadCalendar(); }).catch((err) => { toastr.error("Napaka pri komunikaciji z Googlom!\nPoskusite se odjaviti in ponovno prijaviti."); });
-                        
-                        
-                        
+
+
+
                         loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
                             .then(function () {
                                 fp = $("#dpstart").flatpickr({
@@ -1006,6 +1033,7 @@
 
                                 dp = $("#datepick").flatpickr({
                                     dateFormat: "d.m.Y",
+                                    locale: dayjs.locale(),
                                     defaultDate: new Date(),
                                     time_24hr: true, inline: true,
                                     onChange: function(selectedDates, dateStr, instance) {
@@ -1014,6 +1042,47 @@
                                         $("#myDatePickModal").modal("hide");
                                     }
                                 });
+                                @{
+                                    if (Show3Calendars==true)
+                                    {
+                                    <text>
+                                const datum1 = new Date();
+                                const datum2 = (new Date()).setMonth(datum1.getMonth()+1);
+                                const datum3 = (new Date()).setMonth(datum1.getMonth()+2);
+                                dp1 = $("#datepick1").flatpickr({
+                                    dateFormat: "d.m.Y",
+                                    locale: dayjs.locale(),
+                                    defaultDate: datum1,
+                                    time_24hr: true, inline: true,
+                                    onChange: function(selectedDates, dateStr, instance) {
+                                        console.log(selectedDates);
+                                        calendar.gotoDate(selectedDates[0]);
+                                    }
+                                });
+                                dp2 = $("#datepick2").flatpickr({
+                                    dateFormat: "d.m.Y",
+                                    locale: dayjs.locale(),
+                                    defaultDate: datum2,
+                                    time_24hr: true, inline: true,
+                                    onChange: function(selectedDates, dateStr, instance) {
+                                        console.log(selectedDates);
+                                        calendar.gotoDate(selectedDates[0]);
+                                    }
+                                });
+                                dp3 = $("#datepick3").flatpickr({
+                                    dateFormat: "d.m.Y",
+                                    locale: dayjs.locale(),
+                                    defaultDate: datum3,
+                                    time_24hr: true, inline: true,
+                                    onChange: function(selectedDates, dateStr, instance) {
+                                        console.log(selectedDates);
+                                        calendar.gotoDate(selectedDates[0]);
+                                    }
+                                });
+                                    </text>
+                                    }
+                                 }
+
                                 tp = $("#txtEndTime").flatpickr({
                                     allowInput: true,
                                     enableTime: true,
@@ -1166,8 +1235,16 @@
                 $("#txtClientMobile").val(client.mobile);
             }
             if (typeof info.event?.extendedProps?.notes === "undefined") {
-                $("#txtNotes").val('');
-                $("#txtNotes").tokenfield('setTokens', ' ');
+                if (info.event?.title.length > 0) {
+                    $("#txtNotes").val(info.event?.title);
+                    $("#txtNotes").tokenfield('setTokens', info.event?.title);
+                }
+                else {
+                    $("#txtNotes").val('');
+                    $("#txtNotes").tokenfield('setTokens', ' ');
+                }
+
+
             }
             else {
                 try {
@@ -1285,7 +1362,7 @@
         function SaveNewEvent() {
             if ($('#formEvent').valid()) {
                 //save client
-                getClientID().catch((result) => { toastr.info(result); }).then((result) => {
+                getClientID().catch((result) => { toastr.info(result); }).then((resultClientID) => {
                     //create new event
                     var calid = $('#cboGooCal').val();
                     var cas = $("#txtEndTime").val().split(":");
@@ -1302,7 +1379,7 @@
                         summary: eventSummary,
                         "extendedProperties": {
                             "shared": {
-                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
                                 notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
                         }
@@ -1320,17 +1397,18 @@
                             else {
                                 console.log("Created event: %s", response.id);
                                 //put on full calendar
-                                calendar.addEvent({
+                                var newevt=calendar.addEvent({
                                     id: response.id,
                                     title: newEvent.summary,
                                     start: newEvent.start.dateTime,
                                     end: newEvent.end.dateTime,
                                     resourceId: getResourceIdByGid(calid),
                                     extendedProps: {
-                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
                                         notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                     }
                                 });
+                                 if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); }
                                 //notify client
                                 notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val());
                             }
@@ -1345,7 +1423,7 @@
         function SaveEvent(p_event) {
             if ($('#formEvent').valid()) {
                 //save client (if changed)
-                getClientID().catch((result) => { toastr.info(result); }).then((result) => {
+                getClientID().catch((result) => { toastr.info(result); }).then((resultClientID) => {
                     //create new event
                     var res = p_event.event.getResources();
                     var calid = $('#cboGooCal').val();
@@ -1364,7 +1442,7 @@
                         summary: eventSummary,
                         "extendedProperties": {
                             "shared": {
-                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
                                 notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
                         }
@@ -1382,17 +1460,18 @@
                             else {
                                 console.log("Created event: %s", response.id);
                                 //put on calendar
-                                calendar.addEvent({
+                                var newevt=calendar.addEvent({
                                     id: response.id,
                                     title: newEvent.summary,
                                     start: newEvent.start.dateTime,
                                     end: newEvent.end.dateTime,
                                     resourceId: getResourceIdByGid(calid),
                                     extendedProps: {
-                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
+                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
                                         notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                     }
                                 });
+                                if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); }
                                 //notify client
                                 notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val());
                             }
@@ -1443,6 +1522,7 @@
                             var token = {};
                             token.value = item.id;
                             token.minutes = item.minutes;
+                            token.color = item.color;
                             token.label = item.name;
                             if (item.minutes > 0) { token.label=token.label+' ('+item.minutes+' min)'}
                             retval.push(token)
@@ -1457,13 +1537,13 @@
                         })
 
                       $('#txtNotes').on('tokenfield:createdtoken', function (e) {
-                          $('#txtMinDuration').val(getServiceMaxDuration());
-                          setEndTime("#txtEndTime", getServiceMaxDuration());
+                          $('#txtMinDuration').val(getServiceDuration());
+                          setEndTime("#txtEndTime", getServiceDuration());
 
                       })
                         $('#txtNotes').on('tokenfield:removedtoken', function (e) {
-                            $('#txtMinDuration').val(getServiceMaxDuration());
-                            setEndTime("#txtEndTime", getServiceMaxDuration());
+                            $('#txtMinDuration').val(getServiceDuration());
+                            setEndTime("#txtEndTime", getServiceDuration());
 
                       })
                     },
@@ -1484,12 +1564,23 @@
             }
         }
 
-        function getServiceMaxDuration() {
+        function getServiceDuration() {
             var maxDur = 0;
             $('#txtNotes').tokenfield('getTokens').forEach(function (arrayItem, idx) {
                 if (arrayItem.hasOwnProperty('minutes')) {
-                    maxDur=Math.max(maxDur,arrayItem.minutes);
-                } 
+                    @{
+                        if (Model.Settings.TryGetValue("AppointmentsSumServicesLength", out val) == true)
+                        {
+                            if (bool.Parse(val) == true)
+                            { @Html.Raw("maxDur +=  arrayItem.minutes;");}
+                            else
+                            { @Html.Raw("maxDur = Math.max(maxDur, arrayItem.minutes);");}
+
+                        }
+
+                    }
+
+                }
             });
             return maxDur;
         }
@@ -1540,10 +1631,10 @@
                 var appointmentToken = {};
                 appointmentToken.Token = '';
                 appointmentToken.Service = getSelectedServicesNames().join(' ');
-                appointmentToken.Minutes = $('#txtMinDuration').val(); 
-                appointmentToken.CompanyId = 0; 
-                appointmentToken.LocationId = parseInt($("#cboLocations").val());; 
-                appointmentToken.ClientId = SelectedClientID; 
+                appointmentToken.Minutes = $('#txtMinDuration').val();
+                appointmentToken.CompanyId = 0;
+                appointmentToken.LocationId = parseInt($("#cboLocations").val());;
+                appointmentToken.ClientId = SelectedClientID;
                 appointmentToken.AppUserId = 0;
                 appointmentToken.WorkplaceId = $('#cboGooCal').find('option:selected').attr('data-workplaceid');
                 getAPIToken().then((result) => {
@@ -1565,7 +1656,7 @@
                 });
                 });
 
-                
+
 
             } else { return false; }
         }
@@ -1599,14 +1690,14 @@
         }
 
         function QueueSMS(p_Start, p_Mobile) {
-            
+
             var smsc = {};
             smsc.CampaignType = 3; //direct without approval
             smsc.LocationId = $("#cboLocations").val();
             smsc.MsgTxt = getSMSMessage(p_Start);
             smsc.SendAfter = dayjs.utc().local();
             smsc.Recipients = [p_Mobile];
-            
+
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",

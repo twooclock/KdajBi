@@ -34,6 +34,9 @@ namespace KdajBi.Core
         public DbSet<AppointmentToken> AppointmentTokens { get; set; }
         public DbSet<BookingConfirmation> BookingConfirmations { get; set; }
 
+        public DbSet<AppMessage> AppMessages { get; set; }
+        public DbSet<UserAppMessage> UserAppMessages { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

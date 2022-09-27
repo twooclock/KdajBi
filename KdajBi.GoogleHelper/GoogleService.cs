@@ -95,7 +95,7 @@ namespace KdajBi.GoogleHelper
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex, "Can't getCalendars()");
+                    Logger.Error(ex, "Can't getCalendars() with token that expires on "+ googleAuthToken.expires_at.ToString() );
                 }
             }
             return retval;

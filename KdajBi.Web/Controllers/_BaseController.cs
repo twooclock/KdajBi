@@ -50,7 +50,13 @@ namespace KdajBi.Web.Controllers
             try
             {
                 //check expiration and renew
-                var gooToken = JsonConvert.DeserializeObject<GoogleAuthToken>(User.FindFirst("GooToken").Value);
+                Claim gToken = User.FindFirst("GooToken");
+                if (gToken == null)
+                {
+                    _logger.LogInformation("_CurrentUserGooToken claim User.FindFirst(GooToken) is null!");
+                    return null;
+                }
+                var gooToken = JsonConvert.DeserializeObject<GoogleAuthToken>(gToken.Value);
                 using (GoogleService service = new GoogleService(User.Identity.Name, gooToken))
                 {
                     if (service.TokenWasRefreshed == true)

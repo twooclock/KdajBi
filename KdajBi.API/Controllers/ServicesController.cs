@@ -138,6 +138,7 @@ namespace KdajBi.API.Controllers
                 Serviceindb.SortPosition = Service.SortPosition;
                 Serviceindb.Name = Service.Name;
                 Serviceindb.Minutes = Service.Minutes;
+                Serviceindb.Color = Service.Color;
                 Serviceindb.Active = Service.Active;
 
                 _context.Entry(Serviceindb).State = EntityState.Modified;

@@ -2,6 +2,7 @@
 using KdajBi.Core.Models;
 using KdajBi.Models;
 using KdajBi.Web.Services;
+using KdajBi.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,9 @@ namespace KdajBi.Web.Controllers
                 {
                     if (LocationIsMine(DefaultLocationId()))
                     {
-                        return View();
+                        _BaseViewModel vmModel = new _BaseViewModel();
+                        vmModel.Token = _GetToken();
+                        return View(vmModel);
                     }
                     else
                     { return NotFound(); }

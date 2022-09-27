@@ -29,7 +29,7 @@ namespace KdajBi.Web.ViewModels
                     calEvents += p_events.Substring(1, p_events.Length - 2);
                 calEvents = "[" + calEvents + "]";
             }
-
+            calEvents = calEvents.Replace(",\"color\":null", "");
         }
         
     }

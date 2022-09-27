@@ -2148,15 +2148,17 @@ p {
             border: 0;
             color: #fff; } }
   @media only screen and (min-width: 768px) and (max-width: 991px) {
-    .navbar .navbar-btn {
-      position: absolute;
-      right: 70px;
-      top: 7px; } }
+    .navbar .navbar-btn .navbar-btnGoo {
+        position: absolute;
+        right: 70px;
+        top: 7px;
+    } }
   @media (max-width: 767px) {
      }
-  .navbar .navbar-btn ul li {
+.navbar .navbar-btn ul li {
     display: inline-block;
-    margin-right: 5px; }
+    margin-right: 5px;
+}
     .navbar .navbar-btn ul li a {
       padding: 10px 16px;
       font-size: 16px;

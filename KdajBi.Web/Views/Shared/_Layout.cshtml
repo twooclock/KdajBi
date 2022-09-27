@@ -110,7 +110,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+                        <a id="toggleRightSidebar" class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
                             <i class="fas fa-th-large"></i>
                         </a>
                     </li>
@@ -277,10 +277,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="content-wrapper">
             @RenderBody()
         </div>
-        <aside class="control-sidebar control-sidebar-dark" style="margin-top: 46px">
-            <div class="p-3">       
+        <aside id="rightSideBar" class="control-sidebar control-sidebar-dark" style="margin-top: 46px">
                 @await Component.InvokeAsync("BookingConfirmationList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
-            </div>
+                @await Component.InvokeAsync("AppMessagesList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
         </aside>
         <footer class="main-footer">
             <div class="float-right d-none d-sm-inline">
@@ -356,7 +355,36 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     });
                 });
             });
+            $('#app-messages .btn-success').click(function () {
+                var card = $(this).closest('.card');
+                var id = card.attr('data-id');
+                
+                getAPIToken().then(
+                    (result) => {
+                        $.ajax({
+                        url: apiURL + "/api/UserAppMessageRead/" + id,
+                        type: 'PUT',
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        success: function (data) {
+                            var par = card.parent();
+                            card.remove();
+                            if (par.children().length == 1) { par.remove(); }
+                            ShowHideRightSlidebar();
+                        }
+                    });
+                });
+            });
+            //show sidebar if it contains elements
+            ShowHideRightSlidebar();
+            
         });
+
+        function ShowHideRightSlidebar() {
+            if ($("#rightSideBar").children().length > 0)
+            { $('#toggleRightSidebar').ControlSidebar('show'); $('#toggleRightSidebar').addClass('disabled'); }
+            else
+            { $('#toggleRightSidebar').ControlSidebar('collapse'); $('#toggleRightSidebar').removeClass('disabled'); }
+        }
 
         function showLocations() {
             window.location = "@Url.Content("~/location/")" + $('#cboLocations').val();

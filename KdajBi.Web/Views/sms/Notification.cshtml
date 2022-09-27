@@ -165,7 +165,7 @@
                         <div id="lblSending" class="col-md-6 font-weight-bold">V pošiljanju...</div>
                         <div id="lblSmsInfo" class="col-md-6"></div>
                     </div>
-                    <div  class="form-group mb-1 ">
+                    <div class="form-group mb-1 ">
                         <label for="txtNotificationTime">
                             Sporočila pošlji:
                         </label>
@@ -464,7 +464,6 @@
             document.getElementById('lblStranke').innerHTML = 'Stranke ' + getSelected() + '/' + myClients.length + ':';
         }
         function SporocilZBesedo(p_Number) {
-            //if (p_Number > 100) { p_Number = p_Number % 10 };
             if (p_Number.toString().substr(-2) == '00' ) { return "sporočil"; }
             if (p_Number.toString().substr(-2) == '01' ||p_Number==1 ) { return "sporočilo";}
             if (p_Number.toString().substr(-2) == '02' ||p_Number==2 ) { return "sporočili";}

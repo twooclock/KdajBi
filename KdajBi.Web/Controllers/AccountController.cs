@@ -216,7 +216,7 @@ namespace KdajBi.Web.Controllers
                     _logger.LogError(ex, "Error writing LastLoginDate for user {0}", appUser.Id);
                 }
 
-                return Redirect("~/Home/Index");
+                return Redirect("~/appointments/Index");
             }
             else
             {
@@ -400,7 +400,6 @@ namespace KdajBi.Web.Controllers
             if (myToken != null) { 
                 myToken.refresh_token = ""; 
             }
-            
             return Json(JsonConvert.SerializeObject(myToken));
         }
     }

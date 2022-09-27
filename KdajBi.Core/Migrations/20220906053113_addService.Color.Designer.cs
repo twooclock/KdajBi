@@ -4,70 +4,22 @@ using KdajBi.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace KdajBi.Core.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220906053113_addService.Color")]
+    partial class addServiceColor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.17")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("KdajBi.Core.Models.AppMessage", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool?>("Active")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedUserID")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("ForAdminOnly")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("MessageDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Source")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Subject")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<long>("ToCompanyId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedUserID")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AppMessages");
-                });
 
             modelBuilder.Entity("KdajBi.Core.Models.AppRole", b =>
                 {
@@ -877,50 +829,6 @@ namespace KdajBi.Core.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("KdajBi.Core.Models.UserAppMessage", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool?>("Active")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit");
-
-                    b.Property<long>("AppMessageId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedUserID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DateRead")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool?>("Read")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedUserID")
-                        .HasColumnType("int");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppMessageId");
-
-                    b.ToTable("UserAppMessages");
-                });
-
             modelBuilder.Entity("KdajBi.Core.Models.Workplace", b =>
                 {
                     b.Property<long>("Id")
@@ -1262,17 +1170,6 @@ namespace KdajBi.Core.Migrations
                         .HasForeignKey("SmsCampaignId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("KdajBi.Core.Models.UserAppMessage", b =>
-                {
-                    b.HasOne("KdajBi.Core.Models.AppMessage", "AppMessage")
-                        .WithMany()
-                        .HasForeignKey("AppMessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppMessage");
                 });
 
             modelBuilder.Entity("KdajBi.Core.Models.Workplace", b =>

@@ -13,6 +13,7 @@
     <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link href="~/plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" />
 }
 
 
@@ -189,6 +190,9 @@
                                                                         Trajanje (min)
                                                                     </th>
                                                                     <th>
+                                                                        Barva
+                                                                    </th>
+                                                                    <th>
                                                                         Aktivno
                                                                     </th>
                                                                     <th>
@@ -205,9 +209,21 @@
                                                 </div>
 
                                             </div>
-
+                                            
+                                            
                                             <!-- /.card-body -->
                                         </div>
+                                        <div class="form-group">
+<div class="custom-control custom-radio">
+<input class="custom-control-input" type="radio" id="customRadio1" name="customRadio" onchange="SaveRadio(1);" checked="">
+<label for="customRadio1" class="custom-control-label">Pri naročanju uporabi trajanje najdaljše storitve</label>
+</div>
+<div class="custom-control custom-radio">
+<input class="custom-control-input" type="radio" id="optAppointmentsSumServicesLength" name="customRadio" onchange="SaveRadio(2);">
+<label for="optAppointmentsSumServicesLength" class="custom-control-label">Pri naročanju seštej trajanje storitev</label>
+</div>
+
+</div>
                                     </div>
                                     <!-- /.tab-pane sms -->
                                     <div class="tab-pane" id="sms" role="tabpanel" aria-labelledby="sms-tab">
@@ -405,7 +421,17 @@
                         </label>
                         <input id="txtServiceMinutes" type="number" pattern="[0-9.]+" name="txtServiceMinutes" class="form-control" />
                     </div>
+                    <div class="form-group">
+                  <label>Barva:</label>
 
+                  <div id="cpServiceColor" class="input-group">
+                    <input type="text" class="form-control">
+                    <div class="input-group-append">
+                      <span class="input-group-text"><i class="fas fa-square"></i></span>
+                    </div>
+                  </div>
+                  <!-- /.input group -->
+                </div>
                     <div class="form-group">
                         <label class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="cbActive" value="true" checked="">
@@ -433,6 +459,7 @@
     <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
+    <script src="~/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
 
 
     <script type="text/javascript">
@@ -466,7 +493,7 @@
 
              $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                  if (e.target.id == "workplaces-tab" && workplacesLoaded == false) { GetWorkplacesTable(); workplacesLoaded = true;}
-                 if (e.target.id == "services-tab" && servicesLoaded == false) { GetServicesTable(); servicesLoaded = true;}
+                 if (e.target.id == "services-tab" && servicesLoaded == false) { loadServicesTab();}
             });
 
 
@@ -605,7 +632,72 @@
             };
             //sms end
 
+            //color picker with addon
+            $('#cpServiceColor').colorpicker({useAlpha: false,useHashPrefix: false,autoInputFallback:false})
+
+            $('#cpServiceColor').on('colorpickerChange', function(event) {
+                if (event.color != null) { $('#cpServiceColor .fa-square').removeClass('far').addClass('fas').css('color', event.color.toString()); }
+                else { $('#cpServiceColor .fa-square').removeClass('fas').addClass('far'); $('#cpServiceColor .form-control').val(''); }
+            })
+
+            //radio settings
+
         });
+        function SaveRadio(p_Opt) {
+            saveSettings();
+        }
+
+        async function loadServicesTab() { GetServicesTable(); loadSettings(); servicesLoaded = true; }
+
+        async function loadSettings() {
+            var settings = new Object();
+            settings["AppointmentsSumServicesLength"] = 'false';
+            
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(settings),
+                    url: apiURL+"/api/Settings/Load/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                     success: function (result) {
+                         if (result["AppointmentsSumServicesLength"] != undefined) {
+                             if (result["AppointmentsSumServicesLength"] == "true") { $('#optAppointmentsSumServicesLength').prop('checked', true);}
+                         }
+                     
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+        }
+
+        function saveSettings() {
+            var settings = new Object();
+            settings["AppointmentsSumServicesLength"] = $("#optAppointmentsSumServicesLength").prop("checked");
+
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(settings),
+                    url: apiURL + "/api/Settings/Save/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Shranjeno"); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+        }
 
         async function CreateCalendar(p_name) {
             return new Promise(function (resolve, reject) {
@@ -922,7 +1014,7 @@
             });
         }
 
-        var GetServicesTable = function () {
+        var GetServicesTable = async function () {
 
             var table = $('#dtServices').DataTable({
                 destroy: true,
@@ -955,6 +1047,15 @@
                 'columns': [
                     { 'data': 'name' },
                     { 'data': 'minutes' },
+                    {
+                        'data': 'color', className: 'text-center',
+                        render: function (data, type, row, meta) {
+                            if ( row.color !=null && row.color.length > 0 )
+                             { return '<i class="fas fa-square" style=\"color:#' + row.color + '\"></i>'; }
+                            else
+                            { return '<i class="far fa-square"></i>'; }
+                        }
+                    },
                     {
                         'data': 'active', className: 'text-center',
                         render: function (data, type, row, meta) {
@@ -995,6 +1096,7 @@
                 //clear form
                 $("#txtServiceName").val('');
                 $("#txtServiceMinutes").val('');
+                $("#cpServiceColor").colorpicker('setValue', null);
                 $("#cbActive").prop('checked', true);
             }
             else {
@@ -1010,6 +1112,8 @@
                     success: function (result) {
                         $("#txtServiceName").val(result.name);
                         $("#txtServiceMinutes").val(result.minutes);
+                        if (result.color != null) { $("#cpServiceColor").colorpicker('setValue', '#' + result.color); }
+                        else { $("#cpServiceColor").colorpicker('setValue', ''); }
                         $("#cbActive").prop('checked', result.active);
 
                     },
@@ -1073,7 +1177,9 @@
                 service.LocationId = parseInt($("#cboLocations").val());
                 service.Name = $('#txtServiceName').val();
                 service.Minutes = parseInt($("#txtServiceMinutes").val());
-                if (isNaN(service.Minutes)) { service.Minutes = 0;}
+                if (isNaN(service.Minutes)) { service.Minutes = 0; }
+                service.color = $('#cpServiceColor .form-control').val();
+                if (service.color.length != 6) { service.color = null; }
                 service.Active = $("#cbActive").prop('checked');
                 getAPIToken().then((result) => {
                 $.ajax({
