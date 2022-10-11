@@ -1,9 +1,18 @@
 ﻿@using Newtonsoft.Json;
+@using KdajBi.Web;
+@using KdajBi.Web.ViewModels;
+
 @{
     ViewData["Title"] = "Stranke";
 }
 
 @section styles{
+    <link href="~/plugins/datatables-bs4/css/dataTables.bootstrap4.css" rel="stylesheet" />"
+    <link href="~/plugins/datatables-buttons/css/buttons.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
+
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
 
     <link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
@@ -64,13 +73,13 @@
                     <div class="card-header p-0 border-bottom-0">
                         <ul class="nav nav-tabs" id="tabClient" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" id="general-tab" data-toggle="pill" href="#general" role="tab" aria-controls="general" aria-selected="true">Stranka</a>
+                                <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">Stranka</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="location-tab" data-toggle="pill" href="#location" role="tab" aria-controls="location" aria-selected="false">Splošno</a>
+                                <a class="nav-link" id="appointments-tab" data-toggle="tab" href="#appointments" role="tab" aria-controls="appointments" aria-selected="false">Naročila</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="employee-tab" data-toggle="pill" href="#employee" role="tab" aria-controls="employee" aria-selected="false">Opombe</a>
+                                <a class="nav-link" id="employee-tab" data-toggle="tab" href="#employee" role="tab" aria-controls="employee" aria-selected="false">Opombe</a>
                             </li>
 
                         </ul>
@@ -180,9 +189,34 @@
                                 </div>
                             </div>
 
-                            <div id="location" class="tab-pane fade" role="tabpanel" aria-labelledby="location-tab">
+                            <div id="appointments" class="tab-pane fade" role="tabpanel" aria-labelledby="appointments-tab">
                                 <div class="card">
+<div class="card-body p-0">
+                                                <div class="col-12">
+                                                    <div class="table-responsive">
+                                                        <table id="dtAppointments" class="table table-striped table-bordered" width="100%">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>
+                                                                        Naročen
+                                                                    </th>
+                                                                    <th>
+                                                                        Datum
+                                                                    </th>
+                                                                    <th>
+                                                                        Opis
+                                                                    </th>
+                                                                    <th>
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
 
+                                            </div>
 
 
                                 </div>
@@ -217,6 +251,8 @@
 <!-- /modal content-->
 
 @section scripts{
+    <script src="~/plugins/datatables/jquery.dataTables.js"></script>
+    <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
     <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
@@ -235,9 +271,14 @@
     <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
 
     <script type="text/javascript">
+        var SelectedClientID;
+        var fp;
+        var dsAppointments = [];
 
+        @await Html.PartialAsync("_ApiAccess")
+        @await Html.PartialAsync("_GooApiAccess")
 
-       
+       @Html.Raw("var gooCals=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.GoogleCalendars));
 
         function hideKeyboard() {
             //this set timeout needed for case when hideKeyborad
@@ -293,23 +334,23 @@
             });
         }
 
-        var SelectedClientID;
-        var fp;
-
-        @await Html.PartialAsync("_ApiAccess")
 
 
 
 
         $(document).ready(function () {
 
+            initializeGapi().catch((err) => { toastr.error("Napaka pri komunikaciji z Googlom!\nPoskusite se odjaviti in ponovno prijaviti."); });
+
             //if (navigator.language.slice(0, 2) != "en") {
                 // load locale and Get flatpicker localized instance
                 loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
                     .then(function () {
                         dayjs.locale(navigator.language.slice(0, 2));
+
                         loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
                             .then(function () {
+
                                 fp = $(".flatpickr").flatpickr({
                                     altInput: true,
                                     locale: dayjs.locale(),
@@ -338,6 +379,8 @@
                 Cookies.set('DefaultLocation', $(this).val());
                 showClientDetail(0);
                 GetClients();
+                dsAppointments = [];
+                var t = $("#dtAppointments").DataTable(); t.clear(); t.rows.add(dsAppointments); t.draw();
             });
 
             //init toastr
@@ -359,6 +402,10 @@
                     return false;
                 },
                 focus: function (event, ui) { event.preventDefault(); return false; }
+            });
+
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                 if (e.target.id == "appointments-tab") { loadAppointmentsTab();}
             });
 
             $('#dataform').validate({
@@ -388,10 +435,85 @@
                 });
 
             initTags();
+
+            $('#dtAppointments').DataTable({
+                dom: '<"row"lr><"row"<"col-12"t>><"row"<"col-sm-6"i><"col-sm-6"p>>',
+                data: dsAppointments,
+                columns: [
+                    { title: 'Naročen',orderable: false },
+                    {
+                        title: 'Datum', orderable: false,
+                        render: function (data, type, row, meta) {
+                          return dayjs(row[1]).format("LLL");
+                        }},
+                    { title: 'Opis', orderable: false },
+                    {
+                        title: '', orderable: false,
+                        render: function (data, type, row, meta) {
+                          return '<a href="/appointments/index?date='+dayjs(row[1]).toISOString().substring(0, 10)+'\" target=\"_blank\">Prikaži</a>';
+                        } },
+                ],
             });
 
+        });
 
 
+        async function loadAppointmentsTab() {
+
+            refreshGAPIToken().then(async () => {
+                dsAppointments = [];
+                gooCals.forEach(async function (gcal) {
+                    //for each goo calendar for location
+                    console.log(gcal.Item1, gcal.Item2);
+                    await findEventsForCalendar(gcal.Item1,gcal.Item2, SelectedClientID, "").then(() => { console.log("refresh table"); var t = $("#dtAppointments").DataTable(); t.clear(); t.rows.add(dsAppointments); t.draw(); }).catch(e => { console.log(e); });
+                });
+                
+
+                
+            });
+
+        }
+
+        async function findEventsForCalendar(p_gcalId,p_gcalName, p_clientId,pageToken) {
+            return new Promise(function (resolve, reject) {
+                if (typeof pageToken === "undefined") { console.log('no next page'); reject(); return; }
+
+                gapi.client.calendar.events.list({
+                    "calendarId": p_gcalId,
+                    "sharedExtendedProperty":"clientid="+p_clientId,
+                    "showDeleted": false,
+                    "singleEvents": true,
+                    "pageToken": pageToken
+                }).execute(function (response) {
+                    if (response.error || response == false) {
+                        toastr.error("Napaka pri komunikaciji z Googlom!");
+                        reject(response.error); return;
+                    }
+                    else {
+                        findEventsForCalendar(p_gcalId,p_gcalName,p_clientId,response.nextPageToken).catch(e => { console.log(e); });
+                            response.items.forEach(function (item) {
+                                console.log(item.start.dateTime, item.summary);
+                                var row = [];
+                                row.push(p_gcalName, item.start.dateTime , item.summary);
+                                dsAppointments.push(row);
+                                //calendar.addEvent({
+                                //    id: item.id,
+                                //    title: item.summary,
+                                //    start: item.start.dateTime,
+                                //    end: item.end.dateTime,
+                                //    display: null,
+                                //    eventColor:aResource.eventBackgroundColor,
+                                //    resourceId: calId,
+                                //    extendedProps: ((typeof item.extendedProperties === "undefined") ? {} : item.extendedProperties.shared)
+                                //});
+
+                            });
+                        resolve();
+
+                    }
+                });
+            });
+        }
 
 
          function GetClients() {
@@ -431,7 +553,7 @@
         function cmdClientAdd_Click() {
             $('#txtClientFirstName').focus();
             SelectedClientID = 0;
-            $('#clientsearch').val(''); 
+            $('#clientsearch').val('');
             setClientForm(0);
             //$('#cmdClientDelete').addClass('invisible');
             $('#cmdClientDelete').prop('disabled', true);
@@ -484,6 +606,7 @@
                             $("#txtClientZip").val(result.zip);
                             $("#txtClientNotes").val(result.notes);
                             $("#txtTags").val(result.tags.map(a => a.id)).trigger('change');
+                            $("#general-tab").tab('show');
                         },
                         error: function (xhr, status, error) {
                             toastr.error("Error getting client data:" + error);
@@ -492,7 +615,7 @@
                 },
                     function (error) { toastr.error("Error getting token:" + error); }
                 );
-                
+
             }
 
         }
@@ -505,7 +628,7 @@
                 /*$("#cmdClientSave").off('click').click(function (evt) {
                     if (SaveClient(p_ID) != false) { }
                 });
-                
+
                 $("#cmdClientDelete").off('click').click(function (evt) {
                     if (DeleteClient(p_ID) != false) { }
                 });
@@ -546,7 +669,7 @@
             });
         }
 
-        
+
         function SaveClient(p_ID) {
             if ($('#dataform').valid()) {
                 var client={};
@@ -668,7 +791,7 @@
                 });
             });
 
-            
+
 
 
             $('#txtTags').on("select2:select", function (e) {
@@ -699,5 +822,7 @@
 
         //#endregion
     </script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoadOkay()" onerror="gapiLoadFail(event)"></script>
+
 }
 

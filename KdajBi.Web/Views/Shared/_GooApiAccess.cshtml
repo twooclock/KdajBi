@@ -65,6 +65,6 @@ var newToken=JSON.parse(strJson);
 
 async function refreshGAPIToken() {
     return new Promise(function(resolve, reject) {
-        getGAPIToken().then((result) => { gapi.client.setToken({ access_token: result.access_token, expires_at:result.expires_at }); console.log('new goo TokenExpiresAt:'+result.expires_at ); return result; }).then((result) => { resolve() }).catch((error) => { toastr.error("Napaka:" + error.toString()); reject(); });
+        getGAPIToken().then((result) => { gapi.client.setToken({ access_token: result.access_token, expires_at:result.expires_at }); console.log('new goo TokenExpiresAt:'+result.expires_at ); return result; }).then((result) => { resolve(result) }).catch((error) => { toastr.error("Napaka:" + error.toString()); reject(); });
     });
 }

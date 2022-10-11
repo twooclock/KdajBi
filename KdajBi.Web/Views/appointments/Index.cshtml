@@ -3,6 +3,9 @@
 @using KdajBi.Web.ViewModels;
 @using System.Globalization;
 @model vmAppointments
+@{
+    ViewData["Title"] = "Naročila";
+}
 
 @section styles{
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
@@ -15,63 +18,54 @@
     <link href='~/lib/fullcalendar-scheduler-5.10.1/lib/main.min.css' rel='stylesheet' />
 
     <style>
+@{ string val = "";
+    if (Model.Settings.TryGetValue("AppointmentsRowHeight", out val) == true)
+    {
+        if (String.IsNullOrEmpty(val) == false)
+        {
+            @Html.Raw(".fc .fc-timegrid-slot {");
+            @Html.Raw("height:"+val);
+            @Html.Raw("border-bottom: 0}");
+        }
+    }
+}
+
         .fc-fullscreen-button:before {
             font-family: "Font Awesome 5 Free";
             content: "\f065";
             display: inline-block;
             padding-right: 3px;
             font-weight: 900;
-        }
-
-        .fc-datepicker-button:before {
+        } .fc-datepicker-button:before {
             font-family: "Font Awesome 5 Free";
             content: "\f073";
             display: inline-block;
             padding-right: 3px;
             font-weight: 900;
-        }
-
-        .fc-linkcreator-button:before {
+        } .fc-linkcreator-button:before {
             font-family: "Font Awesome 5 Free";
             content: "\f0c1";
             display: inline-block;
             padding-right: 3px;
             font-weight: 900;
-        }
-
-        body {
+        } body {
             margin: 0;
             padding: 0;
             font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
             font-size: 14px;
-        }
-
-        #calendar {
+        } #calendar {
             max-width: 1100px;
-        }
-
-        ::backdrop {
+        } ::backdrop {
             background-color: white;
-        }
-
-
-        :fullscreen {
+        } :fullscreen {
             overflow-y: scroll;
-        }
-
-        :-ms-fullscreen {
+        } :-ms-fullscreen {
             overflow-y: scroll;
-        }
-
-        :-webkit-full-screen {
+        } :-webkit-full-screen {
             overflow-y: scroll;
-        }
-
-        :-moz-full-screen {
+        } :-moz-full-screen {
             overflow-y: scroll;
-        }
-
-        div.token {
+        } div.token {
             font-size: 13px;
         }
         /*sticky header
@@ -80,58 +74,51 @@
             top: 250px;
             z-index: 10;
         }*/
-
         .fc-head-container.fc-widget-header {
             position: sticky;
             top: 308px;
             z-index: 10;
             background: red;
         }
-
         /*.fc-timeline .fc-body .fc-scroller {
             height: 400px !important;
         }*/
-
         .fc .fc-toolbar.fc-header-toolbar {
             margin-bottom: 1.5em;
             position: sticky;
             background: #ffffff;
             z-index: 100;
             top: 47px;
-        }
-
-        .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
+        } .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
             top: 82px;
-        }
-
-        .fc-header-toolbar {
+        } .fc-header-toolbar {
             padding: 0px !important;
-        }
-
-        .content-wrapper {
+        } .content-wrapper {
             background: white;
         }
+        
     </style>
 }
 
 <!-- page content -->
 
-@{ string val = "";
+@{ 
+    string val = "";
     bool Show3Calendars = false;
     if (Model.Settings.TryGetValue("AppointmentsShow3Calendars", out val) == true)
     {
         Show3Calendars = (bool.Parse(val) == true);
         if (bool.Parse(val) == true)
         { <text>
-                <div class="right_col row" role="main">
-                    <div id="3calendars" class="col-3 d-none d-md-block">
+                <div id="fs" class="right_col row" role="main">
+                    <div id="3calendars" class="col-3 d-none d-md-block" style="top: 3em; position: fixed; z-index: 10;">
                         <div class="form-group">
                             <input type="text" class="form-control" id="datepick1" style="display: none">
                             <input type="text" class="form-control" id="datepick2" style="display: none">
                             <input type="text" class="form-control" id="datepick3" style="display: none">
                         </div>
                     </div>
-                    <div id="fs" class="col">
+                    <div id="fs" class="col" style="padding-left:23em;">
         </text>}
     else
     { <text>
@@ -226,6 +213,9 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="cmdMove">
+                    Premakni
+                </button>
                 <button type="button" class="btn btn-default" id="cmdSendLink">
                     Pošlji
                 </button>
@@ -365,42 +355,9 @@
             });
         }
 
-        var delay = (function () {
-            var timer = {}
-                , values = {}
-            return function (el) {
-                var id = el.id + '.' + el.name
-                return {
-                    enqueue: function (ms, cb) {
-                        if (values[id] == el.value) return
-                        //if (!el.value) return
-                        var original = values[id] = el.value
-                        clearTimeout(timer[id])
-                        timer[id] = setTimeout(function () {
-                            if (original != el.value) return // solves race condition
-                            cb.apply(el)
-                        }, ms)
-                    }
-                }
-            }
-        }());
-
-        function formatDate(date) {
-            var d = new Date(date),
-                month = '' + (d.getMonth() + 1),
-                day = '' + d.getDate(),
-                year = d.getFullYear(),
-                hour = d.getHours(),
-                min = d.getMinutes();
-            if (month.length < 2)
-                month = '0' + month;
-            if (day.length < 2)
-                day = '0' + day;
-
-            return [day, month, year, hour,min].join('.');
-        }
 
         var calendar;
+        var eventToMove = null;
         var fp; var dp; var tp;
         var SelectedClientID = 0;
         var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
@@ -717,7 +674,6 @@
             isFullScreen = true;
             $(".fc-toolbar.fc-header-toolbar").css('top', '0px');
             $(".fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > *").css('top', '34px');
-
         }
         function exitFullScreen() {
 
@@ -728,7 +684,6 @@
             isFullScreen = false;
             $(".fc-toolbar.fc-header-toolbar").css('top', '47px');
             $(".fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > *").css('top', '82px');
-
         }
         function exitHandler() {
             if (!document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
@@ -770,6 +725,9 @@
             if (mySlot == null) { mySlot = "00:30"; }
                 loadLocale(navigator.language.slice(0, 2))
                     .then(function () {
+                        var idate = new Date();
+                        let searchParams = new URLSearchParams(window.location.search);
+                        if (searchParams.has('date')) { idate = searchParams.get('date'); }
                         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                             locale: navigator.language.slice(0, 2),
                             eventDisplay: 'block',
@@ -777,7 +735,7 @@
                             stickyFooterScrollbar: true,
                             stickyHeaderDates: true,
                             initialView: 'resourceTimeGridDay',
-                            //initialDate: 'today',
+                            initialDate: idate,
                             allDaySlot: false,
                             slotMinTime: "@Html.Raw(Model.Location.Schedule.minTime())", //"7:00:00",
                             slotMaxTime: "@Html.Raw(Model.Location.Schedule.maxTime())", //"21:00:00",
@@ -875,20 +833,21 @@
                                 @Html.Raw(myResource.ToJson() + ",")
                             }
                             ],
-                            //events:@Html.Raw(Model.calEvents),
-                            events: function (info, successCallback, failureCallback) {
-                                if (resourceA == null) { successCallback(calEvents); return; }
-                                else {
-                                    var novi = [];
+                            events:@Html.Raw(Model.calEvents),
+                            //events: function (info, successCallback, failureCallback) {
+                            //pazi, če delaš prek funkcije moraš spreminjat calevents tudi pri SaveMoveEvent!
+                            //    if (resourceA == null) { successCallback(calEvents); return; }
+                            //    else {
+                            //        var novi = [];
 
-                                    calEvents.forEach(function (item) {
-                                        if (item.display == 'background') { novi.push(item); }
-                                        else {
-                                            if (item.resourceId!= '2') {novi.push(item);  } }
-                                    });
-                                    successCallback(novi);
-                                }
-                            },
+                            //        calEvents.forEach(function (item) {
+                            //            if (item.display == 'background') { novi.push(item); }
+                            //            else {
+                            //                if (item.resourceId!= '2') {novi.push(item);  } }
+                            //        });
+                            //        successCallback(novi);
+                            //    }
+                            //},
                             eventTimeFormat: {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -907,7 +866,7 @@
                                     .then(() => {
                                         if (typeof info.event?.extendedProps?.client != "undefined") {
                                             var client = JSON.parse(info.event.extendedProps.client);
-                                            notifyClient(info.event.start, client.mobile);
+                                            notifyClient(info.event.start, client.mobile, client.value);
                                         }
                                     });
                             },
@@ -918,7 +877,7 @@
                                     .then(() => {
                                         if (typeof event?.event?.extendedProps?.client != "undefined") {
                                             var client = JSON.parse(event.event.extendedProps.client);
-                                            notifyClient(event?.event.start, client.mobile);
+                                            notifyClient(event?.event.start, client.mobile, client.value);
                                         }
                                     });
                             },
@@ -1199,6 +1158,7 @@
 
         function newEvent(arg) {
             PrepareModal('event');
+            SelectedClientID = 0;
             //clear form
             $("#txtClientsearch").val('');
             $("#txtClientMobile").val('');
@@ -1214,16 +1174,26 @@
             $('#cmdDelete').addClass('invisible');
             $("#myModal").modal("show");
             $("#cmdSave").off('click').click(function (evt) {
-                    if (SaveNewEvent() != false) { $("#myModal").modal("hide"); }
-                });
+                if (SaveNewEvent() != false) { $("#myModal").modal("hide"); }
+            });
             $("#txtClientsearch").focus();
-
+            if (eventToMove !== null) {
+                $("#cmdMove").text('Prilepi');
+                $("#cmdMove").show();
+                $("#cmdMove").off('click').click(function (evt) {
+                    //move event here
+                    console.log('move event here')
+                    SaveMoveEvent();
+                    $("#myModal").modal("hide");
+            });
+            } else {$("#cmdMove").hide(); }
 
         }
 
         function showEvent(info) {
             PrepareModal('event');
-                //show Event info
+            SelectedClientID = 0;
+            //show Event info
             if (typeof info.event?.extendedProps?.client === "undefined") {
                 $("#txtClientsearch").val('');
                 $("#txtClientMobile").val('');
@@ -1243,8 +1213,6 @@
                     $("#txtNotes").val('');
                     $("#txtNotes").tokenfield('setTokens', ' ');
                 }
-
-
             }
             else {
                 try {
@@ -1269,6 +1237,13 @@
             $("#cmdDelete").off('click').click(function (evt) {
                 if (DeleteEvent(info) != false) { $("#myModal").modal("hide"); }
             });
+            
+            $("#cmdMove").off('click').click(function (evt) {
+                eventToMove = info;
+                $("#myModal").modal("hide"); 
+            });
+            $("#cmdMove").text('Premakni');
+            $("#cmdMove").show();
             hideKeyboard();
         }
 
@@ -1379,6 +1354,7 @@
                         summary: eventSummary,
                         "extendedProperties": {
                             "shared": {
+                                clientid:resultClientID,
                                 client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
                                 notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
@@ -1404,13 +1380,14 @@
                                     end: newEvent.end.dateTime,
                                     resourceId: getResourceIdByGid(calid),
                                     extendedProps: {
+                                        clientid:resultClientID,
                                         client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
                                         notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                     }
                                 });
-                                 if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); }
+                                if ($('#txtNotes').tokenfield('getTokens').length > 0) { if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); } }
                                 //notify client
-                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val());
+                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID);
                             }
                         });
                     });
@@ -1442,6 +1419,7 @@
                         summary: eventSummary,
                         "extendedProperties": {
                             "shared": {
+                                clientid:resultClientID,
                                 client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
                                 notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
@@ -1471,9 +1449,9 @@
                                         notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                     }
                                 });
-                                if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); }
+                                if ($('#txtNotes').tokenfield('getTokens').length > 0) { if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); } }
                                 //notify client
-                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val());
+                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID);
                             }
                             //delete previous event
                             gapi.client.calendar.events.delete({
@@ -1489,13 +1467,98 @@
                                     p_event.event.remove();
                                     return true;
                                 }
-
                             });
                         });
                     });
                 });
+            } else { return false; }
+        }
 
+        function SaveMoveEvent() {
+            if ($('#formEvent').valid()) {
+                //move event
+                var res = eventToMove.event.getResources();
+                var oldCalId = res[0].extendedProps.gid;
+                var newCalId = $('#cboGooCal').val();
+                var oldStart = eventToMove.event.start;
+                var oldEnd = eventToMove.event.end;
+                var newStart = new Date(fp.selectedDates[0]);
+                var diffMs = oldEnd.getTime()-oldStart.getTime();
+                var newEnd = new Date(newStart.getTime() + diffMs);
 
+                var eventPatch = {
+                    start: { 'dateTime': newStart },
+                    end: { 'dateTime': newEnd }
+                };
+                var oldEvent = calendar.getEventById(eventToMove.event.id);
+                var client = null;
+                if (typeof oldEvent.extendedProps?.client !== "undefined") {
+                    client = JSON.parse(oldEvent.extendedProps.client);
+                }
+
+                refreshGAPIToken().then(() => {
+                    //move event first
+                    if (newCalId != oldCalId) {
+                        var eventToUpdate = gapi.client.calendar.events.move({
+                            "calendarId": oldCalId,
+                            "eventId": eventToMove.event.id,
+                            "destination": newCalId
+                        }).execute(function (response) {
+                            if (response.error || response == false) {
+                                toastr.error("Napaka:gapi.client.calendar.events.move");
+                                return;
+                            }
+                            else {
+                                console.log("Moved event: %s", eventToMove.event.id);
+                                oldEvent.setResources(getResourceIdByGid(newCalId));
+
+                                diffMs = newStart.getTime() - oldStart.getTime();
+                                if (diffMs != 0) {
+                                    //update event 
+                                    var eventToUpdate = gapi.client.calendar.events.patch({
+                                        "calendarId": newCalId,
+                                        "eventId": eventToMove.event.id,
+                                        "resource": eventPatch
+                                    }).execute(function (response) {
+                                        if (response.error || response == false) {
+                                            toastr.error("Napaka:gapi.client.calendar.events.patch");
+                                            return;
+                                        }
+                                        else {
+                                            console.log("Updated event after move: %s", response.id);
+                                            oldEvent.moveDates(diffMs);
+                                            eventToMove = null;
+                                            toastr.success("Premaknil");
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        diffMs = newStart.getTime() - oldStart.getTime();
+                        if (diffMs != 0) {
+                            //update event 
+                            var eventToUpdate = gapi.client.calendar.events.patch({
+                                "calendarId": newCalId,
+                                "eventId": eventToMove.event.id,
+                                "resource": eventPatch
+                            }).execute(function (response) {
+                                if (response.error || response == false) {
+                                    toastr.error("Napaka:gapi.client.calendar.events.patch");
+                                    return;
+                                }
+                                else {
+                                    console.log("Updated event after move: %s", response.id);
+                                    oldEvent.moveDates(diffMs);
+                                    eventToMove = null;
+                                    toastr.success("Premaknil");
+                                }
+                            });
+                        }
+                    }
+                });
+                if (client !== null) { notifyClient(newStart, client.mobile, client.value); }
             } else { return false; }
         }
 
@@ -1621,7 +1684,6 @@
                 $('#rowDT').hide();
                 $("#cboGooCal").prepend("<option value='0' selected='selected'>Kdorkoli</option>");
                 $('#cboGooCal').selectpicker('refresh');
-
             }
         }
 
@@ -1689,14 +1751,14 @@
             return msgTemplate;
         }
 
-        function QueueSMS(p_Start, p_Mobile) {
+        function QueueSMS(p_Start, p_Mobile, p_ClientId) {
 
             var smsc = {};
             smsc.CampaignType = 3; //direct without approval
             smsc.LocationId = $("#cboLocations").val();
             smsc.MsgTxt = getSMSMessage(p_Start);
             smsc.SendAfter = dayjs.utc().local();
-            smsc.Recipients = [p_Mobile];
+            smsc.Recipients = [p_Mobile + '|' + p_ClientId];
 
             getAPIToken().then((result) => {
                 $.ajax({
@@ -1720,7 +1782,8 @@
             });
         }
 
-        function notifyClient(p_Start, p_Mobile) {
+        function notifyClient(p_Start, p_Mobile, p_ClientId) {
+            
             @{ val = "";
                 if (Model.Settings.TryGetValue("SMS_AppointmentSMS", out val) == true)
                 {
@@ -1735,7 +1798,7 @@
                         timeOut: 7000, extendedTimeOut: 7000,
                         progressBar: true,
                         closeButton: true,
-                        onHidden: function () { if (cancelsms == false) { QueueSMS(p_Start, p_Mobile); } },
+                        onHidden: function () { if (cancelsms == false) { QueueSMS(p_Start, p_Mobile, p_ClientId); } },
                         onclick: function () { cancelsms = true; }
                     });
                 }

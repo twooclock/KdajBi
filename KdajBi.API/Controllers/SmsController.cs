@@ -44,7 +44,7 @@ namespace KdajBi.API.Controllers
 
             var v = from a in _context.SmsCampaigns select a;
             if (locationid.HasValue == true)
-            { v = v.Where(w => w.Company.Id == _CurrentUserCompanyID() && w.LocationId== locationid); }
+            { v = v.Where(w => w.Company.Id == _CurrentUserCompanyID() && w.LocationId == locationid); }
             else
             { v = v.Where(w => w.Company.Id == _CurrentUserCompanyID()); }
             v = v.Include(w => w.Recipients);
@@ -229,7 +229,7 @@ namespace KdajBi.API.Controllers
                         //get all GOO campaigns for companyid and date
                         //except ones that were individualy approved/canceled
                         myCampaigns = _context.SmsCampaigns.Where(c => c.Name == "GOO" && c.Company.Id == myCampaign.Company.Id && c.Date.Value.Date == myCampaign.Date.Value.Date && c.CanceledAt == null && c.ApprovedAt == null).ToList();
-                        _logger.LogInformation("APPROVEALL " + myCampaigns.Count.ToString() + " GOO sms campaigns for " + myCampaign.Company.Name + " ("+guid+") on " + myCampaign.Date.Value.Date.ToString("dd.MM.yyyy"));
+                        _logger.LogInformation("APPROVEALL " + myCampaigns.Count.ToString() + " GOO sms campaigns for " + myCampaign.Company.Name + " (" + guid + ") on " + myCampaign.Date.Value.Date.ToString("dd.MM.yyyy"));
                         foreach (var item in myCampaigns)
                         {
                             item.ApprovedAt = DateTime.Now;
@@ -244,7 +244,7 @@ namespace KdajBi.API.Controllers
                     case "CANCELALL":
                         //get all GOO campaigns for companyid and date
                         //except ones that were individualy approved/canceled
-                        myCampaigns = _context.SmsCampaigns.Where(c => c.Name == "GOO" && c.Company.Id == myCampaign.Company.Id && c.Date.Value.Date == myCampaign.Date.Value.Date && c.CanceledAt==null && c.ApprovedAt==null).ToList();
+                        myCampaigns = _context.SmsCampaigns.Where(c => c.Name == "GOO" && c.Company.Id == myCampaign.Company.Id && c.Date.Value.Date == myCampaign.Date.Value.Date && c.CanceledAt == null && c.ApprovedAt == null).ToList();
                         _logger.LogInformation("CANCELALL " + myCampaigns.Count.ToString() + " GOO sms campaigns for " + myCampaign.Company.Name + " (" + guid + ") on " + myCampaign.Date.Value.Date.ToString("dd.MM.yyyy"));
                         foreach (var item in myCampaigns)
                         {
@@ -275,7 +275,7 @@ namespace KdajBi.API.Controllers
             newSmsCampaign.Name = "";
             if (p_SmsCampaigin.CampaignType == 3) { newSmsCampaign.Name = "AppointmentSMS"; }
 
-                switch (p_SmsCampaigin.CampaignType)
+            switch (p_SmsCampaigin.CampaignType)
             {
                 case 0: //individual recipients (ClientIDs)
                     foreach (string item in p_SmsCampaigin.Recipients)
@@ -283,7 +283,7 @@ namespace KdajBi.API.Controllers
                         Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == long.Parse(item) && a.Mobile != null && a.AllowsSMS == true).SingleOrDefault();
                         if (client != null)
                         {
-                            newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile));
+                            newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, client.Id));
                         }
                     }
                     break;
@@ -292,22 +292,31 @@ namespace KdajBi.API.Controllers
                     {
                         foreach (Client client in _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == long.Parse(item) && a.Mobile != null && a.AllowsSMS == true))
                         {
-                            newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile));
+                            newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, client.Id));
                         }
                     }
                     break;
                 case 2: //recipients by sex
                     foreach (Client client in _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Sex == p_SmsCampaigin.Recipients.ToArray()[0] && a.Mobile != null && a.AllowsSMS == true))
                     {
-                        newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile));
+                        newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, client.Id));
                     }
                     break;
-                case 3: //direct message
+                case 3: //direct message (mobile number | client id)
                     foreach (var item in p_SmsCampaigin.Recipients)
                     {
-                        newSmsCampaign.Recipients.Add(new SmsMsg(item));
+                        var rcpnt = item.Split('|');
+                        if (rcpnt.Length > 1)
+                        {
+                            long clientId = 0;
+                            if (long.TryParse(rcpnt[1], out clientId) == false)
+                            { clientId = 0; }
+                            newSmsCampaign.Recipients.Add(new SmsMsg(rcpnt[0], clientId));
+                        }
+                        else { newSmsCampaign.Recipients.Add(new SmsMsg(rcpnt[0],0)); }
+
                     }
-                    newSmsCampaign.SendAfter= DateTime.Now;
+                    newSmsCampaign.SendAfter = DateTime.Now;
                     newSmsCampaign.ApprovedAt = DateTime.Now;
                     break;
                 default:

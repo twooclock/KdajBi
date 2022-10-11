@@ -30,7 +30,7 @@ namespace KdajBi.Web.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Index()
+        public IActionResult Index(string? date)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace KdajBi.Web.Controllers
                                 myVM.Location.Schedule = _context.Schedules.Find(myVM.Location.ScheduleId);
                                 //load appropriate settings
                                 myVM.Settings = new Dictionary<string, string>();
-                                myVM.Settings.Add("SMS_AppointmentSMS", "true");
+                                myVM.Settings.Add("SMS_AppointmentSMS", "false"); //mind missing sms settings if set to true!
                                 myVM.Settings.Add("SMS_GOO_Msg", "Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA>. Veselimo se vašega obiska!");
                                 SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), DefaultLocationId(), myVM.Settings);
                                 //load setting for null location
@@ -60,6 +60,7 @@ namespace KdajBi.Web.Controllers
                                 globalSettings.Add("cbEmployee_AlternatingWeeks", "false");
                                 globalSettings.Add("AppointmentsSumServicesLength", "false");
                                 globalSettings.Add("AppointmentsShow3Calendars", "false");
+                                globalSettings.Add("AppointmentsRowHeight", "");
                                 SettingsHelper.getSettings(_context, _CurrentUserCompanyID(),null, globalSettings);
                                 foreach (var item in globalSettings)
                                 {

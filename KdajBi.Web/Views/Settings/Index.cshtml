@@ -49,13 +49,19 @@
                                                     </div>
                                                 </div>
 
-
-                                                @*<div class="form-group">
-                                                    <div class="col-sm-offset-2 col-sm-10">
-                                                        <button type="submit" class="btn btn-danger">Shrani</button>
-                                                    </div>
-                                                </div>*@
+                                                <div class="form-group">
+                                                    <label for="txtRowHeight">
+                                                        Višna vrstice:
+                                                    </label>
+                                                    <input type="text" id="txtRowHeight" name="txtRowHeight" class="form-control" />
+                                                </div>
+                                                
                                             </form>
+                                            <div class="form-group">
+                                                    <div class="col-sm-offset-2 col-sm-10">
+                                                        <button class="btn btn-danger" onclick="SaveSettings()">Shrani</button>
+                                                    </div>
+                                                </div>
                                         </div>
                                         
 
@@ -165,36 +171,40 @@
             $('#myModal').on('hidden.bs.modal', function (e) {
                 CancelModal();
             });
-            $('#cbShow3Calendars').on('change', function (e) {
-                var settings = new Object();
-                settings["AppointmentsShow3Calendars"] = $("#cbShow3Calendars").prop("checked");
-
-                getAPIToken().then((result) => {
-                    $.ajax({
-                        type: "post",
-                        data: JSON.stringify(settings),
-                        url: apiURL + "/api/Settings/Save/",
-                        contentType: "application/json; charset=utf-8",
-                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                        dataType: "json",
-                        success: function (result) {
-                            if (result == "OK") { toastr.success("Shranjeno"); return true; }
-                            else { toastr.error("Napaka:" + result); return false; }
-                        },
-                        error: function (xhr, status, error) {
-                            toastr.error("Napaka:" + error.toString());
-                            return false;
-                        }
-                    });
-                });
-            });
+            
         
             
         });
 
+        function SaveSettings() {
+            var settings = new Object();
+            settings["AppointmentsShow3Calendars"] = $("#cbShow3Calendars").prop("checked");
+            settings["AppointmentsRowHeight"] = $("#txtRowHeight").val(); 
+
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(settings),
+                    url: apiURL + "/api/Settings/Save/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Shranjeno"); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+        }
+
         async function loadSettings() {
             var settings = new Object();
             settings["AppointmentsShow3Calendars"] = 'false';
+            settings["AppointmentsRowHeight"] = '';
             
             getAPIToken().then((result) => {
                 $.ajax({
@@ -208,7 +218,9 @@
                          if (result["AppointmentsShow3Calendars"] != undefined) {
                              if (result["AppointmentsShow3Calendars"] == "true") { $('#cbShow3Calendars').prop('checked', true);}
                          }
-                     
+                         if (result["AppointmentsRowHeight"] != undefined) {
+                             if (result["AppointmentsRowHeight"].length > 0) { $('#txtRowHeight').val(result["AppointmentsRowHeight"]); }
+                         }
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Napaka:" + error.toString());

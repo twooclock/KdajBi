@@ -100,6 +100,7 @@ namespace KdajBi.Web.Controllers
             return Redirect("~/LandingPage/index.html");
         }
 
+        [AllowAnonymous]
         public IActionResult AccessDenied()
         {
             return View();
@@ -249,7 +250,7 @@ namespace KdajBi.Web.Controllers
             if (info == null)
             {
                 _logger.LogWarning("_signInManager.GetExternalLoginInfoAsync is NULL!");
-                return RedirectToAction(nameof(Login));
+                return Redirect("~/LandingPage/index.html");
             }
             
 

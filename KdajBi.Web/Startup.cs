@@ -56,12 +56,13 @@ namespace KdajBi
                 options.DefaultScheme = IdentityConstants.ApplicationScheme;
                 
             })
-               .AddGoogle(opts =>
+               .AddGoogle(GoogleDefaults.AuthenticationScheme, opts =>
                {
                    opts.ClientId = Configuration.GetSection("GoogleSettings")["ClientId"];
                    opts.ClientSecret = Configuration.GetSection("GoogleSettings")["ClientSecret"];
-                   opts.SignInScheme = IdentityConstants.ExternalScheme;
-                   opts.CorrelationCookie.SameSite = SameSiteMode.Lax;
+                   opts.SignInScheme =  IdentityConstants.ExternalScheme;
+                   opts.CorrelationCookie.SameSite = SameSiteMode.None;
+                   opts.CorrelationCookie.IsEssential = true;
                    opts.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
                    opts.Scope.Add("https://www.googleapis.com/auth/calendar");
                    opts.AccessType = "offline";

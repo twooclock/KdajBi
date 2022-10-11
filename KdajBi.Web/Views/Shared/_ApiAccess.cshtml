@@ -6,8 +6,7 @@
 var apiURL="@Html.Raw(apiTP.Settings().BaseAddress)"
 var apiToken=JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.Token))')
 var apiUser='@Html.Raw(@UserManager.GetUserName(User))';
-var requesting =false;
- async function getAPIToken() {
+ async function refreshAPIToken() {
     return new Promise(function(resolve, reject) {
             var tnow = (621355968e9 + 10000 + (new Date()).getTime() * 1e4);
             var reqdata = { Token: apiToken.RefreshToken, UserEmail: apiUser };
@@ -15,7 +14,6 @@ var requesting =false;
             { resolve(apiToken); }
             else {
                 //request new token
-                if (requesting==false) { requesting=true;
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(reqdata),
@@ -33,11 +31,13 @@ var requesting =false;
                         reject(error);
                     }
                 });
-}else {
- window.setTimeout(function (){  if (requesting==false){ console.log('prvi'); resolve(apiToken);}},1000);
- window.setTimeout(function (){  if (requesting==false){ console.log('drugi'); resolve(apiToken);}},2000);
- window.setTimeout(function (){  if (requesting==false){ console.log('tretji'); resolve(apiToken);}},3000);
-}
+
             }
         });
     }
+
+async function getAPIToken() {
+    return new Promise(function(resolve, reject) {
+        refreshAPIToken().then((result) => {  console.log('new api TokenExpiresAt:'+result.expires_at ); return result; }).then((result) => { resolve(result) }).catch((error) => { toastr.error("Napaka:" + error.toString()); reject(); });
+    });
+}

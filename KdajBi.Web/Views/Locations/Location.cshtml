@@ -2,7 +2,7 @@
 @using KdajBi.Web.ViewModels;
 @model vmLocation
 @{
-    ViewData["Title"] = "Location";
+    ViewData["Title"] = "Lokacija";
 }
 
 @section styles{
@@ -209,21 +209,21 @@
                                                 </div>
 
                                             </div>
-                                            
-                                            
+
+
                                             <!-- /.card-body -->
                                         </div>
                                         <div class="form-group">
-<div class="custom-control custom-radio">
-<input class="custom-control-input" type="radio" id="customRadio1" name="customRadio" onchange="SaveRadio(1);" checked="">
-<label for="customRadio1" class="custom-control-label">Pri naročanju uporabi trajanje najdaljše storitve</label>
-</div>
-<div class="custom-control custom-radio">
-<input class="custom-control-input" type="radio" id="optAppointmentsSumServicesLength" name="customRadio" onchange="SaveRadio(2);">
-<label for="optAppointmentsSumServicesLength" class="custom-control-label">Pri naročanju seštej trajanje storitev</label>
-</div>
+                                            <div class="custom-control custom-radio">
+                                                <input class="custom-control-input" type="radio" id="customRadio1" name="customRadio" onchange="SaveRadio(1);" checked="">
+                                                <label for="customRadio1" class="custom-control-label">Pri naročanju uporabi trajanje najdaljše storitve</label>
+                                            </div>
+                                            <div class="custom-control custom-radio">
+                                                <input class="custom-control-input" type="radio" id="optAppointmentsSumServicesLength" name="customRadio" onchange="SaveRadio(2);">
+                                                <label for="optAppointmentsSumServicesLength" class="custom-control-label">Pri naročanju seštej trajanje storitev</label>
+                                            </div>
 
-</div>
+                                        </div>
                                     </div>
                                     <!-- /.tab-pane sms -->
                                     <div class="tab-pane" id="sms" role="tabpanel" aria-labelledby="sms-tab">
@@ -491,7 +491,7 @@
                 window.location = "../location/"+$(this).val();
             });
 
-             $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                  if (e.target.id == "workplaces-tab" && workplacesLoaded == false) { GetWorkplacesTable(); workplacesLoaded = true;}
                  if (e.target.id == "services-tab" && servicesLoaded == false) { loadServicesTab();}
             });

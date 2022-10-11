@@ -74,14 +74,18 @@ namespace KdajBi.Core.Models
         [MaxLength(15),Required]
         public string Recipient { get; set; }
 
+        public long ClientId { get; set; }
+
         [MaxLength(100)]
         public string ApiResponse { get; set; }
 
 
 
         public SmsMsg() { }
-        public SmsMsg(string p_Recipient) {
-            Recipient = p_Recipient;
+
+        public SmsMsg(string p_Recipient, long p_ClientId)
+        {
+            Recipient = p_Recipient; ClientId = p_ClientId;
         }
 
     }
