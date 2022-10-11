@@ -100,6 +100,7 @@
     <Compile Remove="Migrations\20211203103521_addContactMails.cs" />
     <Compile Remove="Migrations\20211203103521_addContactMails.Designer.cs" />
     <Compile Remove="Models\UserCompany.cs" />
+    <Compile Remove="SmsCounter.cs" />
   </ItemGroup>
 
   <ItemGroup>

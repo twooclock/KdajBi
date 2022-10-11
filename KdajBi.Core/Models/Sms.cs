@@ -37,6 +37,8 @@ namespace KdajBi.Core.Models
         [MaxLength(640), Required]
         public string MsgTxt { get; set; }
 
+        public int MsgSegments { get; set; }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime? SendAfter { get; set; }
 

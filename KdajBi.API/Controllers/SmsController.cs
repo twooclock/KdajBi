@@ -271,6 +271,10 @@ namespace KdajBi.API.Controllers
             newSmsCampaign.LocationId = p_SmsCampaigin.LocationId;
             newSmsCampaign.AppUser.Id = _CurrentUserID();
             newSmsCampaign.MsgTxt = p_SmsCampaigin.MsgTxt;
+            
+            var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+            newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+
             newSmsCampaign.SendAfter = p_SmsCampaigin.SendAfter;
             newSmsCampaign.Name = "";
             if (p_SmsCampaigin.CampaignType == 3) { newSmsCampaign.Name = "AppointmentSMS"; }
