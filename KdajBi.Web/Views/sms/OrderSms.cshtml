@@ -1,0 +1,420 @@
+﻿@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "Naročilo SMS";
+}
+
+@section styles{
+    <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+
+    <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
+    <link href="~/plugins/bs-stepper/css/bs-stepper.min.css" rel="stylesheet" />
+    <style>
+
+
+        .tc__rendered {
+            list-style-type: none;
+            white-space: nowrap
+        }
+
+        .tc__choice {
+            cursor: pointer;
+            border: solid #ced4da 1px;
+            opacity: 0.85;
+            float: left;
+            border-radius: 4px;
+        }
+
+            .tc__choice.active {
+                background-color: #3c8dbc;
+            }
+
+        .cCB {
+            padding-left: 2rem;
+        }
+
+        .cCB2 {
+            padding-left: 0.7rem;
+        }
+
+        .ulClients {
+            padding-left: 0px;
+            list-style-type: none;
+            max-height: 300px;
+            overflow-y: scroll;
+        }
+
+        .ccl {
+            padding-left: 0.5rem;
+        }
+    </style>
+}
+
+
+<!-- page content -->
+<div class="right_col col-md-12" role="main">
+
+
+    <div class="row">
+
+        <div class="col-md-12 mt-1">
+            <h2>Naročilo SMS</h2>
+            <h3 id="limitinfo">Pošljete lahko </h3>
+            <h3 id="qtyInfo">Naročam </h3>
+            <div id="stepper2" class="bs-stepper">
+                <div class="bs-stepper-header">
+                    <div class="step" data-target="#step-nl-1">
+                        <button type="button" class="btn step-trigger">
+                            <span class="bs-stepper-circle">1</span>
+                            <span class="bs-stepper-label">Izbira količine</span>
+                        </button>
+                    </div>
+                    <div class="line"></div>
+                    <div class="step" data-target="#step-nl-2">
+                        <div class="btn step-trigger">
+                            <span class="bs-stepper-circle">2</span>
+                            <span class="bs-stepper-label">Plačilo</span>
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="step" data-target="#step-nl-3">
+                        <button type="button" class="btn step-trigger">
+                            <span class="bs-stepper-circle">3</span>
+                            <span class="bs-stepper-label">Oddaja naročila</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="bs-stepper-content pb-0">
+                    <div id="step-nl-1" class="content">
+                        <div class="row">
+
+                        </div>
+                        <div id="notifyQtySelect" class="row">
+                            <button type="button" class="btn btn-primary col-12 py-4" onclick="setQuantity(500);">Naročam 500 sms</button>
+                            <button type="button" class="btn btn-primary col-12  my-2 py-4" onclick="setQuantity(1000);">Naročam 1000 sms</button>
+                            <button type="button" class="btn btn-primary col-12 py-4" onclick="setQuantity(5000);">Naročam 5000 sms</button>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div id="step-nl-2" class="content">
+                    <div class="form-group mb-1">
+                        <label id="lblMessage" for="txtMessage">
+                            Podatki o plačilu:
+                        </label>
+                        <textarea rows="5" id="txtMessage" name="txtMessage" class="form-control" maxlength="640"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="ToNextStep(3);">Naprej</button>
+                </div>
+                <div id="step-nl-3" class="content">
+                    <div class="row">
+                        <div class="col-md-12">
+                            Povzetek naročila
+                        </div>
+                    </div>
+                    
+                    
+                    <button class="btn btn-primary" onclick="submitOrder()">Oddaj naročilo</button>
+                    <button type="button" class="btn btn-default" style="display:none" onclick="test();">TEST</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<br />
+
+
+<!-- /page content -->
+<!-- modal new client content-->
+<!-- /modal content-->
+
+@section scripts{
+    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+    <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/plugins/js-cookie/js.cookie.min.js"></script>
+
+    <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
+    <script src="~/plugins/flatpickr/plugins/confirmDate/confirmDate.js"></script>
+
+    <script src="~/plugins/dayjs/dayjs.min.js"></script>
+    <script src="~/plugins/dayjs/plugin/utc.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_utc)</script>
+    <script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localizedFormat);</script>
+    <script src="~/plugins/dayjs/plugin/localeData.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
+    <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
+    <script src="~/plugins/bs-stepper/js/bs-stepper.min.js"></script>
+
+    <script type="text/javascript">
+
+
+
+        function hideKeyboard() {
+            //this set timeout needed for case when hideKeyborad
+            //is called inside of 'onfocus' event handler
+            setTimeout(function () {
+
+                //creating temp field
+                var field = document.createElement('input');
+                field.setAttribute('type', 'text');
+                //hiding temp field from peoples eyes
+                //-webkit-user-modify is nessesary for Android 4.x
+                field.setAttribute('style', 'position:absolute; top: 0px; opacity: 0; -webkit-user-modify: read-write-plaintext-only; left:0px;');
+                document.body.appendChild(field);
+
+                //adding onfocus event handler for out temp field
+                field.onfocus = function () {
+                    //this timeout of 200ms is nessasary for Android 2.3.x
+                    setTimeout(function () {
+
+                        field.setAttribute('style', 'display:none;');
+                        setTimeout(function () {
+                            document.body.removeChild(field);
+                            document.body.focus();
+                        }, 14);
+
+                    }, 200);
+                };
+                //focusing it
+                field.focus();
+
+            }, 50);
+        }
+
+        function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                const s = document.createElement('script');
+                let r = false;
+                s.type = 'text/javascript';
+                s.src = src;
+                s.async = true;
+                s.onerror = function (err) {
+                    reject(err, s);
+                };
+                s.onload = s.onreadystatechange = function () {
+                    // console.log(this.readyState); // uncomment this line to see which ready states are called.
+                    if (!r && (!this.readyState || this.readyState == 'complete')) {
+                        r = true;
+                        resolve();
+                    }
+                };
+                const t = document.getElementsByTagName('script')[0];
+                t.parentElement.insertBefore(s, t);
+            });
+        }
+
+        var delay = (function () {
+            var timer = {}
+                , values = {}
+            return function (el) {
+                var id = el.id + '.' + el.name
+                return {
+                    enqueue: function (ms, cb) {
+                        if (values[id] == el.value) return
+                        //if (!el.value) return
+                        var original = values[id] = el.value
+                        clearTimeout(timer[id])
+                        timer[id] = setTimeout(function () {
+                            if (original != el.value) return // solves race condition
+                            cb.apply(el)
+                        }, ms)
+                    }
+                }
+            }
+        }());
+
+
+        var smsQty;
+
+        
+
+
+        @await Html.PartialAsync("_ApiAccess")
+
+       var stepper2 = new Stepper(document.getElementById('stepper2'), {
+                linear: false,
+                animation: true
+            })
+
+        
+        function ToNextStep(p_Step) {
+            if (p_Step == 2)
+            {
+                //var smsc = getSmscObject();
+                //if (smsc.Recipients.length > 0) { stepper2.next(); }
+                //else { return false; }
+            }
+            if (p_Step == 3)
+            {
+                //if ($('#txtMessage').val().length > 0) { stepper2.next(); }
+                //else { return false; }
+            }
+
+        }
+        
+
+        function submitOrder() {
+            Swal.fire({
+                title: 'Oddam naročilo?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    getAPIToken().then((result) => {
+                    $.ajax({
+                        type: "post",
+                        data: JSON.stringify(getSmscObject()),
+                        url: apiURL + "/api/Sms/QueueSmsCampaign",
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result == "OK") {
+                                Swal.fire('Sporočila so v pošiljanju.').then((result) => {
+                                    window.location.href = '@Url.Action("Index", "Home")';
+                                    return true;
+                                });
+                            }
+                            else { toastr.error("Napaka pri pošiljanju:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka pri pošiljanju:" + error.toString());
+                            return false;
+                        }
+                    });
+                    });
+
+                } else { return false; }
+            });
+
+
+        }
+
+
+        
+        function SporocilZBesedo(p_Number) {
+            if (p_Number.toString().substr(-2) == '00' ) { return "sporočil"; }
+            if (p_Number.toString().substr(-2) == '01' ||p_Number==1 ) { return "sporočilo";}
+            if (p_Number.toString().substr(-2) == '02' ||p_Number==2 ) { return "sporočili";}
+            if (p_Number.toString().substr(-2) == '03' ||p_Number==3 ) { return "sporočila";}
+            if (p_Number.toString().substr(-2) == '04' ||p_Number==4 ) { return "sporočila";}
+            if (p_Number > 4) { return "sporočil";}
+        }
+
+        $(document).ready(function () {
+            //show sms limit info
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(getSmscObject()),
+                    url: apiURL + "/api/Sms/SmsInfo",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        var smsInfo = "";
+                        var cssClass = "text-success";
+                        if (result.limit > 0)
+                            { smsInfo = "Pošljete lahko " + result.limit + " "+SporocilZBesedo(result.limit)+"."; }
+                        else
+                        { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
+                        if (result.limit == -1) { smsInfo = "Prišlo je do napake. Naročanje trenutno ni mogoče!"; cssClass = "text-danger"; }
+
+                        $('#limitinfo').removeClass("text-success");
+                        $('#limitinfo').removeClass("text-warning");
+                        $('#limitinfo').removeClass("text-danger");
+                        $('#limitinfo').addClass(cssClass);
+                        $('#limitinfo').text(smsInfo);
+
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+
+
+
+            document.getElementById('stepper2').addEventListener('shown.bs-stepper', function (event) {
+                if (event.detail.indexStep == 2) {
+                    //show sms limit info
+                    getAPIToken().then((result) => {
+                        $.ajax({
+                            type: "post",
+                            data: JSON.stringify(getSmscObject()),
+                            url: apiURL + "/api/Sms/SmsInfo",
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (result) {
+                                var smsInfo = "";
+                                var cssClass = "text-success";
+                                if (result.limit >= result.recipients) { smsInfo = "Pošljete lahko " + result.limit + " " + SporocilZBesedo(result.limit) + "." }
+                                else {
+                                    smsInfo = "Pošljete lahko " + result.limit + " "+SporocilZBesedo(result.limit)+"."
+                                    smsInfo = (result.recipients - result.limit) + " "+SporocilZBesedo(result.recipients - result.limit)+" ne bo poslanih! Naročite dodatne sms-e!";
+                                    cssClass = "text-warning";
+                                }
+                                if (result.limit == 0) { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
+                                if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
+
+                                $('#lblSending').text("Pripravljenih sporočil: " + result.recipients);
+                                $('#lblSmsInfo').removeClass("text-success");
+                                $('#lblSmsInfo').removeClass("text-warning");
+                                $('#lblSmsInfo').removeClass("text-danger");
+                                $('#lblSmsInfo').addClass(cssClass);
+                                $('#lblSmsInfo').text(smsInfo);
+
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka:" + error.toString());
+                                return false;
+                            }
+                        });
+                    });
+                }
+            })
+
+
+            //init toastr
+            toastr.options.preventDuplicates = true;
+            toastr.options.timeOut = 1000;
+
+        });
+
+        
+
+        function setQuantity(p_qty)
+        {
+            smsQty = p_qty;
+            //$("#notifyQtySelect").hide();
+            $("#btnNext").show();
+
+            $("#qtyInfo").text("Naročam " + p_qty.toString() + " sms");
+            //$("#lblQtySummary").show();
+            stepper2.next();
+        }
+
+        function getSmscObject() {
+
+            var smsc={};
+            smsc.CampaignType = 0;
+            smsc.LocationId = $("#cboLocations").val();
+            smsc.MsgTxt = "";
+            
+            smsc.SendAfter = new Date();
+            smsc.Recipients = [];
+                    
+                    
+            return smsc;
+        }
+
+
+    </script>
+}
+
