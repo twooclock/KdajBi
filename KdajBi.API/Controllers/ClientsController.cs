@@ -42,7 +42,11 @@ namespace KdajBi.API.Controllers
             { v = v.Where(w => w.CompanyId == _CurrentUserCompanyID() && w.LocationId == locationid); }
             else
             { v = v.Where(w => w.CompanyId == _CurrentUserCompanyID()); }
-            //v = v.Include(w => w.Tags);
+            
+            //search
+            if (string.IsNullOrEmpty(param.search.value)==false)
+            { v = v.Where(w => w.FirstName.Contains(param.search.value) || w.LastName.Contains(param.search.value));  }
+
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
             {

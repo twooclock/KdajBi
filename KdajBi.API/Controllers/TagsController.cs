@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace KdajBi.API.Controllers
 {
-    [Authorize(Roles = "Super,Admin")]
+    [Authorize]
     [ApiController]
     public class TagsController : _BaseController
     {

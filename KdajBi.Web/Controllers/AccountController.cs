@@ -100,6 +100,7 @@ namespace KdajBi.Web.Controllers
             return Redirect("~/LandingPage/index.html");
         }
 
+        [AllowAnonymous]
         public IActionResult AccessDenied()
         {
             return View();
@@ -216,7 +217,7 @@ namespace KdajBi.Web.Controllers
                     _logger.LogError(ex, "Error writing LastLoginDate for user {0}", appUser.Id);
                 }
 
-                return Redirect("~/Home/Index");
+                return Redirect("~/appointments/Index");
             }
             else
             {
@@ -249,7 +250,7 @@ namespace KdajBi.Web.Controllers
             if (info == null)
             {
                 _logger.LogWarning("_signInManager.GetExternalLoginInfoAsync is NULL!");
-                return RedirectToAction(nameof(Login));
+                return Redirect("~/LandingPage/index.html");
             }
             
 
@@ -400,7 +401,6 @@ namespace KdajBi.Web.Controllers
             if (myToken != null) { 
                 myToken.refresh_token = ""; 
             }
-            
             return Json(JsonConvert.SerializeObject(myToken));
         }
     }

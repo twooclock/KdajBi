@@ -56,12 +56,13 @@ namespace KdajBi
                 options.DefaultScheme = IdentityConstants.ApplicationScheme;
                 
             })
-               .AddGoogle(opts =>
+               .AddGoogle(GoogleDefaults.AuthenticationScheme, opts =>
                {
                    opts.ClientId = Configuration.GetSection("GoogleSettings")["ClientId"];
                    opts.ClientSecret = Configuration.GetSection("GoogleSettings")["ClientSecret"];
-                   opts.SignInScheme = IdentityConstants.ExternalScheme;
-                   opts.CorrelationCookie.SameSite = SameSiteMode.Lax;
+                   opts.SignInScheme =  IdentityConstants.ExternalScheme;
+                   opts.CorrelationCookie.SameSite = SameSiteMode.None;
+                   opts.CorrelationCookie.IsEssential = true;
                    opts.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
                    opts.Scope.Add("https://www.googleapis.com/auth/calendar");
                    opts.AccessType = "offline";
@@ -95,6 +96,8 @@ namespace KdajBi
             services.Configure<ApiSettings>(Configuration.GetSection("ApiSettings"));
             services.AddSingleton<IApiTokenProvider, ApiTokenProvider>();
 
+            services.Configure<CalendarV3ProviderSettings>(Configuration.GetSection("CalendarV3ProviderSettings"));
+            services.AddSingleton<ICalendarV3Provider, CalendarV3Provider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

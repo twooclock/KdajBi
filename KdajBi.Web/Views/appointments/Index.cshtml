@@ -3,6 +3,9 @@
 @using KdajBi.Web.ViewModels;
 @using System.Globalization;
 @model vmAppointments
+@{
+    ViewData["Title"] = "Naročila";
+}
 
 @section styles{
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
@@ -15,40 +18,54 @@
     <link href='~/lib/fullcalendar-scheduler-5.10.1/lib/main.min.css' rel='stylesheet' />
 
     <style>
+@{ string val = "";
+    if (Model.Settings.TryGetValue("AppointmentsRowHeight", out val) == true)
+    {
+        if (String.IsNullOrEmpty(val) == false)
+        {
+            @Html.Raw(".fc .fc-timegrid-slot {");
+            @Html.Raw("height:"+val);
+            @Html.Raw("border-bottom: 0}");
+        }
+    }
+}
 
-        body {
+        .fc-fullscreen-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f065";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 900;
+        } .fc-datepicker-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f073";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 900;
+        } .fc-linkcreator-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f0c1";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 900;
+        } body {
             margin: 0;
             padding: 0;
             font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
             font-size: 14px;
-        }
-
-        #calendar {
+        } #calendar {
             max-width: 1100px;
-        }
-
-        ::backdrop {
+        } ::backdrop {
             background-color: white;
-        }
-
-
-        :fullscreen {
+        } :fullscreen {
             overflow-y: scroll;
-        }
-
-        :-ms-fullscreen {
+        } :-ms-fullscreen {
             overflow-y: scroll;
-        }
-
-        :-webkit-full-screen {
+        } :-webkit-full-screen {
             overflow-y: scroll;
-        }
-
-        :-moz-full-screen {
+        } :-moz-full-screen {
             overflow-y: scroll;
-        }
-
-        div.token {
+        } div.token {
             font-size: 13px;
         }
         /*sticky header
@@ -57,134 +74,191 @@
             top: 250px;
             z-index: 10;
         }*/
-
         .fc-head-container.fc-widget-header {
             position: sticky;
             top: 308px;
             z-index: 10;
             background: red;
         }
-
         /*.fc-timeline .fc-body .fc-scroller {
             height: 400px !important;
         }*/
-
         .fc .fc-toolbar.fc-header-toolbar {
             margin-bottom: 1.5em;
             position: sticky;
             background: #ffffff;
             z-index: 100;
             top: 47px;
-        }
-
-        .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
+        } .fc .fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > * {
             top: 82px;
-        }
-
-        .fc-header-toolbar {
+        } .fc-header-toolbar {
             padding: 0px !important;
-        }
-
-        .content-wrapper {
+        } .content-wrapper {
             background: white;
         }
+        
     </style>
 }
 
 <!-- page content -->
-<div class="right_col col-md-12" role="main">
-    <div id="fs">
-        <div id='calendar'></div>
-        <!-- Workplace modal content-->
-        <div id="myModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
-            <div class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title" id="myModalLabel">Naročilo</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+
+@{ 
+    string val = "";
+    bool Show3Calendars = false;
+    if (Model.Settings.TryGetValue("AppointmentsShow3Calendars", out val) == true)
+    {
+        Show3Calendars = (bool.Parse(val) == true);
+        if (bool.Parse(val) == true)
+        { <text>
+                <div id="fs" class="right_col row" role="main">
+                    <div id="3calendars" class="col-3 d-none d-md-block" style="top: 3em; position: fixed; z-index: 10;">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="datepick1" style="display: none">
+                            <input type="text" class="form-control" id="datepick2" style="display: none">
+                            <input type="text" class="form-control" id="datepick3" style="display: none">
+                        </div>
                     </div>
-                    <div class="modal-body ui-front">
-                        <form id="formEvent" class="formEvent" name="formEvent">
-                            <div class="form-row">
-                                <div class="form-group col-9">
-                                    <label for="txtClientsearch">
-                                        Stranka:
-                                    </label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text" onclick="$('#txtClientsearch').select();$('#txtClientsearch').autocomplete('search')">
-                                                <span class="fas fa-user"></span>
-                                            </div>
-                                        </div>
-                                        <input id="txtClientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#txtClientsearch').select(); $('#txtClientsearch').autocomplete('search')">
+                    <div id="fs" class="col" style="padding-left:23em;">
+        </text>}
+    else
+    { <text>
+            <div class="right_col" role="main">
+                <div id="fs">
+    </text>}
+
+}
+
+}
+
+<div id='calendar'></div>
+<!-- Workplace modal content-->
+<div id="myModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Naročilo</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body ui-front">
+                <form id="formEvent" class="formEvent" name="formEvent">
+                    <div class="form-row">
+                        <div class="form-group col-9">
+                            <label for="txtClientsearch">
+                                Stranka:
+                            </label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text" onclick="$('#txtClientsearch').select();$('#txtClientsearch').autocomplete('search')">
+                                        <span class="fas fa-user"></span>
                                     </div>
                                 </div>
+                                <input id="txtClientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#txtClientsearch').select(); $('#txtClientsearch').autocomplete('search')">
+                            </div>
+                        </div>
 
-                                <div class="form-group col-3">
-                                    <label for="txtClientMobile">
-                                        Mobi:
-                                    </label>
-                                    <input type="text" id="txtClientMobile" name="txtClientMobile" class="form-control" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="txtNotes">
-                                    Naročilo:
-                                </label>
-                                <input type="text" id="txtNotes" name="txtNotes" class="form-control ">
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group pr-2 col-9 ">
-                                    <label for="txtStartTime">
-                                        Datum ura:
-                                    </label>
-                                    <div class="input-group flatpickr  p-0">
-                                        <input type="text" id="txtStartTime" name="txtStartTime" class="form-control " aria-describedby="basic-addonY" data-input />
-                                        <div class="input-group-append">
-                                            <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
-                                                <i class="fas fa-calendar"></i>
-                                            </div>
-                                        </div>
+                        <div class="form-group col-3">
+                            <label for="txtClientMobile">
+                                Mobi:
+                            </label>
+                            <input type="tel" id="txtClientMobile" name="txtClientMobile" class="form-control" oninput="CheckMobileNumber(this);" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="txtNotes">
+                            Naročilo:
+                        </label>
+                        <input type="text" id="txtNotes" name="txtNotes" class="form-control ">
+                    </div>
+                    <div id="rowMinDuration" class="form-group">
+                        <label for="txtMinDuration">
+                            Trajanje (min):
+                        </label>
+                        <input type="number" min="1" id="txtMinDuration" name="txtMinDuration" class="form-control ">
+                    </div>
+                    <div id="rowDT" class="form-row">
+                        <div class="form-group pr-2 col-9 ">
+                            <label for="txtStartTime">
+                                Datum ura:
+                            </label>
+                            <div id="dpstart" class="input-group flatpickr p-0">
+                                <input type="text" id="txtStartTime" name="txtStartTime" class="form-control" aria-describedby="basic-addonY" data-input />
+                                <div class="input-group-append">
+                                    <div class="input-group-text" id="basic-addonY" data-toggle onclick="">
+                                        <i class="fas fa-calendar"></i>
                                     </div>
                                 </div>
-                                <div class="form-group col-3 ">
-                                    <label for="txtEndTime">
-                                        Do (ura):
-                                    </label>
-                                    <div class="input-group  p-0">
-                                        <input type="text" id="txtEndTime" name="txtEndTime" class="form-control " />
-                                    </div>
-                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="cboGooCal">
-                                    Delovno mesto/zaposleni:
-                                </label>
-                                <select id="cboGooCal" name="cboGooCal" class="selectpicker custom-select custom-select-sm form-control">
-                                    @foreach (var item in Model.GoogleCalendars)
-                                    {
-                                        <option value="@item.Key">@Html.Raw(item.Value)</option>
-                                    }
-                                </select>
-                            </div>
+                        </div>
+                        <div class="form-group col-3 ">
+                            <label for="txtEndTime">
+                                Do (ura):
+                            </label>
+                            <input type="text" id="txtEndTime" class="form-control flatpickr flatpickr-input" data-id="timePicker24" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cboGooCal">
+                            Delovno mesto/zaposleni:
+                        </label>
+                        <select id="cboGooCal" name="cboGooCal" class="selectpicker custom-select custom-select-sm form-control">
+                            @foreach (var item in Model.GoogleCalendars)
+                            {
+                                <option value="@item.Item1" data-workplaceid="@Html.Raw(item.Item3)">@Html.Raw(item.Item2)</option>
+                            }
+                        </select>
+                    </div>
 
 
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" id="cmdDelete">
-                            Zbriši
-                        </button>
-                        <button type="button" class="btn btn-primary" id="cmdSave">
-                            Shrani
-                        </button>
-                    </div>
-                </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="cmdMove">
+                    Premakni
+                </button>
+                <button type="button" class="btn btn-default" id="cmdSendLink">
+                    Pošlji
+                </button>
+                <button type="button" class="btn btn-default" id="cmdDelete">
+                    Zbriši
+                </button>
+                <button type="button" class="btn btn-primary" id="cmdSave">
+                    Shrani
+                </button>
             </div>
         </div>
-        <!-- /modal content-->
     </div>
+</div>
+<!-- /modal content-->
+<!-- DatePick modal content-->
+<div id="myDatePickModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: fit-content;">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">skoči na datum</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body ui-front">
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="datepick" style="visibility: hidden" aria-describedby="emailHelp">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+
+
+
+
+
+</div>
 </div>
 <!-- /page content -->
 
@@ -220,6 +294,12 @@
     <script type="text/javascript">
         @await Html.PartialAsync("_ApiAccess")
         @await Html.PartialAsync("_GooApiAccess")
+
+        function CheckMobileNumber(el) {
+            var mobi = $(el).val();
+            mobi = mobi.replace(/[^\d\+]/g, '');
+            $(el).val(mobi);
+        }
 
         function hideKeyboard() {
             //this set timeout needed for case when hideKeyborad
@@ -275,44 +355,13 @@
             });
         }
 
-        var delay = (function () {
-            var timer = {}
-                , values = {}
-            return function (el) {
-                var id = el.id + '.' + el.name
-                return {
-                    enqueue: function (ms, cb) {
-                        if (values[id] == el.value) return
-                        //if (!el.value) return
-                        var original = values[id] = el.value
-                        clearTimeout(timer[id])
-                        timer[id] = setTimeout(function () {
-                            if (original != el.value) return // solves race condition
-                            cb.apply(el)
-                        }, ms)
-                    }
-                }
-            }
-        }());
-
-        function formatDate(date) {
-            var d = new Date(date),
-                month = '' + (d.getMonth() + 1),
-                day = '' + d.getDate(),
-                year = d.getFullYear(),
-                hour = d.getHours(),
-                min = d.getMinutes();
-            if (month.length < 2)
-                month = '0' + month;
-            if (day.length < 2)
-                day = '0' + day;
-
-            return [day, month, year, hour,min].join('.');
-        }
 
         var calendar;
-        var fp;
+        var eventToMove = null;
+        var fp; var dp; var tp;
         var SelectedClientID = 0;
+        var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
+
 
         //#region events
         @Html.Raw("var eventsMonths = []; eventsMonths.push(dayjs(Date()).format(\"YYYYMM\"));")
@@ -321,47 +370,14 @@
                 console.info("FetchRenderEvents:", p_date);
                 if (isInArray(eventsMonths, dayjs(p_date).format("YYYYMM")) == false) {
                     console.info("asking for events for ", dayjs(p_date).format("YYYY-MM"));
-                    var firstDayOfMonth = new Date(p_date.getFullYear(), p_date.getMonth(), 1);
-                    var lastDayOfMonth = new Date(p_date.getFullYear(), p_date.getMonth() + 1, 0);
+                    var firstDayOfMonth = dayjs.utc().year(p_date.getFullYear()).month(p_date.getMonth()).startOf('month').local(); //  new Date(p_date.getFullYear(), p_date.getMonth(), 1);
+                    var lastDayOfMonth = dayjs.utc().year(p_date.getFullYear()).month(p_date.getMonth()).endOf('month').local()//new Date(p_date.getFullYear(), p_date.getMonth() + 1, 0);
 
-                    refreshGAPIToken().then(() => {
-                        p_calendar.getResources().forEach(function (aResource) {
+                    refreshGAPIToken().then(async () => {
+                        p_calendar.getResources().forEach(async function (aResource) {
                             //for each goo calendar
-                            var pageToken = null;
-                            do {
-                                //get events
-                                gapi.client.calendar.events.list({
-                                    "calendarId": aResource.extendedProps.gid,
-                                    "timeMin": firstDayOfMonth.toISOString(),
-                                    "timeMax": lastDayOfMonth.toISOString(),
-                                    "showDeleted": false,
-                                    "singleEvents": true,
-                                    "pageToken": pageToken
-                                }).execute(function (response) {
-                                    if (response.error || response == false) {
-                                        toastr.error("Napaka:gapi.client.calendar.events.list");
-                                        reject(); return;
-                                    }
-                                    else {
-                                        response.items.forEach(function (item) {
-                                            //put on calendar
-                                            calendar.addEvent({
-                                                id: item.id,
-                                                title: item.summary,
-                                                start: item.start.dateTime,
-                                                end: item.end.dateTime,
-                                                resourceId: getResourceIdByGid(aResource.extendedProps.gid),
-                                                extendedProps: ((typeof item.extendedProperties === "undefined") ? {} : item.extendedProperties.private)
-                                            });
-                                        });
-                                        pageToken = ((typeof response.nextPageToken === "undefined") ? null : response.nextPageToken);
-                                        pageToken = pageToken;
-                                    }
-
-                                });
-                            } while (pageToken != null);
-
-
+                            console.log(aResource.extendedProps.gid)
+                            await getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,"").catch(e => { console.log(e); eventsMonths = eventsMonths.filter(function(item) { return item !== dayjs(p_date).format("YYYYMM")})});
                         });
 
                         eventsMonths.push(dayjs(p_date).format("YYYYMM"));
@@ -372,12 +388,66 @@
             });
 
         }
+        async function getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,pageToken) {
+            return new Promise(function (resolve, reject) {
+                if (typeof pageToken === "undefined") { console.log('no next page'); reject(); return; }
+                let calId = getResourceIdByGid(aResource.extendedProps.gid);
+                console.info("first:" + firstDayOfMonth.toString(),firstDayOfMonth.toISOString());
+                console.info("last:" + lastDayOfMonth.toString(),lastDayOfMonth.toISOString());
+                gapi.client.calendar.events.list({
+                    "calendarId": aResource.extendedProps.gid,
+                    "timeMin": firstDayOfMonth.toISOString(),
+                    "timeMax": lastDayOfMonth.toISOString(),
+                    "showDeleted": false,
+                    "singleEvents": true,
+                    "pageToken": pageToken
+                }).execute(function (response) {
+                    if (response.error || response == false) {
+                        toastr.error("Napaka pri komunikaciji z Googlom!");
+                        reject(response.error); return;
+                    }
+                    else {
+                        getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,response.nextPageToken).catch(e => { console.log(e); });
+                        //var myEvents=[];
+                        calendar.batchRendering(function() {
+                            response.items.forEach(function (item) {
+                                calendar.addEvent({
+                                    id: item.id,
+                                    title: item.summary,
+                                    start: item.start.dateTime,
+                                    end: item.end.dateTime,
+                                    display: null,
+                                    eventColor:aResource.eventBackgroundColor,
+                                    resourceId: calId,
+                                    extendedProps: ((typeof item.extendedProperties === "undefined") ? {} : item.extendedProperties.shared)
+                                });
+                            });
+                          });
+
+                        //put on calendar
+
+
+                    }
+                });
+            });
+        }
+
+
         //#endregion
 
     //#region background events
         @Html.Raw("var resourceswd=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.resourcesWD));
         @Html.Raw("var exMonths = [];")
-        @{const bool nakaziUrnike = false; }
+
+         @{
+             bool nakaziUrnike = false;
+             if (Model.Settings.TryGetValue("cbAppointments_ShowTimetables", out val) == true)
+             {
+                 nakaziUrnike =bool.Parse(val);
+             }
+
+            }
+
         function isInArray(array, value) {
             return (array.find(item => { return item == value }) || []).length > 0;
         }
@@ -494,8 +564,8 @@
         }
 
 
-        async function SaveDragedEvent(info) { 
-            return new Promise(function (resolve, reject) { 
+        async function SaveDragedEvent(info) {
+            return new Promise(function (resolve, reject) {
                 var res = info.event.getResources();
                 var calid = res[0].extendedProps.gid;
                 var eid = info.event.id;
@@ -518,7 +588,7 @@
                             }
                             else {
                                 console.log("Moved event: %s", info.event.id);
-                                
+
                                 if (info.delta.milliseconds != 0 || info.delta.days != 0 || info.delta.months != 0 || info.delta.years != 0) {
                                     //update event if changed
                                     eid = info.event.id;
@@ -604,7 +674,6 @@
             isFullScreen = true;
             $(".fc-toolbar.fc-header-toolbar").css('top', '0px');
             $(".fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > *").css('top', '34px');
-
         }
         function exitFullScreen() {
 
@@ -615,7 +684,6 @@
             isFullScreen = false;
             $(".fc-toolbar.fc-header-toolbar").css('top', '47px');
             $(".fc-scrollgrid-section-header.fc-scrollgrid-section-sticky > *").css('top', '82px');
-
         }
         function exitHandler() {
             if (!document.webkitIsFullScreen && !document.mozFullScreen && !document.msFullscreenElement) {
@@ -649,10 +717,17 @@
                 } else { resolve(); }
             });
         }
-
+        var resourceA=null;
         function loadCalendar() {
+            var mySlot = localStorage.getItem("Slot");
+            var cancelSwipe = false;
+            var calEvents=@Html.Raw(Model.calEvents);
+            if (mySlot == null) { mySlot = "00:30"; }
                 loadLocale(navigator.language.slice(0, 2))
                     .then(function () {
+                        var idate = new Date();
+                        let searchParams = new URLSearchParams(window.location.search);
+                        if (searchParams.has('date')) { idate = searchParams.get('date'); }
                         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                             locale: navigator.language.slice(0, 2),
                             eventDisplay: 'block',
@@ -660,20 +735,20 @@
                             stickyFooterScrollbar: true,
                             stickyHeaderDates: true,
                             initialView: 'resourceTimeGridDay',
-                            //initialDate: 'today',
+                            initialDate: idate,
+                            allDaySlot: false,
                             slotMinTime: "@Html.Raw(Model.Location.Schedule.minTime())", //"7:00:00",
                             slotMaxTime: "@Html.Raw(Model.Location.Schedule.maxTime())", //"21:00:00",
-                            slotDuration: '00:30',
-                            allDaySlot: false,
-                            //scrollTime: getScrollTime(), //"8:00:00",
-                            slotLabelFormat: {
-                                hour: 'numeric',
-                                hour12: false,
-                                minute: '2-digit',
-                                omitZeroMinute: true,
-                                meridiem: false
+                            slotDuration: mySlot,
+                            slotLabelInterval: mySlot,
+                            slotLabelFormat: function (date)
+                            {
+                                if (date.date.minute == 0)
+                                    return date.date.hour.toString().padStart(2, '0') + ':00';
+
+                                return date.date.minute;
                             },
-                            slotLabelInterval: "00:30",
+                                                        //scrollTime: getScrollTime(), //"8:00:00",
                             height:'auto',
                             expandRows: true,
                             editable: true,
@@ -681,18 +756,48 @@
                             dayMaxEvents: true, // allow "more" link when too many events
                             //dayMinWidth: 200,
                             headerToolbar: {
-                                left: 'prev,next today',
+                                left: 'datepicker prev,next today',
                                 center: 'title',
-                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth fullscreen'
+                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth mnuResources,slotinterval,linkcreator,fullscreen'
                             },
                             customButtons: {
                                 fullscreen: {
-                                    text:'¤',
                                     click: function () {
                                         if (isFullScreen) { exitFullScreen(); } else { goFullScreen('fs'); }
 
                                     }
-                                }
+                                },
+                                linkcreator: {
+                                    click: function () {
+                                        showSendLink();
+                                    }
+                                },
+                                slotinterval: {
+                                    text:  "",
+                                    click: function (a) {
+                                        if (mySlot == "00:30") { mySlot = "00:15"; this.innerText = "30'"; } else { mySlot = "00:30"; $(this).attr("title", "15'"); this.innerText="15'"; }
+                                        localStorage.setItem("Slot", mySlot);
+                                        calendar.setOption('slotDuration', mySlot);
+                                        calendar.setOption('slotLabelInterval', mySlot)
+
+                                    }
+                                },
+                                mnuResources: {
+                                    text: "R",
+                                    click: function () {
+                                        console.log('remove resource...');
+                                        if (resourceA == null) {
+                                            resourceA = calendar.getResourceById('2');
+                                            resourceA.remove();
+                                        } else { calendar.addResource(resourceA); resourceA = null; calendar.render(); }
+
+                                        calendar.refetchEvents();
+                                    }
+                                },
+                                datepicker: {
+                                    click: function () {
+                                        $("#myDatePickModal").modal("show"); }
+                                },
                             },
                             views: {
                                 resourceTimeGridDay: {
@@ -729,6 +834,20 @@
                             }
                             ],
                             events:@Html.Raw(Model.calEvents),
+                            //events: function (info, successCallback, failureCallback) {
+                            //pazi, če delaš prek funkcije moraš spreminjat calevents tudi pri SaveMoveEvent!
+                            //    if (resourceA == null) { successCallback(calEvents); return; }
+                            //    else {
+                            //        var novi = [];
+
+                            //        calEvents.forEach(function (item) {
+                            //            if (item.display == 'background') { novi.push(item); }
+                            //            else {
+                            //                if (item.resourceId!= '2') {novi.push(item);  } }
+                            //        });
+                            //        successCallback(novi);
+                            //    }
+                            //},
                             eventTimeFormat: {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -737,17 +856,30 @@
                             eventClick: function (info) {
                                 console.info("eventClick: info:", info);
 
-                                //info.event.setProp("title", "test666");
-
                                 showEvent(info);
                             },
                             eventDrop: function (info) {
-                                //console.info("eventDrop: info:", info);
-                                SaveDragedEvent(info).catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); });
+                                console.info("eventDrop: info:", info);
+                                cancelSwipe = true;
+                                SaveDragedEvent(info)
+                                    .catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); })
+                                    .then(() => {
+                                        if (typeof info.event?.extendedProps?.client != "undefined") {
+                                            var client = JSON.parse(info.event.extendedProps.client);
+                                            notifyClient(info.event.start, client.mobile, client.value);
+                                        }
+                                    });
                             },
                             eventResize: function (event, dayDelta, minuteDelta) {
                                 //console.info("eventResize: ", event);
-                                SaveResizedEvent(event).catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); });
+                                SaveResizedEvent(event)
+                                    .catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); })
+                                    .then(() => {
+                                        if (typeof event?.event?.extendedProps?.client != "undefined") {
+                                            var client = JSON.parse(event.event.extendedProps.client);
+                                            notifyClient(event?.event.start, client.mobile, client.value);
+                                        }
+                                    });
                             },
                             select: function (arg) {
                                 if (typeof arg.resource === "undefined") {
@@ -758,29 +890,54 @@
                                     newEvent(arg);
                                 }
                             },
+                            longPressDelay: 300,
                             datesSet: function (dateInfo) {
                                 console.info("date changes to:", dateInfo.start);
-                                FetchRenderEvents(calendar, dateInfo.start).then(result => { FetchRenderEvents(calendar, dateInfo.end) });
+                                let dateE = dateInfo.end;
+                                var datum =dayjs(dateInfo.start).add(1, 'month').toDate()
+                                FetchRenderEvents(calendar, dateInfo.start)
+                                    .then(result => { if (dateE.getMonth() > datum.getMonth()) { FetchRenderEvents(calendar, datum ) } })
+                                    .then(result => { FetchRenderEvents(calendar, dateInfo.end) });
+
                                 @if (nakaziUrnike == true)
                                 {
                                 <text>
-                                    FetchRenderExceptions(calendar, dateInfo.start).then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
+                                FetchRenderExceptions(calendar, dateInfo.start)
+                                    .then(result => { if (dateE.getMonth() > datum.getMonth()) { FetchRenderExceptions(calendar, datum ) } })
+                                    .then(result => { FetchRenderExceptions(calendar, dateInfo.end) });
                                 </text>
                                 }
-                                
+
                             }
+
+
 
                             });
                         calendar.render();
+                        //setTimeout(() => {
+                            if (mySlot == "00:30") { $(".fc-slotinterval-button").text("15'"); } else { $(".fc-slotinterval-button").text("30'"); }
+                        //}, 400);
                         //calendar.setOption("height", "1450px");
 
                         // gestures
                         var af = new AlloyFinger(document.getElementById('calendar'), {
                             swipe: function (evt) {
+                                if (cancelSwipe == false) {
+                                    switch (evt.direction) {
+                                        case "Left": calendar.next();
+                                            break;
+                                        case "Right": calendar.prev();
+                                            break;
+                                    }
+                                } else { cancelSwipe = false; }
+                            }
+                        });
+                        var af = new AlloyFinger(document.getElementById('myDatePickModal'), {
+                            swipe: function (evt) {
                                 switch (evt.direction) {
-                                    case "Left": calendar.next();
+                                    case "Left": dp.changeMonth(1);
                                         break;
-                                    case "Right": calendar.prev();
+                                    case "Right": dp.changeMonth(-1);
                                         break;
                                 }
                             }
@@ -788,19 +945,28 @@
                     });
         }
 
-            document.addEventListener('DOMContentLoaded', function() {
 
+
+
+
+
+
+
+            document.addEventListener('DOMContentLoaded', function() {
                 // load locale and Get flatpicker localized instance
                 console.info("loading dayjs,fp:", navigator.language.slice(0, 2));
                 loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
-                    .then(function () {
+                    .then(async function () {
                         dayjs.locale(navigator.language.slice(0, 2));
-                        loadCalendar();
+                        await initializeGapi().then((result) => { loadCalendar(); }).catch((err) => { toastr.error("Napaka pri komunikaciji z Googlom!\nPoskusite se odjaviti in ponovno prijaviti."); });
+
+
+
                         loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
                             .then(function () {
-                                fp = $(".flatpickr").flatpickr({
+                                fp = $("#dpstart").flatpickr({
                                     altInput: true,
-                                    //defaultDate: new Date(),
+                                    wrap:true,
                                     minDate: new Date(),
                                     locale: dayjs.locale(),
                                     plugins: [new confirmDatePlugin({ showAlways: true })],
@@ -824,6 +990,69 @@
                                     }
                                 });
 
+                                dp = $("#datepick").flatpickr({
+                                    dateFormat: "d.m.Y",
+                                    locale: dayjs.locale(),
+                                    defaultDate: new Date(),
+                                    time_24hr: true, inline: true,
+                                    onChange: function(selectedDates, dateStr, instance) {
+                                        console.log(selectedDates);
+                                        calendar.gotoDate(selectedDates[0]);
+                                        $("#myDatePickModal").modal("hide");
+                                    }
+                                });
+                                @{
+                                    if (Show3Calendars==true)
+                                    {
+                                    <text>
+                                const datum1 = new Date();
+                                const datum2 = (new Date()).setMonth(datum1.getMonth()+1);
+                                const datum3 = (new Date()).setMonth(datum1.getMonth()+2);
+                                dp1 = $("#datepick1").flatpickr({
+                                    dateFormat: "d.m.Y",
+                                    locale: dayjs.locale(),
+                                    defaultDate: datum1,
+                                    time_24hr: true, inline: true,
+                                    onChange: function(selectedDates, dateStr, instance) {
+                                        console.log(selectedDates);
+                                        calendar.gotoDate(selectedDates[0]);
+                                    }
+                                });
+                                dp2 = $("#datepick2").flatpickr({
+                                    dateFormat: "d.m.Y",
+                                    locale: dayjs.locale(),
+                                    defaultDate: datum2,
+                                    time_24hr: true, inline: true,
+                                    onChange: function(selectedDates, dateStr, instance) {
+                                        console.log(selectedDates);
+                                        calendar.gotoDate(selectedDates[0]);
+                                    }
+                                });
+                                dp3 = $("#datepick3").flatpickr({
+                                    dateFormat: "d.m.Y",
+                                    locale: dayjs.locale(),
+                                    defaultDate: datum3,
+                                    time_24hr: true, inline: true,
+                                    onChange: function(selectedDates, dateStr, instance) {
+                                        console.log(selectedDates);
+                                        calendar.gotoDate(selectedDates[0]);
+                                    }
+                                });
+                                    </text>
+                                    }
+                                 }
+
+                                tp = $("#txtEndTime").flatpickr({
+                                    allowInput: true,
+                                    enableTime: true,
+                                    noCalendar: true,
+                                    dateFormat: "H:i",
+                                    time_24hr: true,
+                                    onOpen: [
+                                        function (selectedDates, dateStr, instance) {
+                                            instance.setDate($("#txtEndTime").val());
+                                    }]
+                                });
                             });
                     });
 
@@ -832,7 +1061,6 @@
 
 
                 //fill client search
-                var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
                 $("#txtClientsearch").autocomplete({
                     minlength: 3,
                     delay: 200,
@@ -902,6 +1130,10 @@
                     document.addEventListener('fullscreenchange', exitHandler, false);
                     document.addEventListener('MSFullscreenChange', exitHandler, false);
                 }
+
+                $("#cmdSendLink").click(function (evt) {
+                    if (SendLink() != false) { $("#myModal").modal("hide"); }
+                });
             });
 
 
@@ -925,6 +1157,8 @@
 
 
         function newEvent(arg) {
+            PrepareModal('event');
+            SelectedClientID = 0;
             //clear form
             $("#txtClientsearch").val('');
             $("#txtClientMobile").val('');
@@ -940,14 +1174,25 @@
             $('#cmdDelete').addClass('invisible');
             $("#myModal").modal("show");
             $("#cmdSave").off('click').click(function (evt) {
-                    if (SaveNewEvent() != false) { $("#myModal").modal("hide"); }
-                });
+                if (SaveNewEvent() != false) { $("#myModal").modal("hide"); }
+            });
             $("#txtClientsearch").focus();
-
+            if (eventToMove !== null) {
+                $("#cmdMove").text('Prilepi');
+                $("#cmdMove").show();
+                $("#cmdMove").off('click').click(function (evt) {
+                    //move event here
+                    console.log('move event here')
+                    SaveMoveEvent();
+                    $("#myModal").modal("hide");
+            });
+            } else {$("#cmdMove").hide(); }
 
         }
 
         function showEvent(info) {
+            PrepareModal('event');
+            SelectedClientID = 0;
             //show Event info
             if (typeof info.event?.extendedProps?.client === "undefined") {
                 $("#txtClientsearch").val('');
@@ -960,8 +1205,14 @@
                 $("#txtClientMobile").val(client.mobile);
             }
             if (typeof info.event?.extendedProps?.notes === "undefined") {
-                $("#txtNotes").val('');
-                $("#txtNotes").tokenfield('setTokens', ' ');
+                if (info.event?.title.length > 0) {
+                    $("#txtNotes").val(info.event?.title);
+                    $("#txtNotes").tokenfield('setTokens', info.event?.title);
+                }
+                else {
+                    $("#txtNotes").val('');
+                    $("#txtNotes").tokenfield('setTokens', ' ');
+                }
             }
             else {
                 try {
@@ -986,6 +1237,13 @@
             $("#cmdDelete").off('click').click(function (evt) {
                 if (DeleteEvent(info) != false) { $("#myModal").modal("hide"); }
             });
+            
+            $("#cmdMove").off('click').click(function (evt) {
+                eventToMove = info;
+                $("#myModal").modal("hide"); 
+            });
+            $("#cmdMove").text('Premakni');
+            $("#cmdMove").show();
             hideKeyboard();
         }
 
@@ -1060,7 +1318,7 @@
                                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                                     dataType: "json",
                                     success: function (retval) {
-                                        if (retval.result == "OK") { toastr.info("Saved new client (" + retval.id.toString() + ")"); resolve(retval.id); }
+                                        if (retval.result == "OK") { toastr.info("Shranil novo stranko (" + retval.id.toString() + ")"); myClients.push( {id:retval.id, label:name,mobile:client.Mobile}); resolve(retval.id); }
                                         else { reject(retval.result); return false; }
                                     },
                                     error: function (xhr, status, error) {
@@ -1079,7 +1337,7 @@
         function SaveNewEvent() {
             if ($('#formEvent').valid()) {
                 //save client
-                getClientID().catch((result) => { toastr.info(result); }).then((result) => {
+                getClientID().catch((result) => { toastr.info(result); }).then((resultClientID) => {
                     //create new event
                     var calid = $('#cboGooCal').val();
                     var cas = $("#txtEndTime").val().split(":");
@@ -1088,15 +1346,17 @@
                     if (cas[1] != undefined) { endDate.setMinutes(cas[1]); }
                     var eventSummary = $("#txtClientsearch").val();
                     if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
-                    if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
+                    var selServices = getSelectedServicesNames();
+                    if (selServices.length > 0) { eventSummary = eventSummary + "\n" + selServices.join(' '); }
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
                         end: { 'dateTime': endDate },
                         summary: eventSummary,
                         "extendedProperties": {
-                            "private": {
-                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                notes: JSON.stringify($("#txtNotes").val())
+                            "shared": {
+                                clientid:resultClientID,
+                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
+                                notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
                         }
                     };
@@ -1113,17 +1373,21 @@
                             else {
                                 console.log("Created event: %s", response.id);
                                 //put on full calendar
-                                calendar.addEvent({
+                                var newevt=calendar.addEvent({
                                     id: response.id,
                                     title: newEvent.summary,
                                     start: newEvent.start.dateTime,
                                     end: newEvent.end.dateTime,
                                     resourceId: getResourceIdByGid(calid),
                                     extendedProps: {
-                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                        notes: JSON.stringify($("#txtNotes").val())
+                                        clientid:resultClientID,
+                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
+                                        notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                     }
                                 });
+                                if ($('#txtNotes').tokenfield('getTokens').length > 0) { if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); } }
+                                //notify client
+                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID);
                             }
                         });
                     });
@@ -1136,7 +1400,7 @@
         function SaveEvent(p_event) {
             if ($('#formEvent').valid()) {
                 //save client (if changed)
-                getClientID().catch((result) => { toastr.info(result); }).then((result) => {
+                getClientID().catch((result) => { toastr.info(result); }).then((resultClientID) => {
                     //create new event
                     var res = p_event.event.getResources();
                     var calid = $('#cboGooCal').val();
@@ -1147,15 +1411,17 @@
 
                     var eventSummary = $("#txtClientsearch").val();
                     if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
-                    if ($("#txtNotes").val().length != 0) { eventSummary = eventSummary + "\n" + $("#txtNotes").val() }
+                    var selServices = getSelectedServicesNames();
+                    if (selServices.length > 0) { eventSummary = eventSummary + "\n" + selServices.join(' '); }
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
                         end: { 'dateTime': endDate },
                         summary: eventSummary,
                         "extendedProperties": {
-                            "private": {
-                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                notes: JSON.stringify($("#txtNotes").val())
+                            "shared": {
+                                clientid:resultClientID,
+                                client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
+                                notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                             }
                         }
                     };
@@ -1172,17 +1438,20 @@
                             else {
                                 console.log("Created event: %s", response.id);
                                 //put on calendar
-                                calendar.addEvent({
+                                var newevt=calendar.addEvent({
                                     id: response.id,
                                     title: newEvent.summary,
                                     start: newEvent.start.dateTime,
                                     end: newEvent.end.dateTime,
                                     resourceId: getResourceIdByGid(calid),
                                     extendedProps: {
-                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: SelectedClientID, mobile: $("#txtClientMobile").val() }),
-                                        notes: JSON.stringify($("#txtNotes").val())
+                                        client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
+                                        notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
                                     }
                                 });
+                                if ($('#txtNotes').tokenfield('getTokens').length > 0) { if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); } }
+                                //notify client
+                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID);
                             }
                             //delete previous event
                             gapi.client.calendar.events.delete({
@@ -1198,26 +1467,114 @@
                                     p_event.event.remove();
                                     return true;
                                 }
-
                             });
                         });
                     });
                 });
+            } else { return false; }
+        }
 
+        function SaveMoveEvent() {
+            if ($('#formEvent').valid()) {
+                //move event
+                var res = eventToMove.event.getResources();
+                var oldCalId = res[0].extendedProps.gid;
+                var newCalId = $('#cboGooCal').val();
+                var oldStart = eventToMove.event.start;
+                var oldEnd = eventToMove.event.end;
+                var newStart = new Date(fp.selectedDates[0]);
+                var diffMs = oldEnd.getTime()-oldStart.getTime();
+                var newEnd = new Date(newStart.getTime() + diffMs);
 
+                var eventPatch = {
+                    start: { 'dateTime': newStart },
+                    end: { 'dateTime': newEnd }
+                };
+                var oldEvent = calendar.getEventById(eventToMove.event.id);
+                var client = null;
+                if (typeof oldEvent.extendedProps?.client !== "undefined") {
+                    client = JSON.parse(oldEvent.extendedProps.client);
+                }
+
+                refreshGAPIToken().then(() => {
+                    //move event first
+                    if (newCalId != oldCalId) {
+                        var eventToUpdate = gapi.client.calendar.events.move({
+                            "calendarId": oldCalId,
+                            "eventId": eventToMove.event.id,
+                            "destination": newCalId
+                        }).execute(function (response) {
+                            if (response.error || response == false) {
+                                toastr.error("Napaka:gapi.client.calendar.events.move");
+                                return;
+                            }
+                            else {
+                                console.log("Moved event: %s", eventToMove.event.id);
+                                oldEvent.setResources(getResourceIdByGid(newCalId));
+
+                                diffMs = newStart.getTime() - oldStart.getTime();
+                                if (diffMs != 0) {
+                                    //update event 
+                                    var eventToUpdate = gapi.client.calendar.events.patch({
+                                        "calendarId": newCalId,
+                                        "eventId": eventToMove.event.id,
+                                        "resource": eventPatch
+                                    }).execute(function (response) {
+                                        if (response.error || response == false) {
+                                            toastr.error("Napaka:gapi.client.calendar.events.patch");
+                                            return;
+                                        }
+                                        else {
+                                            console.log("Updated event after move: %s", response.id);
+                                            oldEvent.moveDates(diffMs);
+                                            eventToMove = null;
+                                            toastr.success("Premaknil");
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        diffMs = newStart.getTime() - oldStart.getTime();
+                        if (diffMs != 0) {
+                            //update event 
+                            var eventToUpdate = gapi.client.calendar.events.patch({
+                                "calendarId": newCalId,
+                                "eventId": eventToMove.event.id,
+                                "resource": eventPatch
+                            }).execute(function (response) {
+                                if (response.error || response == false) {
+                                    toastr.error("Napaka:gapi.client.calendar.events.patch");
+                                    return;
+                                }
+                                else {
+                                    console.log("Updated event after move: %s", response.id);
+                                    oldEvent.moveDates(diffMs);
+                                    eventToMove = null;
+                                    toastr.success("Premaknil");
+                                }
+                            });
+                        }
+                    }
+                });
+                if (client !== null) { notifyClient(newStart, client.mobile, client.value); }
             } else { return false; }
         }
 
 
         //init services tags
         function initServicesTags() {
-
             //get tags
-            var myTags = [];
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "get",
-                    url: apiURL + "/api/services/@Html.Raw(Model.Location.Id)/",
+                    url: apiURL + "/api/services/@{ val = "";
+                if (Model.Settings.TryGetValue("cbUseSingleListOfServices", out val) == true)
+                {
+                    if (val.ToLower() == "false") {@Html.Raw(Model.Location.Id+"/"); } else {@Html.Raw("0/"); }
+                }
+            }",
                     contentType: "application/json; charset=utf-8",
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
@@ -1225,18 +1582,33 @@
                     success: function (result) {
                         var retval = [];
                         result.forEach(function (item) {
-                            retval.push(item.name)
+                            var token = {};
+                            token.value = item.id;
+                            token.minutes = item.minutes;
+                            token.color = item.color;
+                            token.label = item.name;
+                            if (item.minutes > 0) { token.label=token.label+' ('+item.minutes+' min)'}
+                            retval.push(token)
                         });
-                        myTags = retval;
 
                         $("#txtNotes").tokenfield({
                             autocomplete: {
-                                source: myTags,
+                                source: retval,
                                 delay: 100
                             },
                             showAutocompleteOnFocus: true, createTokensOnBlur: true
                         })
 
+                      $('#txtNotes').on('tokenfield:createdtoken', function (e) {
+                          $('#txtMinDuration').val(getServiceDuration());
+                          setEndTime("#txtEndTime", getServiceDuration());
+
+                      })
+                        $('#txtNotes').on('tokenfield:removedtoken', function (e) {
+                            $('#txtMinDuration').val(getServiceDuration());
+                            setEndTime("#txtEndTime", getServiceDuration());
+
+                      })
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Error getting data:" + error);
@@ -1244,8 +1616,194 @@
                 });
             });
         }
+        function setEndTime(p_selector, p_Minutes) {
+            if (p_Minutes != 0) {
+                var endDate = new Date(fp.selectedDates[0]);
+                var newEndTime = new Date(endDate.getTime() + p_Minutes * 60000);
+                var cHour = newEndTime.getHours();
+                var cMinuts = newEndTime.getMinutes();
+                var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+                $(p_selector).val(outStr);
+            }
+        }
+
+        function getServiceDuration() {
+            var maxDur = 0;
+            $('#txtNotes').tokenfield('getTokens').forEach(function (arrayItem, idx) {
+                if (arrayItem.hasOwnProperty('minutes')) {
+                    @{
+                        if (Model.Settings.TryGetValue("AppointmentsSumServicesLength", out val) == true)
+                        {
+                            if (bool.Parse(val) == true)
+                            { @Html.Raw("maxDur +=  arrayItem.minutes;");}
+                            else
+                            { @Html.Raw("maxDur = Math.max(maxDur, arrayItem.minutes);");}
+
+                        }
+
+                    }
+
+                }
+            });
+            return maxDur;
+        }
+        function getSelectedServicesNames()
+        {
+            var retval = [];
+            $('#txtNotes').tokenfield('getTokens').forEach(function (arrayItem, idx) {
+                if (arrayItem.hasOwnProperty('minutes')) {
+                    retval.push(arrayItem.label.replace('('+arrayItem.minutes+' min)',''));
+                } else { retval.push(arrayItem.label); }
+            });
+            return retval;
+        }
+
+
     //#endregion
 
+        function showSendLink() {
+            PrepareModal('link');
+            $("#myModal").modal("show");
+        }
+
+        function PrepareModal(p_prepareFor) {
+            if (p_prepareFor == 'event') {
+                $('#cmdDelete').show();
+                $('#cmdSave').show();
+                $('#cmdSendLink').hide();
+                $('#rowMinDuration').hide();
+                $('#rowDT').show();
+                $("#cboGooCal option[value='0']").remove();
+                $('#cboGooCal').selectpicker('refresh');
+            }
+            else {
+                $('#cmdSendLink').show();
+                $('#cmdDelete').hide();
+                $('#cmdSave').hide();
+                $('#rowMinDuration').show();
+                $('#rowDT').hide();
+                $("#cboGooCal").prepend("<option value='0' selected='selected'>Kdorkoli</option>");
+                $('#cboGooCal').selectpicker('refresh');
+            }
+        }
+
+        function SendLink(p_event) {
+            if ($('#formEvent').valid()) {
+                //send Link
+                var appointmentToken = {};
+                appointmentToken.Token = '';
+                appointmentToken.Service = getSelectedServicesNames().join(' ');
+                appointmentToken.Minutes = $('#txtMinDuration').val();
+                appointmentToken.CompanyId = 0;
+                appointmentToken.LocationId = parseInt($("#cboLocations").val());;
+                appointmentToken.ClientId = SelectedClientID;
+                appointmentToken.AppUserId = 0;
+                appointmentToken.WorkplaceId = $('#cboGooCal').find('option:selected').attr('data-workplaceid');
+                getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(appointmentToken),
+                    url: apiURL + "/api/appointment-tokens/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (retval) {
+                        if (retval.hasOwnProperty('id')) { toastr.success("Link sent!"); }
+                        else { toastr.error("Link NOT sent!"); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Error saving client:" + error.toString());
+                        return false;
+                    }
+                });
+                });
+
+
+
+            } else { return false; }
+        }
+
+        function getSMSMessage(p_Start) {
+            @{ string msgTemplate = "";
+                if (Model.Settings.TryGetValue("SMS_GOO_Msg", out msgTemplate) == false)
+                {
+                    msgTemplate = "Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA>. Veselimo se vašega obiska!";
+                }
+                @Html.Raw("var msgTemplate=`"+msgTemplate+"`;");
+            }
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            if (dayjs(p_Start).format("DD-MM-YYYY") == dayjs(today).format("DD-MM-YYYY"))
+            { msgTemplate=msgTemplate.replace("<DANESJUTRI>","danes"); }
+            else
+            {
+                if (dayjs(p_Start).format("DD-MM-YYYY") == dayjs(tomorrow).format("DD-MM-YYYY"))
+            { msgTemplate=msgTemplate.replace("<DANESJUTRI>","jutri"); }
+            else
+                {
+                    const wd = ['v nedeljo', 'v ponedeljek', 'v torek', 'v sredo','v četrtek', 'v petek', 'v soboto'];
+                    msgTemplate = msgTemplate.replace("<DANESJUTRI>", wd[p_Start.getDay()]);
+                }
+            }
+            msgTemplate = msgTemplate.replace("<URA>", dayjs(p_Start).format("LT"));
+            msgTemplate = msgTemplate.replace("<DATUM>", dayjs(p_Start).format("l"));
+            return msgTemplate;
+        }
+
+        function QueueSMS(p_Start, p_Mobile, p_ClientId) {
+
+            var smsc = {};
+            smsc.CampaignType = 3; //direct without approval
+            smsc.LocationId = $("#cboLocations").val();
+            smsc.MsgTxt = getSMSMessage(p_Start);
+            smsc.SendAfter = dayjs.utc().local();
+            smsc.Recipients = [p_Mobile + '|' + p_ClientId];
+
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(smsc),
+                    url: apiURL + "/api/Sms/QueueSmsCampaign",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") {
+                            toastr.success('SMS uspešno poslan');
+                        }
+                        else { toastr.error("Napaka pri pošiljanju:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka pri pošiljanju:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+        }
+
+        function notifyClient(p_Start, p_Mobile, p_ClientId) {
+            
+            @{ val = "";
+                if (Model.Settings.TryGetValue("SMS_AppointmentSMS", out val) == true)
+                {
+                    if (val.ToLower() != "true") {@Html.Raw("return;"); }
+                }
+            }
+            if (typeof p_Start === "undefined") { console.log('Notify client start is undefined');  return; }
+            if (p_Mobile != "") {
+                    let cancelsms = false;
+                    let toast = toastr.warning("Poslal bom SMS " + p_Mobile + ". <br\><small>(Klik za preklic)</small>", "",
+                    {
+                        timeOut: 7000, extendedTimeOut: 7000,
+                        progressBar: true,
+                        closeButton: true,
+                        onHidden: function () { if (cancelsms == false) { QueueSMS(p_Start, p_Mobile, p_ClientId); } },
+                        onclick: function () { cancelsms = true; }
+                    });
+                }
+
+        }
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoadOkay()" onerror="gapiLoadFail(event)"></script>
 

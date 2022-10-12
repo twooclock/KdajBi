@@ -1,0 +1,225 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+@inject KdajBi.Web.Services.IApiTokenProvider apiTP
+@model vmBooking
+@{
+  Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+  ViewData["Title"] = "Naročilo";
+}
+
+@section styles{
+
+<style>
+  .appointment {
+    cursor: pointer;
+  }
+
+  .appointment.card:hover {
+    background: #007bff22;
+  }
+</style>
+}
+
+
+<!-- page content -->
+
+<div class="card mt-5">
+  <div class="card-body login-card-body">
+    <h1 class="mb-2">KdajBi naročanje</h1>
+    <div class="row">
+      <div class="col">
+        <h3>@Html.Raw(@Model.token.Company.Name)</h3>
+      </div>
+      <div class="col" id="appointments">
+        <div class="mb-2 align-center d-flex justify-content-between align-items-center">
+          <button type="button" class="btn btn-outline-primary" id="previous-day"><</button>
+              <span id="selected-date"></span>
+              <button type="button" class="btn btn-outline-primary" id="next-day">></button>
+        </div>
+        <div id="no-appointments" class="card card-outline card-primary p-1" style="display: none">
+          <div class="card-body text-center">
+            <h4>Ni prostih terminov</h4>
+          </div>
+        </div>
+        <div id="appointments-loader" class="card card-outline card-primary p-1" style="display: none">
+          <div class="card-body text-center">
+            <div class="spinner-border" role="status">
+              <span class="sr-only">Nalagam...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="select-appointment" tabindex="-1" aria-labelledby="select-appointment-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="select-appointment-label">Izbran termin</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="font-size: 18px">
+        Ali ste prepričani, da se želite naročiti na termin <br /><b><span id="selected-appointment-date"></span> ob <span id="selected-appointment-time"></span></b>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" id="create-appointment" class="btn btn-primary">Naroči se</button>
+      </div>
+    </div>
+  </div>
+</div>
+@section scripts{
+<script type="text/javascript">
+  var apiURL = "@Html.Raw(apiTP.Settings().BaseAddress)"
+
+  var token = "@Html.Raw(@Model.token.Token)";
+  var date = new Date();
+
+  $( document ).ready( function () {
+    $( "#previous-day" ).click( function () {
+      changeDate( -1 )
+    } );
+    $( "#next-day" ).click( function () {
+      changeDate( 1 )
+    } );
+
+    $('#select-appointment').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget);
+      var appointment = button.data('appointment');
+      var modal = $(this)
+      modal.find('#selected-appointment-date').text(formatDate(date));
+      modal.find('#selected-appointment-time').text(appointment);
+      modal.find('#create-appointment').click(function () {
+        $.ajax( {
+          type: "POST",
+          url: apiURL + "/api/booking/" + token,
+          contentType: "application/json; charset=utf-8",
+          data: JSON.stringify({
+            "date": date.toISOString(),
+            "timeSlot": appointment
+          }),
+          success: function ( result ) {
+            window.location.href = "/booking-successful";
+          },
+          error: function ( error ){
+            // TODO
+          }
+        });
+      });
+    })
+
+    var dateString = getQueryParameter( 'date' );
+    dateFormatRegex = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
+
+    if ( dateFormatRegex.test( dateString ) ) {
+      date = new Date( dateString );
+    }
+
+    loadFreeAppointments();
+  } );
+  function formatDate( date ) {
+    var days = [
+      'Nedelja',
+      'Ponedeljek',
+      'Torek',
+      'Sreda',
+      'Četrtek',
+      'Petek',
+      'Sobota'
+    ];
+    var months = [
+      'januar',
+      'februar',
+      'marec',
+      'april',
+      'maj',
+      'junij',
+      'julij',
+      'avgust',
+      'september',
+      'oktober',
+      'november',
+      'december',
+    ];
+
+    return days[date.getDay()] + ", " + date.getDate() + ". " + months[date.getMonth()];
+  }
+
+  function loadFreeAppointments() {
+    $( "#selected-date" ).text( formatDate( date ) );
+
+    $( "#previous-day" ).prop( "disabled", false );
+    if ( date <= new Date() ) {
+      $( "#previous-day" ).prop( "disabled", true );
+    }
+
+    $( ".appointment" ).remove();
+    $( "#no-appointments" ).hide();
+    $( "#appointments-loader" ).show();
+
+    $.ajax( {
+      type: "GET",
+      url: apiURL + "/api/booking/" + token + "?date=" + date.toISOString().substring( 0, 10 ),
+      contentType: "application/json; charset=utf-8",
+      success: function ( result ) {
+        $( "#appointments-loader" ).hide();
+        $( "#no-appointments" ).hide();
+        if ( result.length === 0 ) {
+          $( "#no-appointments" ).show();
+          return;
+        }
+        result.forEach( appointment => {
+          $( "#appointments" ).append( `
+          <div 
+            class="appointment card card-outline card-primary p-1" 
+            data-toggle="modal" 
+            data-target="#select-appointment" 
+            data-appointment="` + formatAppointmentDate( appointment ) + `"
+          >
+            <div class="card-body text-center">
+              <h4>` + formatAppointmentDate( appointment ) + `</h4>
+            </div>
+          </div>
+          `);
+        } );
+      },
+      error: function ( xhr, status, error ) {
+        $( "#appointments-loader" ).hide();
+        $( "#no-appointments" ).show();
+        // TODO: Show invalid token error
+        return false;
+      }
+    } );
+  }
+
+  function formatAppointmentDate( appointment ) {
+    var start = new Date( appointment.start );
+    var end = new Date( appointment.end );
+
+    return start.getHours() + ":"
+      + ( start.getMinutes() < 10 ? "0" + start.getMinutes() : start.getMinutes() )
+      + " - " + end.getHours() + ":"
+      + ( end.getMinutes() < 10 ? "0" + end.getMinutes() : end.getMinutes() );
+  }
+
+  function changeDate( noOfDays ) {
+    var newDate = new Date( date );
+    newDate.setDate( newDate.getDate() + noOfDays );
+    var url = new URL( window.location.href );
+    url.searchParams.set( "date", newDate.toISOString().substring( 0, 10 ) ); // setting your param
+    window.history.pushState( { path: url.href }, '', url.href );
+    date = newDate;
+    loadFreeAppointments();
+  }
+
+  function getQueryParameter( name ) {
+    var results = new RegExp( '[\?&]' + name + '=([^&#]*)' )
+      .exec( window.location.search );
+
+    return ( results !== null ) ? results[1] || 0 : false;
+  }
+</script>
+}

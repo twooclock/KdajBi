@@ -13,6 +13,9 @@ namespace KdajBi.Core.Models
         [ForeignKey("Company"), Required] //not really necessary but should be easier to navigate
         public long CompanyId { get; set; }
 
+        [ForeignKey("Location")]
+        public long? LocationId { get; set; }
+
         [ForeignKey("AppUser"), Required]
         public long UserId { get; set; }
 

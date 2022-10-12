@@ -32,6 +32,7 @@ namespace KdajBi.GoogleHelper
         }
     }
 
+    //used to communicate with google via GoogleAuthToken (user must be authenticated via Google)
     public class GoogleService : IDisposable
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
@@ -64,14 +65,14 @@ namespace KdajBi.GoogleHelper
                 var credential = new UserCredential(flow, p_userid, tokenResponse);
                 var dobil = credential.RefreshTokenAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-                if (credential.Token.RefreshToken != null) { Logger.Info("GOT New token.RefreshToken:{0}", credential.Token.RefreshToken.ToString()); }
-
                 googleAuthToken.access_token = credential.Token.AccessToken;
                 if (credential.Token.RefreshToken != null)
                 {
                     googleAuthToken.refresh_token = credential.Token.RefreshToken;
+                    Logger.Info("GOT New token.RefreshToken:{0}", credential.Token.RefreshToken.ToString());
                 }
-                googleAuthToken.expires_at = credential.Token.IssuedUtc.AddSeconds((double)credential.Token.ExpiresInSeconds);
+                if (credential.Token.ExpiresInSeconds.HasValue)
+                { googleAuthToken.expires_at = credential.Token.IssuedUtc.AddSeconds((double)credential.Token.ExpiresInSeconds); }
             }
         }
 
@@ -89,12 +90,12 @@ namespace KdajBi.GoogleHelper
                 {
                     var request = calendarService.CalendarList.List();
                     request.OauthToken = googleAuthToken.access_token;
-                    request.MinAccessRole = CalendarListResource.ListRequest.MinAccessRoleEnum.Writer;
+                    request.MinAccessRole = CalendarListResource.ListRequest.MinAccessRoleEnum.Reader;
                     retval = request.Execute();
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex, "Can't getCalendars()");
+                    Logger.Error(ex, "Can't getCalendars() with token that expires on "+ googleAuthToken.expires_at.ToString() );
                 }
             }
             return retval;

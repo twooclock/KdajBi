@@ -30,6 +30,12 @@ namespace KdajBi.Core
         public DbSet<WorkplaceScheduleException> WorkplaceScheduleExceptions { get; set; }
 
         public DbSet<ContactMail> ContactMails { get; set; }
+        
+        public DbSet<AppointmentToken> AppointmentTokens { get; set; }
+        public DbSet<BookingConfirmation> BookingConfirmations { get; set; }
+
+        public DbSet<AppMessage> AppMessages { get; set; }
+        public DbSet<UserAppMessage> UserAppMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -53,6 +59,8 @@ namespace KdajBi.Core
                     .HasForeignKey(ur => ur.CompanyId)
                     .IsRequired();
             });
+            //builder.Entity<Location>().HasOne(s=>s.Schedule).WithOne().IsRequired();
+            //builder.Entity<SmsCampaign>().HasOne(s => s.Company).WithOne().IsRequired();
 
             builder.Entity<ClientTag>().HasIndex(p => new { p.ClientId, p.TagId }).IsUnique(true);
             builder.Entity<Tag>().HasIndex(p => new { p.Title }).IsUnique(true);

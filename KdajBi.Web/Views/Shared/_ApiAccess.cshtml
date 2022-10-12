@@ -6,8 +6,7 @@
 var apiURL="@Html.Raw(apiTP.Settings().BaseAddress)"
 var apiToken=JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.Token))')
 var apiUser='@Html.Raw(@UserManager.GetUserName(User))';
-
- async function getAPIToken() {
+ async function refreshAPIToken() {
     return new Promise(function(resolve, reject) {
             var tnow = (621355968e9 + 10000 + (new Date()).getTime() * 1e4);
             var reqdata = { Token: apiToken.RefreshToken, UserEmail: apiUser };
@@ -32,6 +31,13 @@ var apiUser='@Html.Raw(@UserManager.GetUserName(User))';
                         reject(error);
                     }
                 });
+
             }
         });
     }
+
+async function getAPIToken() {
+    return new Promise(function(resolve, reject) {
+        refreshAPIToken().then((result) => {  console.log('new api TokenExpiresAt:'+result.expires_at ); return result; }).then((result) => { resolve(result) }).catch((error) => { toastr.error("Napaka:" + error.toString()); reject(); });
+    });
+}

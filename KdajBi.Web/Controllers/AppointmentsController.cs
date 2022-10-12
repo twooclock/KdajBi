@@ -30,7 +30,7 @@ namespace KdajBi.Web.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Index()
+        public IActionResult Index(string? date)
         {
             try
             {
@@ -38,14 +38,36 @@ namespace KdajBi.Web.Controllers
                 {
                     if (LocationIsMine(DefaultLocationId()))
                     {
-                        const long scheduletype = 0;
+                        long scheduletype = 0;
+                        bool alternateWeeks = (SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbEmployee_AlternatingWeeks", "false")) == "true";
+                        if (alternateWeeks == true) { scheduletype = 1; }
                         try
                         {
                             vmAppointments myVM = new vmAppointments();
                             myVM.Location = _context.Locations.Include(s => s.Schedule).Include(w => w.Workplaces).FirstOrDefault(x => x.Id == DefaultLocationId());
-
                             if (myVM.Location != null)
                             {
+                                myVM.Location.Schedule = _context.Schedules.Find(myVM.Location.ScheduleId);
+                                //load appropriate settings
+                                myVM.Settings = new Dictionary<string, string>();
+                                myVM.Settings.Add("SMS_AppointmentSMS", "false"); //mind missing sms settings if set to true!
+                                myVM.Settings.Add("SMS_GOO_Msg", "Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA>. Veselimo se vašega obiska!");
+                                SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), DefaultLocationId(), myVM.Settings);
+                                //load setting for null location
+                                var globalSettings = new Dictionary<string, string>();
+                                globalSettings.Add("cbUseSingleListOfServices", "false");
+                                globalSettings.Add("cbAppointments_ShowTimetables", "false");
+                                globalSettings.Add("cbEmployee_AlternatingWeeks", "false");
+                                globalSettings.Add("AppointmentsSumServicesLength", "false");
+                                globalSettings.Add("AppointmentsShow3Calendars", "false");
+                                globalSettings.Add("AppointmentsRowHeight", "");
+                                SettingsHelper.getSettings(_context, _CurrentUserCompanyID(),null, globalSettings);
+                                foreach (var item in globalSettings)
+                                {
+                                    myVM.Settings.Add(item.Key,item.Value);
+                                }
+                                //myVM.Settings.Add("cbUseSingleListOfServices", SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbUseSingleListOfServices", "false"));
+                                //load google calendars
                                 var gt = _CurrentUserGooToken();
                                 if (gt != null)
                                 {
@@ -53,81 +75,117 @@ namespace KdajBi.Web.Controllers
                                     using (GoogleService service = new GoogleService(User.Identity.Name, gt))
                                     {
                                         var cals = service.getCalendars().Items;
-                                        for (int i = myVM.Location.Workplaces.Count - 1; i >= 0; i--)
+                                        if (cals != null)
                                         {
-                                            var item = myVM.Location.Workplaces.ElementAt(i);
-                                            if (item.GoogleCalendarID != null)
+                                            for (int i = myVM.Location.Workplaces.Count - 1; i >= 0; i--)
                                             {
-                                                myVM.GoogleCalendars.Add(item.GoogleCalendarID, item.Name);
-                                                //get calendar events
-                                                List<Event> calEvents = service.GetEvents(item.GoogleCalendarID, DateTime.Now);
-
-                                                foreach (var calEvent in calEvents)
+                                                var item = myVM.Location.Workplaces.ElementAt(i);
+                                                if (cals.Where(c => c.Id == item.GoogleCalendarID).Count() == 0) { item.GoogleCalendarID = null; }
+                                                if (item.GoogleCalendarID != null)
                                                 {
-                                                    var start = calEvent.Start.DateTime.Value;
-                                                    var end = calEvent.End.DateTime.Value;
-                                                    var newEvent = new FullCalendar.Event()
-                                                    {
-                                                        id = calEvent.Id,
-                                                        resourceId = item.Id.ToString(),
-                                                        title = calEvent.Summary,
-                                                        start = start.ToString("yyyy-MM-ddTHH:mm:ss"),
-                                                        end = end.ToString("yyyy-MM-ddTHH:mm:ss"),
-                                                        allDay = false
+                                                    myVM.GoogleCalendars.Add(new Tuple<string, string, long>(item.GoogleCalendarID, item.Name, item.Id));
+                                                    //get calendar events
+                                                    List<Event> calEvents = service.GetEvents(item.GoogleCalendarID, DateTime.Now);
 
-                                                    };
-                                                    if (calEvent.ExtendedProperties != null)
+                                                    foreach (var calEvent in calEvents)
                                                     {
-                                                        newEvent.extendedProps = (Dictionary<string, string>)calEvent.ExtendedProperties.Private__;
-                                                        if (newEvent.extendedProps.ContainsKey("client"))
+                                                        //ignore all day events
+                                                        if (calEvent.Start.DateTime != null && calEvent.End.DateTime != null)
                                                         {
-                                                            var client = newEvent.extendedProps["client"];
-                                                            try
+                                                            var start = calEvent.Start.DateTime.Value;
+                                                            var end = calEvent.End.DateTime.Value;
+                                                            var newEvent = new FullCalendar.Event()
                                                             {
-                                                                dynamic myClient = JsonConvert.DeserializeObject<dynamic>(client);
-                                                                newEvent.title = myClient.label;
-                                                                if (myClient.mobile.ToString().Length > 0) { newEvent.title = newEvent.title + " (" + myClient.mobile + ")"; }
-                                                            }
-                                                            catch (Exception ex)
-                                                            {
-                                                                newEvent.title = client;
-                                                            }
-                                                        }
-                                                        if (newEvent.extendedProps.ContainsKey("notes"))
-                                                        {
-                                                            try
-                                                            {
-                                                                newEvent.title = newEvent.title + "\r\n" + JsonConvert.DeserializeObject<string>(newEvent.extendedProps["notes"]);
-                                                            }
-                                                            catch (Exception)
-                                                            {
-                                                                newEvent.title = newEvent.title + "\r\n" + newEvent.extendedProps["notes"];
-                                                            }
-                                                        }
+                                                                id = calEvent.Id,
+                                                                resourceId = item.Id.ToString(),
+                                                                title = calEvent.Summary,
+                                                                start = start.ToString("yyyy-MM-ddTHH:mm:ss"),
+                                                                end = end.ToString("yyyy-MM-ddTHH:mm:ss"),
+                                                                allDay = false
 
+                                                            };
+                                                            if (calEvent.ExtendedProperties != null)
+                                                            {
+                                                                newEvent.extendedProps = (Dictionary<string, string>)calEvent.ExtendedProperties.Shared;
+                                                                if (newEvent.extendedProps != null)
+                                                                {
+                                                                    //if (newEvent.extendedProps.ContainsKey("client"))
+                                                                    //{
+                                                                    //    var client = newEvent.extendedProps["client"];
+                                                                    //    try
+                                                                    //    {
+                                                                    //        dynamic myClient = JsonConvert.DeserializeObject<dynamic>(client);
+                                                                    //        newEvent.title = myClient.label;
+                                                                    //        if (myClient.mobile.ToString().Length > 0) { newEvent.title = newEvent.title + " (" + myClient.mobile + ")"; }
+                                                                    //    }
+                                                                    //    catch (Exception ex)
+                                                                    //    {
+                                                                    //        newEvent.title = client;
+                                                                    //    }
+                                                                    //}
+                                                                    if (newEvent.extendedProps.ContainsKey("notes"))
+                                                                    {
+                                                                        try
+                                                                        {
+                                                                            dynamic myNotes = JsonConvert.DeserializeObject<dynamic>(newEvent.extendedProps["notes"]);
+                                                                            //foreach (var myNote in myNotes)
+                                                                            //{
+                                                                            //    if (myNote.minutes != null)
+                                                                            //    { newEvent.title = newEvent.title + "\r\n" + myNote.label.Value.Replace("(" + myNote.minutes.Value + " min)", ""); }
+                                                                            //    else
+                                                                            //    { newEvent.title = newEvent.title + "\r\n" + myNote.label.Value; }
+                                                                            //}
+
+                                                                            if (myNotes[0].color != null)
+                                                                            { newEvent.color = "#" + myNotes[0].color.Value; }
+
+                                                                        }
+                                                                        catch (Exception)
+                                                                        {
+                                                                            //newEvent.title = newEvent.title + "\r\n" + newEvent.extendedProps["notes"];
+                                                                        }
+                                                                    }
+                                                                }
+
+                                                            }
+                                                            events.Add(newEvent);
+                                                        }
                                                     }
-                                                    events.Add(newEvent);
+                                                    //get schedule bgEvents
+                                                    setBGEvents(myVM, item.Id, scheduletype);
+                                                    myVM.AddcalEvents(myVM.calBGEvents);
                                                 }
-                                                //get schedule bgEvents
-                                                setBGEvents(myVM, item.Id, scheduletype);
-                                                myVM.AddcalEvents(myVM.calBGEvents);
-                                            }
-                                            else { 
-                                                myVM.Location.Workplaces.Remove(item); }
-                                            //get calendar color
-                                            foreach (var cal in cals)
-                                            {
-                                                if (cal.Id == item.GoogleCalendarID) { item.GoogleCalendarColor = cal.BackgroundColor; }
+                                                else
+                                                {
+                                                    myVM.Location.Workplaces.Remove(item);
+                                                }
+                                                //get calendar color
+                                                foreach (var cal in cals)
+                                                {
+                                                    if (cal.Id == item.GoogleCalendarID) { item.GoogleCalendarColor = cal.BackgroundColor; }
+                                                }
                                             }
                                         }
-                                        
+                                        else {
+                                            //didnt get any google calendars
+                                            //either user has any
+                                            //or google error occured
+                                            _logger.LogInformation("No google calendars for " + User.Identity.Name);
+                                        }
+
                                     }
 
                                     myVM.AddcalEvents(Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray()));
 
-                                    //myVM.calEvents = Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray());
                                 }
-                                myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName, mobile = p.Mobile }).ToList()).Replace(@"\", @"\\");
+
+                                Dictionary<string, string> mySettings = new Dictionary<string, string>();
+                                mySettings.Add("cbUseSingleListOfClients", "false");
+                                SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), null, mySettings);
+                                if (mySettings["cbUseSingleListOfClients"] == "false")
+                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName, mobile = p.Mobile }).ToList()).Replace(@"\", @"\\"); }
+                                else
+                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName, mobile = p.Mobile }).ToList()).Replace(@"\", @"\\"); }
 
                                 myVM.Token = _GetToken();
                                 return View(myVM);
@@ -138,7 +196,7 @@ namespace KdajBi.Web.Controllers
                         catch (Exception ex)
                         {
                             //TODO:expired google credentials?
-                            _logger.LogError(ex, "Error /home/");
+                            _logger.LogError(ex, "Error AppointmentsController.Index (throwing next error)");
                             throw;
                         }
                     }
@@ -148,11 +206,13 @@ namespace KdajBi.Web.Controllers
                 else
                 {
                     _logger.LogError("Error User.identity is NOT Authenticated!");
-                    return Redirect("~/LandingPage/index.html"); }
+                    return Redirect("~/LandingPage/index.html");
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error /Appointments/index");
+                //TODO:not all errors are solved with user logoff/logon! FIX!
                 return Redirect("~/LandingPage/index.html");
             }
 
@@ -168,7 +228,7 @@ namespace KdajBi.Web.Controllers
                 myVM.Workplace = _context.Workplaces.Where(w => w.Id == p_WorkplaceId).SingleOrDefault();
                 myVM.Workplace.WorkplaceSchedules = _context.WorkplaceSchedules.Include(s => s.Schedule).Where(wps => wps.WorkplaceId == p_WorkplaceId).ToList();
                 myVM.Location = _context.Locations.Include(s => s.Schedule).Where(l => l.Id == myVM.Workplace.LocationId).SingleOrDefault();
-
+                myVM.Location.Schedule = _context.Schedules.Find(myVM.Location.ScheduleId);
                 var events = new List<FullCalendar.rEventShow>();
                 var events2 = new List<FullCalendar.rEventShow>();
 

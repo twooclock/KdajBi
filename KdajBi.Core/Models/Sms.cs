@@ -18,8 +18,12 @@ namespace KdajBi.Core.Models
         public int UserId { get; set; }
         public virtual AppUser AppUser { get; set; }
 
-        [ForeignKey("CompanyId"), Required]
+        [ForeignKey("Company"), Required]
+        public long CompanyId { get; set; }
         public virtual Company Company { get; set; }
+
+        [ForeignKey("Location")]
+        public long? LocationId { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Guid { get; set; }
@@ -32,6 +36,8 @@ namespace KdajBi.Core.Models
 
         [MaxLength(640), Required]
         public string MsgTxt { get; set; }
+
+        public int MsgSegments { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime? SendAfter { get; set; }
@@ -70,14 +76,18 @@ namespace KdajBi.Core.Models
         [MaxLength(15),Required]
         public string Recipient { get; set; }
 
+        public long ClientId { get; set; }
+
         [MaxLength(100)]
         public string ApiResponse { get; set; }
 
 
 
         public SmsMsg() { }
-        public SmsMsg(string p_Recipient) {
-            Recipient = p_Recipient;
+
+        public SmsMsg(string p_Recipient, long p_ClientId)
+        {
+            Recipient = p_Recipient; ClientId = p_ClientId;
         }
 
     }

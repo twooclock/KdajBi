@@ -7,9 +7,9 @@ namespace KdajBi.Core.Models
 {
     public enum ScheduleType
     {
-        AllWeeks=0,
-        OddWeeks=1,
-        EvenWeeks=2
+        AllWeeks = 0,
+        OddWeeks = 1,
+        EvenWeeks = 2
     }
     public class Schedule : BaseModel
     {
@@ -64,8 +64,8 @@ namespace KdajBi.Core.Models
 
         public string minTime()
         {
-             DateTime currMin = DateTime.MaxValue;
-            if (MondayStart!= MondayEnd && MondayStart.TimeOfDay < currMin.TimeOfDay) { currMin = MondayStart; }
+            DateTime currMin = DateTime.MaxValue;
+            if (MondayStart != MondayEnd && MondayStart.TimeOfDay < currMin.TimeOfDay) { currMin = MondayStart; }
             if (TuesdayStart != TuesdayEnd && TuesdayStart.TimeOfDay < currMin.TimeOfDay) { currMin = TuesdayStart; }
             if (WednesdayStart != WednesdayEnd && WednesdayStart.TimeOfDay < currMin.TimeOfDay) { currMin = WednesdayStart; }
             if (ThursdayStart != ThursdayEnd && ThursdayStart.TimeOfDay < currMin.TimeOfDay) { currMin = ThursdayStart; }
@@ -78,7 +78,7 @@ namespace KdajBi.Core.Models
         public string maxTime()
         {
             TimeSpan currMax = TimeSpan.Zero;
-            if (MondayEnd.TimeOfDay.CompareTo(currMax) ==1) { currMax = MondayEnd.TimeOfDay; }
+            if (MondayEnd.TimeOfDay.CompareTo(currMax) == 1) { currMax = MondayEnd.TimeOfDay; }
             if (TuesdayEnd.TimeOfDay.CompareTo(currMax) == 1) { currMax = TuesdayEnd.TimeOfDay; }
             if (WednesdayEnd.TimeOfDay.CompareTo(currMax) == 1) { currMax = WednesdayEnd.TimeOfDay; }
             if (ThursdayEnd.TimeOfDay.CompareTo(currMax) == 1) { currMax = ThursdayEnd.TimeOfDay; }

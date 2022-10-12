@@ -47,7 +47,8 @@ namespace KdajBi.Web.Controllers
             try
             {
                 vmLocation myVM = new vmLocation();
-                myVM.Location = _context.Locations.Include(s => s.Schedule).FirstOrDefault(x => x.Id == id);
+                myVM.Location = _context.Locations.Include(l=>l.Schedule).Where( x => x.Id == id).First();
+                myVM.Location.Schedule = _context.Schedules.Find(myVM.Location.ScheduleId);
 
                 if (myVM.Location != null)
                 {

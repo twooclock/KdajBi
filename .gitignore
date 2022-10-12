@@ -352,3 +352,7 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 Sms/*
+sms-counter-csharp-master.zip
+sms-counter-csharp-master/LICENSE
+sms-counter-csharp-master/README.md
+sms-counter-csharp-master/SmsCounter.cs

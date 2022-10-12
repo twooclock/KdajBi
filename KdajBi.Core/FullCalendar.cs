@@ -42,6 +42,7 @@ namespace KdajBi.Web
             public String end { get; set; }
             public bool allDay { get; set; }
             public String display { get; set; }
+            public String color { get; set; }
 
             public Dictionary<string, string> extendedProps = new Dictionary<string, string>();
         }
@@ -161,23 +162,23 @@ namespace KdajBi.Web
             switch (p_scheduleType)
             {
                 case 1:
-                    dt = new DateTime(2021, 01, 01);
+                    dt = new DateTime(2018, 01, 01);
                     interval = "2";
                     break;
                 case 2:
-                    dt = new DateTime(2021, 01, 01).AddDays(7);
+                    dt = new DateTime(2018, 01, 01).AddDays(7);
                     interval = "2";
                     break;
                 default:
-                    dt = new DateTime(2021, 01, 01);
+                    dt = new DateTime(2018, 01, 01);
                     interval = "1";
                     break;
             }
             string rrule = "DTSTART:" + dt.ToString("yyyyMMdd") + "T" + p_StartTime.Replace(":", "") + "00";
             rrule += "\nRRULE:FREQ=WEEKLY;INTERVAL=" + interval + ";";
-            CultureInfo ci = new CultureInfo("en-US");
-            DateTimeFormatInfo dtfi = ci.DateTimeFormat;
-            rrule += "BYDAY=" + dtfi.GetShortestDayName((DayOfWeek)int.Parse(p_dayoftheweek)).ToUpper();
+            //CultureInfo ci = new CultureInfo("en-US");
+            //DateTimeFormatInfo dtfi = ci.DateTimeFormat;
+            rrule += "BYDAY=" + ((DayOfWeek)int.Parse(p_dayoftheweek)).ToString().Substring(0, 2).ToUpper();
             return rrule;
         }
 

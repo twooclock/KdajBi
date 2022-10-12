@@ -37,7 +37,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                        <a class="nav-link" data-widget="pushmenu" href="#" role="button" data-enable-remember="true"><i class="fas fa-bars"></i></a>
                     </li>
 
                 </ul>
@@ -110,7 +110,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+                        <a id="toggleRightSidebar" class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
                             <i class="fas fa-th-large"></i>
                         </a>
                     </li>
@@ -237,6 +237,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                 <p>Pregled poslanih SMS</p>
                                             </a>
                                         </li>
+                                        <li class="nav-item">
+                                            <a href="@Url.Content("~/sms/OrderSms")" class="nav-link">
+                                                <i class="far nav-icon"></i>
+                                                <p>Naročilo SMS</p>
+                                            </a>
+                                        </li>
                                     }
                                 }
 
@@ -267,11 +273,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
                                 </ul>
                             </li>*@
-
-
-
-
-
                     </ul>
                 </nav>
                 <!-- /.sidebar-menu -->
@@ -279,36 +280,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <!-- /.sidebar -->
         </aside>
 
-        <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
             @RenderBody()
         </div>
-        <!-- /.content-wrapper -->
-        <!-- Control Sidebar -->
-        <aside class="control-sidebar control-sidebar-dark">
-            <!-- Control sidebar content goes here -->
-            <div class="p-3">
-                <h5>Title</h5>
-                <p>Sidebar content</p>
-            </div>
+        <aside id="rightSideBar" class="control-sidebar control-sidebar-dark" style="margin-top: 46px">
+                @await Component.InvokeAsync("BookingConfirmationList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
+                @await Component.InvokeAsync("AppMessagesList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
         </aside>
-        <!-- /.control-sidebar -->
-        <!-- Main Footer -->
         <footer class="main-footer">
-            <!-- To the right -->
             <div class="float-right d-none d-sm-inline">
                 Anything you want
             </div>
-            <!-- Default to the left -->
             <strong>Copyright &copy; 2014-2019 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights reserved.
         </footer>
     </div>
-
-    <!-- ./wrapper -->
     <!-- modal content-->
     <div id="myContactModal" class="modal fade" role="dialog">
         <div class="modal-dialog">
-            <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="myModalLabel">Sporočilo</h4>
@@ -339,9 +327,75 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="~/plugins/toastr/toastr.min.js"></script>
 
     <script>
+        
+        $(document).ready(function () {
+            $('#booking-confirmation .btn-danger').click(function () {
+                var card = $(this).closest('.card');
+                var id = card.attr('data-id');
+                
+                getAPIToken().then(
+                    (result) => {
+                        $.ajax({
+                        url: apiURL + "/api/booking-confirmation/" + id,
+                        type: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        success: function (data) {
+                            card.remove();
+                        }
+                    });
+                });
+            });
+            $('#booking-confirmation .btn-success').click(function () {
+                var card = $(this).closest('.card');
+                var id = card.attr('data-id');
+                
+                getAPIToken().then(
+                    (result) => {
+                        $.ajax({
+                        url: apiURL + "/api/booking-confirmation/" + id,
+                        type: 'PUT',
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        success: function (data) {
+                            card.remove();
+                        }
+                    });
+                });
+            });
+            $('#app-messages .btn-success').click(function () {
+                var card = $(this).closest('.card');
+                var id = card.attr('data-id');
+                
+                getAPIToken().then(
+                    (result) => {
+                        $.ajax({
+                        url: apiURL + "/api/UserAppMessageRead/" + id,
+                        type: 'PUT',
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        success: function (data) {
+                            var par = card.parent();
+                            card.remove();
+                            if (par.children().length == 1) { par.remove(); }
+                            ShowHideRightSlidebar();
+                        }
+                    });
+                });
+            });
+            //show sidebar if it contains elements
+            ShowHideRightSlidebar();
+            
+        });
+
+        function ShowHideRightSlidebar() {
+            if ($("#rightSideBar").children().length > 0)
+            { $('#toggleRightSidebar').ControlSidebar('show'); $('#toggleRightSidebar').addClass('disabled'); }
+            else
+            { $('#toggleRightSidebar').ControlSidebar('collapse'); $('#toggleRightSidebar').removeClass('disabled'); }
+        }
+
         function showLocations() {
             window.location = "@Url.Content("~/location/")" + $('#cboLocations').val();
         }
+
         function flipNadzornik() {
             @if (User.HasClaim("Nadzornik", bool.TrueString))
             { <text>window.location = "@Url.Content("~/Account/flipNadzornik")";</text> }
@@ -372,36 +426,39 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         }
 
-
-    function SendMail() {
-        if (JSON.stringify($("#txtMessage").val().length > 0)) {
-            var companyID = $("#cboLocations").val();
-            $.ajax({
-                type: "post",
-                data: JSON.stringify($("#txtMessage").val()),
-                url: "@Url.Action("SendMail","Account")/" + companyID,
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (result) {
-                    if (result == "OK") { toastr.success("Sporočilo poslano! <br/>Dajte nam, prosim, nekaj časa za odgovor..."); }
-                    else { toastr.error("Error sending message:" + " - " + result.d); }
-                    CancelMessage();
-                },
-                error: function (xhr, status, error) {
-                    toastr.error("Error sending message:" + " - " + error);
-                }
-            });
+        function SendMail() {
+            if (JSON.stringify($("#txtMessage").val().length > 0)) {
+                document.getElementById("cmdSend").disabled = true;
+                var companyID = $("#cboLocations").val();
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify($("#txtMessage").val()),
+                    url: "@Url.Action("SendMail","Account")/" + companyID,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Sporočilo poslano! <br/>Dajte nam, prosim, nekaj časa za odgovor..."); }
+                        else { toastr.error("Error sending message:" + " - " + result.d); }
+                        CancelMessage();
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Error sending message:" + " - " + error);
+                        document.getElementById("cmdSend").disabled = false;
+                    }
+                });
+            }
         }
-    }
-    function OpenMessage(p_text) {
-        $("#txtMessage").val(p_text);
-        $("#myContactModal").modal('show');
-    }
-    function CancelMessage() {
-        $("#txtMessage").val('');
-        $("#myContactModal").modal('hide');
-    }
 
+        function OpenMessage(p_text) {
+            $("#txtMessage").val(p_text);
+            $("#myContactModal").modal('show');
+        }
+
+        function CancelMessage() {
+            $("#txtMessage").val('');
+            document.getElementById("cmdSend").disabled = false;
+            $("#myContactModal").modal('hide');
+        }
 
     </script>
     @RenderSection("Scripts", required: false)

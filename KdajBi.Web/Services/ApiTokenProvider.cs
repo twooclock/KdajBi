@@ -125,7 +125,14 @@ namespace KdajBi.Web.Services
             JwtToken fals = new JwtToken();
             try
             {
-                HttpClient client = new HttpClient();
+                var handler = new HttpClientHandler();
+                handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                handler.ServerCertificateCustomValidationCallback = 
+                    (httpRequestMessage, cert, cetChain, policyErrors) =>
+                {
+                    return true;
+                };
+                HttpClient client = new HttpClient(handler);
                 client.BaseAddress = new Uri(_apiSettings.BaseAddress);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 string stringData = "{\"email\":\"" + email + "\",\"password\":\"" + email + "\"}";

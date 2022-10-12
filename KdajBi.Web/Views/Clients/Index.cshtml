@@ -1,6 +1,6 @@
 ﻿@using Newtonsoft.Json;
 @{
-    ViewData["Title"] = "clients";
+    ViewData["Title"] = "Stranke";
 }
 
 @section styles{
@@ -176,45 +176,19 @@
     <script type="text/javascript">
 
         var SelectedClientID;
+        var myTable;
         @await Html.PartialAsync("_ApiAccess")
 
         $(document).ready(function () {
             //bind cboLocations
             $("#cboLocations").off('change').change(function (evt) {
                 GetClientsTable();
+                //FillClientSearch();
             });
+
             GetClientsTable();
 
-            //fill client search
-            getAPIToken().then((result) => {
-            $.ajax({
-                type: "GET",
-                url:  apiURL + "/api/clients/"+$("#cboLocations").val(),
-                contentType: "application/json; charset=utf-8",
-                headers: { 'Authorization': 'Bearer '+result.AccessToken },
-                dataType: "json",
-                async: true,
-                success: function (msg) {
-                    myClients = msg.map(x => {
-                        return {label:x.fullName, value:x.id};
-                      });
-                    $( "#clientsearch" ).autocomplete({
-                        source: myClients,
-                        select: function (event, ui) {
-                            $("#clientsearch").val(ui.item.label);
-                            SelectedClientID = myClients.indexOf(ui.item.value);
-                            return false;
-                        },
-                        focus:function (event, ui) {event.preventDefault(); return false;}
-                    });
-                },
-                error: function () {
-                    toastr.error("Napaka: Ni podatkov o strankah!");
-                }
-            });
-            });
-
-
+            //FillClientSearch();
 
             $('#dataform').validate({
                     rules: {
@@ -242,13 +216,24 @@
                     }
                 });
 
-            
-                $('#myModal').on('hidden.bs.modal', function (e) {
-                    CancelClientModal();
-                });
+            $('#myModal').on('hidden.bs.modal', function (e) {
+                CancelClientModal();
             });
 
+            $("#clientsearch").on('input', function () {
+                delay(function () {
+                    myTable.search($( "#clientsearch" ).val(), false, false).draw();
+                }, 1000);
+            });
+        });
 
+        var delay = (function () {
+            var timer = 0;
+            return function (callback, ms) {
+                clearTimeout(timer);
+                timer = setTimeout(callback, ms);
+            };
+        })()
 
         function CancelClientModal() {
             $('#dataform').validate().resetForm();
@@ -260,13 +245,12 @@
 
         var GetClientsTable = function () {
 
-            
-            var table = $('#dataTable').DataTable({
+            myTable = $('#dataTable').DataTable({
                 destroy: true,
                 responsive: true,
                 'order': [[0, 'desc']],
-                //                dom: '<""top"">rt<""bottom""ilp><""container"">',
-                searching: false,
+                dom: '<"row"lr><"row"<"col-12"t>><"row"<"col-sm-6"i><"col-sm-6"p>>',
+                searching: true,
                 'processing': true,
                 'serverSide': true,
                 'ajax': {
@@ -290,7 +274,7 @@
 
                 },
                 'columns': [
-                    { 'data': 'firstName', render: function (data, type, row, meta) { return row.fullName; } }, 
+                    { 'data': 'firstName', render: function (data, type, row, meta) { return row.fullName; } },
                     {
                         'data': 'active', className: 'text-center',
                         render: function (data, type, row, meta) {
@@ -308,8 +292,39 @@
                     }
                 ]
             });
-            
 
+
+        }
+
+        function FillClientSearch() {
+            //fill client search
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "GET",
+                    url:  apiURL + "/api/clients/"+$("#cboLocations").val(),
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer '+result.AccessToken },
+                    dataType: "json",
+                    async: true,
+                    success: function (msg) {
+                        myClients = msg.map(x => {
+                            return {label:x.fullName, value:x.id};
+                          });
+                        $( "#clientsearch" ).autocomplete({
+                            source: myClients,
+                            select: function (event, ui) {
+                                $("#clientsearch").val(ui.item.label);
+                                SelectedClientID = myClients.indexOf(ui.item.value);
+                                return false;
+                            },
+                            focus:function (event, ui) {event.preventDefault(); return false;}
+                        });
+                    },
+                    error: function () {
+                        toastr.error("Napaka: Ni podatkov o strankah!");
+                    }
+                });
+            });
         }
 
         function cmdClientAdd_Click() {
@@ -442,8 +457,8 @@
                     contentType: "application/json; charset=utf-8",
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
-                    success: function (result) {
-                         if (result == "OK") { toastr.success("Shranjeno"); GetClientsTable(); return true; }
+                    success: function (retval) {
+                         if (retval.result == "OK") { toastr.success("Shranjeno"); GetClientsTable(); return true; }
                         else { toastr.error("Napaka:" + result); return false; }
                     },
                     error: function (xhr, status, error) {

@@ -165,7 +165,7 @@
                         <div id="lblSending" class="col-md-6 font-weight-bold">V pošiljanju...</div>
                         <div id="lblSmsInfo" class="col-md-6"></div>
                     </div>
-                    <div  class="form-group mb-1 ">
+                    <div class="form-group mb-1 ">
                         <label for="txtNotificationTime">
                             Sporočila pošlji:
                         </label>
@@ -350,6 +350,7 @@
 
             var smsc={};
             smsc.CampaignType = notifyType;
+            smsc.LocationId = $("#cboLocations").val();
             smsc.MsgTxt = $('#txtMessage').val();
             if (fp!=undefined)
             { smsc.SendAfter = new Date(dayjs(fp.selectedDates[0]).utc()); }
@@ -463,7 +464,6 @@
             document.getElementById('lblStranke').innerHTML = 'Stranke ' + getSelected() + '/' + myClients.length + ':';
         }
         function SporocilZBesedo(p_Number) {
-            //if (p_Number > 100) { p_Number = p_Number % 10 };
             if (p_Number.toString().substr(-2) == '00' ) { return "sporočil"; }
             if (p_Number.toString().substr(-2) == '01' ||p_Number==1 ) { return "sporočilo";}
             if (p_Number.toString().substr(-2) == '02' ||p_Number==2 ) { return "sporočili";}
@@ -475,35 +475,35 @@
         $(document).ready(function () {
             //show sms limit info
             getAPIToken().then((result) => {
-                        $.ajax({
-                            type: "post",
-                            data: JSON.stringify(getSmscObject()),
-                            url: apiURL + "/api/Sms/SmsInfo",
-                            contentType: "application/json; charset=utf-8",
-                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                            dataType: "json",
-                            success: function (result) {
-                                var smsInfo = "";
-                                var cssClass = "text-success";
-                                if (result.limit > 0)
-                                    { smsInfo = "Pošljete lahko " + result.limit + " "+SporocilZBesedo(result.limit)+"."; }
-                                else
-                                { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
-                                if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(getSmscObject()),
+                    url: apiURL + "/api/Sms/SmsInfo",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        var smsInfo = "";
+                        var cssClass = "text-success";
+                        if (result.limit > 0)
+                            { smsInfo = "Pošljete lahko " + result.limit + " "+SporocilZBesedo(result.limit)+"."; }
+                        else
+                        { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
+                        if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
 
-                                $('#limitinfo').removeClass("text-success");
-                                $('#limitinfo').removeClass("text-warning");
-                                $('#limitinfo').removeClass("text-danger");
-                                $('#limitinfo').addClass(cssClass);
-                                $('#limitinfo').text(smsInfo);
+                        $('#limitinfo').removeClass("text-success");
+                        $('#limitinfo').removeClass("text-warning");
+                        $('#limitinfo').removeClass("text-danger");
+                        $('#limitinfo').addClass(cssClass);
+                        $('#limitinfo').text(smsInfo);
 
-                            },
-                            error: function (xhr, status, error) {
-                                toastr.error("Napaka:" + error.toString());
-                                return false;
-                            }
-                        });
-                    });
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
 
             document.getElementById('stepper2').addEventListener('shown.bs-stepper', function (event) {
                 if (event.detail.indexStep == 2) {

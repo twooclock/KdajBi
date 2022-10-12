@@ -319,18 +319,10 @@
                             right: 'save fullscreen'
                         },
                         viewDidMount: function (view, element) {
-
-                        @{
-                            string myCbo = @"`<div><select id=""cboScheduleType"" name=""cboScheduleType"" class=""selectpicker custom-select custom-select-sm form-control"">
-                                                        <option value=""0"" selected>Splošni urnik</option>
-                                                        <option value=""1"" >Lihi urnik</option>
-                                                        <option value=""2"" >Sodi urnik</option>
-                                                </select></div>`";
-                        }
-                            $("#wcalendar").find('.fc-toolbar > .fc-toolbar-chunk:first').empty().append(@Html.Raw(myCbo));
-                            var myType = sessionStorage.getItem('cboScheduleType');
-                            if (myType === null) { myType = "0";}
-                            $("#cboScheduleType").val(myType);
+                            $("#wcalendar").find('.fc-toolbar > .fc-toolbar-chunk:first').empty().append('@Html.Raw(Model.cboScheduleTypeHTML(0,false))');
+                            //var myType = sessionStorage.getItem('cboScheduleType');
+                            //if (myType === null) { myType = "0";}
+                            //$("#cboScheduleType").val(myType);
                         },
                         themeSystem: 'bootstrap',
                         stickyFooterScrollbar: true,
@@ -520,7 +512,7 @@
                     });
 
                     $("#cboScheduleType").off('change').change(function (evt) {
-                        sessionStorage.setItem("cboScheduleType", $("#cboScheduleType").val());
+                        //sessionStorage.setItem("cboScheduleType", $("#cboScheduleType").val());
                         window.location.replace('@Url.Content("~/wps/"+Model.Workplace.Id.ToString())' + "/" + $("#cboScheduleType").val());
                     });
                 });

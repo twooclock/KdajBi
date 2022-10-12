@@ -122,11 +122,20 @@
                                                             Dodaj
                                                         </button>
                                                     </div>
+                                                    
                                                 </div>
 
                                             </div>
 
                                             <!-- /.card-body -->
+                                        </div>
+                                        <div class="form-check" >
+                                            <input type="checkbox" onclick="saveSettings()" class="form-check-input" id="cbUseSingleListOfClients">
+                                            <label class="form-check-label" for="cbUseSingleListOfClients">Pri naročanju uporabi enoten seznam strank</label>
+                                        </div>
+                                        <div class="form-check" >
+                                            <input type="checkbox" onclick="saveSettings()"  class="form-check-input" id="cbUseSingleListOfServices">
+                                            <label class="form-check-label" for="cbUseSingleListOfServices">Pri naročanju uporabi enoten seznam storitev</label>
                                         </div>
                                     </div>
 
@@ -166,6 +175,14 @@
                                             </div>
 
                                             <!-- /.card-body -->
+                                        </div>
+                                        <div class="form-check" >
+                                            <input type="checkbox" onclick="saveSettings()"  class="form-check-input" id="cbAppointments_ShowTimetables">
+                                            <label class="form-check-label" for="cbAppointments_ShowTimetables">Nakaži urnike pri naročanju</label>
+                                        </div>
+                                        <div class="form-check" >
+                                            <input type="checkbox" onclick="saveSettings()"  class="form-check-input" id="cbEmployee_AlternatingWeeks">
+                                            <label class="form-check-label" for="cbEmployee_AlternatingWeeks">Zaposleni delajo v tedenskih izmenah</label>
                                         </div>
                                     </div>
 
@@ -469,6 +486,9 @@
             $('#myTagModal').on('hidden.bs.modal', function (e) {
                 CancelTagModal();
             });
+
+            //load settings
+            loadSettings();
         });
 
         //#region Employee
@@ -690,6 +710,8 @@
                 ]
             });
 
+            
+            
         }
 
          function CancelLocationModal() {
@@ -988,7 +1010,70 @@
         }
         //#endregion
 
+        function saveSettings() {
+            var settings = new Object();
+            settings["cbUseSingleListOfClients"] = $("#cbUseSingleListOfClients").prop("checked");
+            settings["cbUseSingleListOfServices"] = $("#cbUseSingleListOfServices").prop("checked");
+            settings["cbAppointments_ShowTimetables"] = $("#cbAppointments_ShowTimetables").prop("checked");
+            settings["cbEmployee_AlternatingWeeks"] = $("#cbEmployee_AlternatingWeeks").prop("checked");
+            
 
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(settings),
+                    url: apiURL + "/api/Settings/Save/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Shranjeno"); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+        }
+
+        function loadSettings() {
+            var settings = new Object();
+            settings["cbUseSingleListOfClients"] = 'false';
+            settings["cbUseSingleListOfServices"] = 'false';
+            settings["cbAppointments_ShowTimetables"] = 'false';
+            settings["cbEmployee_AlternatingWeeks"] = 'false';
+            
+            getAPIToken().then((result) => {
+            $.ajax({
+                type: "post",
+                data: JSON.stringify(settings),
+                url: apiURL+"/api/Settings/Load/",
+                contentType: "application/json; charset=utf-8",
+                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                dataType: "json",
+                 success: function (result) {
+                     if (result["cbUseSingleListOfClients"] != undefined) {
+                         if (result["cbUseSingleListOfClients"] == "true") { $('#cbUseSingleListOfClients').prop('checked', true);}
+                     }
+                     if (result["cbUseSingleListOfServices"] != undefined) {
+                         if (result["cbUseSingleListOfServices"] == "true") { $('#cbUseSingleListOfServices').prop('checked', true);}
+                     }
+                     if (result["cbAppointments_ShowTimetables"] != undefined) {
+                         if (result["cbAppointments_ShowTimetables"] == "true") { $('#cbAppointments_ShowTimetables').prop('checked', true);}
+                     }
+                     if (result["cbEmployee_AlternatingWeeks"] != undefined) {
+                         if (result["cbEmployee_AlternatingWeeks"] == "true") { $('#cbEmployee_AlternatingWeeks').prop('checked', true);}
+                     }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("Napaka:" + error.toString());
+                    return false;
+                }
+            });
+            });
+        }
     </script>
 }
 

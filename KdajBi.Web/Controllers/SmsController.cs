@@ -53,5 +53,12 @@ namespace KdajBi.Web.Controllers
             return NotFound();
         }
 
+        [Route("/sms/OrderSms")]
+        public IActionResult OrderSms()
+        {
+            _BaseViewModel vmModel = new _BaseViewModel();
+            vmModel.Token = _GetToken();
+            return View(vmModel);
+        }
     }
 }

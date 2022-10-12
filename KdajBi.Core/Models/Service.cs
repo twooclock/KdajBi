@@ -23,6 +23,8 @@ namespace KdajBi.Core.Models
 
         //approximate service duration in minutes
         public int Minutes { get; set; }
+        [MinLength(6), MaxLength(6)]
+        public string Color { get; set; }
         public int SortPosition { get; set; }
 
     }

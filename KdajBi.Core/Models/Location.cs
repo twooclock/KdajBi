@@ -21,8 +21,9 @@ namespace KdajBi.Core.Models
         [MinLength(9), MaxLength(15)]
         public string Tel { get; set; }
 
-        [ForeignKey("ScheduleId"), Required]
-        public virtual Schedule Schedule { get; set; }
+        [ForeignKey("Schedule"), Required]
+        public long ScheduleId { get; set; }
+        public Schedule Schedule { get; set; }
 
         public ICollection<Workplace> Workplaces { get; set; }
 
