@@ -96,13 +96,22 @@
         } .content-wrapper {
             background: white;
         }
-        
+        .movefor3cals {
+            padding-left:23em;
+        }
+        @@media
+        (max-width: 576px) {
+            .movefor3cals
+            {
+                padding-left: 0;
+            }
+        }
     </style>
 }
 
 <!-- page content -->
 
-@{ 
+@{
     string val = "";
     bool Show3Calendars = false;
     if (Model.Settings.TryGetValue("AppointmentsShow3Calendars", out val) == true)
@@ -118,7 +127,7 @@
                             <input type="text" class="form-control" id="datepick3" style="display: none">
                         </div>
                     </div>
-                    <div id="fs" class="col" style="padding-left:23em;">
+                    <div id="fs" class="col movefor3cals">
         </text>}
     else
     { <text>
@@ -1237,10 +1246,10 @@
             $("#cmdDelete").off('click').click(function (evt) {
                 if (DeleteEvent(info) != false) { $("#myModal").modal("hide"); }
             });
-            
+
             $("#cmdMove").off('click').click(function (evt) {
                 eventToMove = info;
-                $("#myModal").modal("hide"); 
+                $("#myModal").modal("hide");
             });
             $("#cmdMove").text('Premakni');
             $("#cmdMove").show();
@@ -1514,7 +1523,7 @@
 
                                 diffMs = newStart.getTime() - oldStart.getTime();
                                 if (diffMs != 0) {
-                                    //update event 
+                                    //update event
                                     var eventToUpdate = gapi.client.calendar.events.patch({
                                         "calendarId": newCalId,
                                         "eventId": eventToMove.event.id,
@@ -1538,7 +1547,7 @@
                     else {
                         diffMs = newStart.getTime() - oldStart.getTime();
                         if (diffMs != 0) {
-                            //update event 
+                            //update event
                             var eventToUpdate = gapi.client.calendar.events.patch({
                                 "calendarId": newCalId,
                                 "eventId": eventToMove.event.id,
@@ -1783,7 +1792,7 @@
         }
 
         function notifyClient(p_Start, p_Mobile, p_ClientId) {
-            
+
             @{ val = "";
                 if (Model.Settings.TryGetValue("SMS_AppointmentSMS", out val) == true)
                 {

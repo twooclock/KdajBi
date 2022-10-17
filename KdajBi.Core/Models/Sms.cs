@@ -76,7 +76,8 @@ namespace KdajBi.Core.Models
         [MaxLength(15),Required]
         public string Recipient { get; set; }
 
-        public long ClientId { get; set; }
+        public long? ClientId { get; set; }
+        public virtual Client Client { get; set; }
 
         [MaxLength(100)]
         public string ApiResponse { get; set; }

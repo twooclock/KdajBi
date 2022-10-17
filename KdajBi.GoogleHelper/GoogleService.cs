@@ -47,32 +47,42 @@ namespace KdajBi.GoogleHelper
         public GoogleService(string p_userid, GoogleAuthToken p_googleAuthToken)
         {
             googleAuthToken = p_googleAuthToken;
+            Logger.Info("New GoogleService with token that expires on (UTC) " + googleAuthToken.expires_at.ToString());
             if (p_googleAuthToken.expires_at.AddMinutes(-5) < DateTime.UtcNow)
             {
-                TokenWasRefreshed = true;
-                var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-                var tokenResponse = new TokenResponse()
+                try
                 {
-                    AccessToken = p_googleAuthToken.access_token,
-                    RefreshToken = p_googleAuthToken.refresh_token
-                };
-                ClientSecrets cSecrets = new ClientSecrets() { ClientId = config["GoogleSettings:ClientId"], ClientSecret = config["GoogleSettings:ClientSecret"] };
+                    TokenWasRefreshed = true;
+                    var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+                    var tokenResponse = new TokenResponse()
+                    {
+                        AccessToken = p_googleAuthToken.access_token,
+                        RefreshToken = p_googleAuthToken.refresh_token
+                    };
+                    ClientSecrets cSecrets = new ClientSecrets() { ClientId = config["GoogleSettings:ClientId"], ClientSecret = config["GoogleSettings:ClientSecret"] };
 
-                var flowInitializer = new GoogleAuthorizationCodeFlow.Initializer { ClientSecrets = cSecrets };
+                    var flowInitializer = new GoogleAuthorizationCodeFlow.Initializer { ClientSecrets = cSecrets };
 
-                var flow = new GoogleAuthorizationCodeFlow(flowInitializer);
+                    var flow = new GoogleAuthorizationCodeFlow(flowInitializer);
 
-                var credential = new UserCredential(flow, p_userid, tokenResponse);
-                var dobil = credential.RefreshTokenAsync(CancellationToken.None).GetAwaiter().GetResult();
+                    var credential = new UserCredential(flow, p_userid, tokenResponse);
+                    var dobil = credential.RefreshTokenAsync(CancellationToken.None).GetAwaiter().GetResult();
 
-                googleAuthToken.access_token = credential.Token.AccessToken;
-                if (credential.Token.RefreshToken != null)
-                {
-                    googleAuthToken.refresh_token = credential.Token.RefreshToken;
-                    Logger.Info("GOT New token.RefreshToken:{0}", credential.Token.RefreshToken.ToString());
+                    googleAuthToken.access_token = credential.Token.AccessToken;
+                    if (credential.Token.RefreshToken != null)
+                    {
+                        googleAuthToken.refresh_token = credential.Token.RefreshToken;
+                        Logger.Info("GOT New token.RefreshToken:{0}", credential.Token.RefreshToken.ToString());
+                    }
+                    if (credential.Token.ExpiresInSeconds.HasValue)
+                    { googleAuthToken.expires_at = credential.Token.IssuedUtc.AddSeconds((double)credential.Token.ExpiresInSeconds); }
+                    Logger.Info("GoogleService TokenWasRefreshed="+ TokenWasRefreshed.ToString() + " with token that expires on (UTC) " + googleAuthToken.expires_at.ToString());
                 }
-                if (credential.Token.ExpiresInSeconds.HasValue)
-                { googleAuthToken.expires_at = credential.Token.IssuedUtc.AddSeconds((double)credential.Token.ExpiresInSeconds); }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                    throw;
+                }
             }
         }
 

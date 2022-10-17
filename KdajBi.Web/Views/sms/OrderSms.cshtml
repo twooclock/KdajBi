@@ -11,7 +11,6 @@
     <link href="~/plugins/bs-stepper/css/bs-stepper.min.css" rel="stylesheet" />
     <style>
 
-
         .tc__rendered {
             list-style-type: none;
             white-space: nowrap
@@ -58,9 +57,9 @@
     <div class="row">
 
         <div class="col-md-12 mt-1">
-            <h2>Naročilo SMS</h2>
-            <h3 id="limitinfo">Pošljete lahko </h3>
-            <h3 id="qtyInfo">Naročam </h3>
+            <h3 id="qtyInfo">Naročanje SMS </h3>
+            <h4 id="limitinfo">Pošljete lahko </h4>
+            <h4 id="sentInfo">Zadnjih 30 dni ste jih poslali @Model.Id</h4>
             <div id="stepper2" class="bs-stepper">
                 <div class="bs-stepper-header">
                     <div class="step" data-target="#step-nl-1">
@@ -73,16 +72,16 @@
                     <div class="step" data-target="#step-nl-2">
                         <div class="btn step-trigger">
                             <span class="bs-stepper-circle">2</span>
-                            <span class="bs-stepper-label">Plačilo</span>
+                            <span class="bs-stepper-label">Oddaja naročila</span>
                         </div>
                     </div>
-                    <div class="line"></div>
+                    @*<div class="line"></div>
                     <div class="step" data-target="#step-nl-3">
                         <button type="button" class="btn step-trigger">
                             <span class="bs-stepper-circle">3</span>
                             <span class="bs-stepper-label">Oddaja naročila</span>
                         </button>
-                    </div>
+                    </div>*@
                 </div>
                 <div class="bs-stepper-content pb-0">
                     <div id="step-nl-1" class="content">
@@ -90,14 +89,17 @@
 
                         </div>
                         <div id="notifyQtySelect" class="row">
-                            <button type="button" class="btn btn-primary col-12 py-4" onclick="setQuantity(500);">Naročam 500 sms</button>
-                            <button type="button" class="btn btn-primary col-12  my-2 py-4" onclick="setQuantity(1000);">Naročam 1000 sms</button>
-                            <button type="button" class="btn btn-primary col-12 py-4" onclick="setQuantity(5000);">Naročam 5000 sms</button>
+                            <button data-qty="100" type="button" class="btn btn-primary col-12 my-2 py-4" >Naročam 100 sms</button>
+                            <button data-qty="200" type="button" class="btn btn-primary col-12 py-4" >Naročam 200 sms</button>
+                            <button data-qty="500" type="button" class="btn btn-primary col-12 my-2 py-4" >Naročam 500 sms</button>
+                            <button data-qty="1000" type="button" class="btn btn-primary col-12 py-4" >Naročam 1000 sms</button>
+                            <button data-qty="2000" type="button" class="btn btn-primary col-12  my-2 py-4" >Naročam 2000 sms</button>
+                            <button data-qty="5000" type="button" class="btn btn-primary col-12 py-4" >Naročam 5000 sms</button>
                         </div>
-                        
+
                     </div>
                 </div>
-                <div id="step-nl-2" class="content">
+                @*<div id="step-nl-2" class="content">
                     <div class="form-group mb-1">
                         <label id="lblMessage" for="txtMessage">
                             Podatki o plačilu:
@@ -105,17 +107,63 @@
                         <textarea rows="5" id="txtMessage" name="txtMessage" class="form-control" maxlength="640"></textarea>
                     </div>
                     <button class="btn btn-primary" onclick="ToNextStep(3);">Naprej</button>
-                </div>
-                <div id="step-nl-3" class="content">
+                </div>*@
+                <div id="step-nl-2" class="content">
                     <div class="row">
                         <div class="col-md-12">
                             Povzetek naročila
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 10em">#</th>
+                                            <th style="width: 1em" class="text-right">Količina</th>
+                                            <th style="width: 2em" class="text-right">Cena</th>
+                                            <th style="width: 1em" class="text-right">Skupaj</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th>sms</th>
+                                            <td><div id="bQty" class="text-right"></div></td>
+                                            <td><div id="bPrice" class="text-right"></div></td>
+                                            <td><div id="bPreTax" class="text-right"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Osnova za DDV:</th>
+                                            <td><div id="bPreTaxSum" class="text-right"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <th>DDV (22%)</th>
+                                            <td><div id="bTaxSum" class="text-right"></div></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <th>Skupaj za plačilo:</th>
+                                            <th><div id="bTotal" class="text-right"></div></th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                    
-                    
-                    <button class="btn btn-primary" onclick="submitOrder()">Oddaj naročilo</button>
-                    <button type="button" class="btn btn-default" style="display:none" onclick="test();">TEST</button>
+
+                    <div class="alert" role="alert">
+                      Po oddaji naročila vam bomo v najkrajšem možnem času zagotovili naročeno število sms-ov, nakar boste po ePošti prejeli račun. <br/>Za več informacij lahko pokličete <a  href="tel:+38641651026" style="color:blue">041 651 026</a>. Hvala!
+                    </div>
+                    <div class="form-group mb-1">
+                        <label id="lblMessage" for="txtMessage">
+                            Sporočilo:
+                        </label>
+                        <textarea rows="1" id="txtMessage" name="txtMessage" class="form-control" maxlength="160" placeholder="Če nam želite še kaj sporočiti, napišite tukaj..."></textarea>
+                    </div>
+                    <button id="cmdSubmitOrder" class="btn btn-primary" style="float:right">Oddaj naročilo</button>
                 </div>
             </div>
         </div>
@@ -227,19 +275,17 @@
         }());
 
 
-        var smsQty;
 
-        
 
 
         @await Html.PartialAsync("_ApiAccess")
 
-       var stepper2 = new Stepper(document.getElementById('stepper2'), {
-                linear: false,
-                animation: true
-            })
+        var stepper2 = new Stepper(document.getElementById('stepper2'), {
+            linear: false,
+            animation: true
+        })
 
-        
+
         function ToNextStep(p_Step) {
             if (p_Step == 2)
             {
@@ -254,9 +300,9 @@
             }
 
         }
-        
 
-        function submitOrder() {
+
+        function SubmitOrder(p_quantity) {
             Swal.fire({
                 title: 'Oddam naročilo?',
                 showDenyButton: true,
@@ -265,24 +311,27 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     getAPIToken().then((result) => {
+                        var data={};
+                        data.p_quantity = p_quantity;
+                        data.p_message = $("#txtMessage").val();
                     $.ajax({
                         type: "post",
-                        data: JSON.stringify(getSmscObject()),
-                        url: apiURL + "/api/Sms/QueueSmsCampaign",
+                        data: JSON.stringify(data),
+                        url: apiURL + "/api/Sms/SmsMakeOrder",
                         contentType: "application/json; charset=utf-8",
                         headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         dataType: "json",
                         success: function (result) {
-                            if (result == "OK") {
-                                Swal.fire('Sporočila so v pošiljanju.').then((result) => {
+                            if (result.substring(0,3) != "ERR") {
+                                Swal.fire('Naročilo uspešno oddano.').then((result) => {
                                     window.location.href = '@Url.Action("Index", "Home")';
                                     return true;
                                 });
                             }
-                            else { toastr.error("Napaka pri pošiljanju:" + result); return false; }
+                            else { toastr.error("Napaka pri oddaji naročila:" + result); return false; }
                         },
                         error: function (xhr, status, error) {
-                            toastr.error("Napaka pri pošiljanju:" + error.toString());
+                            toastr.error("Napaka pri oddaji naročila:" + error.toString());
                             return false;
                         }
                     });
@@ -295,7 +344,7 @@
         }
 
 
-        
+
         function SporocilZBesedo(p_Number) {
             if (p_Number.toString().substr(-2) == '00' ) { return "sporočil"; }
             if (p_Number.toString().substr(-2) == '01' ||p_Number==1 ) { return "sporočilo";}
@@ -308,6 +357,23 @@
         $(document).ready(function () {
             //show sms limit info
             getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: "",
+                    url: apiURL + "/api/Sms/SmsPrice",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        setPrice(result.price);
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+
+
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(getSmscObject()),
@@ -338,7 +404,22 @@
                 });
             });
 
-
+            function setPrice(p_price) {
+                //fix UI
+                $('#notifyQtySelect').children('button').each(function () {
+                    var qty = $(this).attr('data-qty');
+                    if (p_price == -1) {
+                        $(this).html("(Naročanje trenutno ni mogoče)");
+                    }
+                    else {
+                        $(this).html("Naročam " + qty + " sms <br/>po ceni " + p_price + "€+ddv<br/>(Za plačilo: " + ((qty * p_price) * 1.22).toString() + "€)");
+                        $(this).click(function() {
+                            setQuantity(qty,p_price);
+                        });
+                    }
+                   
+                });
+            }
 
             document.getElementById('stepper2').addEventListener('shown.bs-stepper', function (event) {
                 if (event.detail.indexStep == 2) {
@@ -387,16 +468,24 @@
 
         });
 
-        
 
-        function setQuantity(p_qty)
+
+        function setQuantity(p_qty, p_price)
         {
-            smsQty = p_qty;
             //$("#notifyQtySelect").hide();
             $("#btnNext").show();
 
             $("#qtyInfo").text("Naročam " + p_qty.toString() + " sms");
-            //$("#lblQtySummary").show();
+            //set billing info
+            $("#bQty").text( p_qty.toString());
+            $("#bPrice").text( p_price.toString()+" €");
+            $("#bPreTax").text( (p_qty*p_price).toString()+" €");
+            $("#bPreTaxSum").text( (p_qty*p_price).toString()+" €");
+            $("#bTaxSum").text( (p_qty*p_price*0.22).toString()+" €");
+            $("#bTotal").text( (p_qty*p_price*1.22).toString()+" €");
+            $("#cmdSubmitOrder").off('click').click(function (evt) {
+                SubmitOrder(p_qty);
+            });
             stepper2.next();
         }
 
@@ -406,11 +495,11 @@
             smsc.CampaignType = 0;
             smsc.LocationId = $("#cboLocations").val();
             smsc.MsgTxt = "";
-            
+
             smsc.SendAfter = new Date();
             smsc.Recipients = [];
-                    
-                    
+
+
             return smsc;
         }
 

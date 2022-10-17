@@ -58,6 +58,7 @@ namespace KdajBi.Web.Controllers
         {
             _BaseViewModel vmModel = new _BaseViewModel();
             vmModel.Token = _GetToken();
+            vmModel.Id= _context.SmsCampaigns.Where(s => s.CompanyId == _CurrentUserCompanyID() && s.SentAt > DateTime.Now.AddDays(-30)).Sum(a => a.MsgSegments * a.RecipientsCount);
             return View(vmModel);
         }
     }

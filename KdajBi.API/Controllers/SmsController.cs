@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +48,8 @@ namespace KdajBi.API.Controllers
             { v = v.Where(w => w.Company.Id == _CurrentUserCompanyID() && w.LocationId == locationid); }
             else
             { v = v.Where(w => w.Company.Id == _CurrentUserCompanyID()); }
-            v = v.Include(w => w.Recipients);
+            v = v.Include(w => w.Recipients).ThenInclude(c=>c.Client);
+            
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
             {
@@ -56,10 +58,63 @@ namespace KdajBi.API.Controllers
 
             recordsTotal = v.Count();
             var data = v.Skip(param.start).Take(param.length).ToList();
+            //TODO: remove client data
+            //foreach (var item in data)
+            //{
+            //    foreach (var rcpt in item.Recipients)
+            //    {
+            //        if ( rcpt.Client != null)
+            //        {
+            //            string fn = rcpt.Client.FirstName;
+            //            string ln = rcpt.Client.LastName;
+            //            rcpt.Client = new Client();
+            //            rcpt.Client.FirstName = fn;
+            //            rcpt.Client.LastName = ln;
+            //        }
+            //    }
+                
+            //}
 
             return Json(new { draw = param.draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
         }
 
+        [HttpPost]
+        [Route("/api/Sms/ClientSmsTable/{ClientId}")]
+        public JsonResult ClientSmsTable(long clientid, [FromBody] DataTableAjaxPostModel param)
+        {
+            int recordsTotal = 0;
+
+            var v = from a in _context.SmsCampaigns select a;
+            v = v.Where(w => w.Company.Id == _CurrentUserCompanyID()); 
+            v = v.Include(w => w.Recipients.Where(p => p.ClientId== clientid)).ThenInclude(c => c.Client);
+            v = v.Where(w => w.Company.Id == _CurrentUserCompanyID() && w.Recipients.Any(a=>a.ClientId==clientid) );
+            //SORT
+            if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
+            {
+                v = v.OrderBy(param.columns[param.order[0].column].data + " " + param.order[0].dir);
+            }
+
+            recordsTotal = v.Count();
+            var data = v.Skip(param.start).Take(param.length).ToList();
+            //TODO: remove client data
+            //foreach (var item in data)
+            //{
+            //    foreach (var rcpt in item.Recipients)
+            //    {
+            //        if ( rcpt.Client != null)
+            //        {
+            //            string fn = rcpt.Client.FirstName;
+            //            string ln = rcpt.Client.LastName;
+            //            rcpt.Client = new Client();
+            //            rcpt.Client.FirstName = fn;
+            //            rcpt.Client.LastName = ln;
+            //        }
+            //    }
+
+            //}
+
+            return Json(new { draw = param.draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
+        }
 
         [HttpPost]
         [Route("/api/Sms/SmsMsgTable/{id}")]
@@ -189,6 +244,37 @@ namespace KdajBi.API.Controllers
             }
 
             return Json(new { limit = ClientSmsLimit, recipients = recipientsCount });
+
+        }
+
+        [HttpPost("/api/Sms/SmsPrice")]
+        public async Task<JsonResult> PostSmsPrice()
+        {
+            double retval = -1;
+            if (ModelState.IsValid)
+            {
+                //get sms limit info
+                retval = _smsInfo.SmsPriceInfo("KB" + _CurrentUserCompanyID().ToString(), _CurrentUserCompanyTaxID());
+            }
+
+            return Json(new { price = retval });
+
+        }
+
+        [HttpPost("/api/Sms/SmsMakeOrder/")]
+        public async Task<JsonResult> PostSmsMakeOrder([FromBody] JObject data)
+        {
+            int p_quantity= (int)data.GetValue("p_quantity");
+            string p_message= data.GetValue("p_message").ToString();
+            string retval = "";
+            if (ModelState.IsValid)
+            {
+                //get sms limit info
+                retval = _smsInfo.SmsMakeOrder("KB" + _CurrentUserCompanyID().ToString(), _CurrentUserCompanyTaxID(),"",p_quantity,p_message);
+
+            }
+
+            return Json(retval);
 
         }
 

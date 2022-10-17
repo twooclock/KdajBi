@@ -51,7 +51,6 @@
                                     <th>
                                         Status pošiljanja
                                     </th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -215,8 +214,14 @@
                             if (row.recipientsCount > 1)
                             { return "<a href='/sms/campaign/" + row.id + "'>" + row.recipientsCount + "/<p class='text-success d-inline' >" + row.sentOk + "</p>/<p class='text-danger d-inline'>" + row.sentError + "</p></a>"; }
                             else {
-                                if (row.sentOk == 1) { return "<p class='text-success d-inline' >" + row.recipients[0].recipient + "</p>"; }
-                                else { return "<p class='text-danger d-inline' >" + row.recipients[0].recipient +(row.recipients[0].apiResponse?" / "+row.recipients[0].apiResponse:'')+ "</p>"; }
+                                if (row.recipients[0].client != null) {
+                                    if (row.sentOk == 1) { return "<p class='text-success d-inline' >" + row.recipients[0].client.fullName + " (" + row.recipients[0].recipient + ")</p>"; }
+                                    else { return "<p class='text-danger d-inline' >" + row.recipients[0].client.fullName + " (" + row.recipients[0].recipient + ")" + (row.recipients[0].apiResponse ? " / " + row.recipients[0].apiResponse : '') + "</p>"; }
+                                } else
+                                    {
+                                    if (row.sentOk == 1) { return "<p class='text-success d-inline' >" +  "(" + row.recipients[0].recipient + ")</p>"; }
+                                    else { return "<p class='text-danger d-inline' >" + "(" + row.recipients[0].recipient + ")" + (row.recipients[0].apiResponse ? " / " + row.recipients[0].apiResponse : '') + "</p>"; }
+                                }
                             }
                         }
                     }
