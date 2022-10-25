@@ -51,7 +51,6 @@ console.log('req new goo token')
 var newToken=JSON.parse(strJson);
                         gooToken.access_token=newToken.access_token;
                         gooToken.expires_at=new Date(newToken.expires_at);
-
                         resolve(gooToken);
                     },
                     error: function (xhr, status, error) {

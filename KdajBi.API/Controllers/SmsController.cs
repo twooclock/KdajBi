@@ -124,6 +124,7 @@ namespace KdajBi.API.Controllers
             int recordsTotal = 0;
             var v = from a in _context.SmsMsgs select a;
             v = v.Where(w => w.SmsCampaignId == Id);
+            v = v.Include(c => c.Client);
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))
             {
@@ -136,6 +137,15 @@ namespace KdajBi.API.Controllers
             return Json(new { draw = param.draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data });
         }
 
+        [HttpGet("/api/Sms/SmsCampaign/{id}")]
+        public async Task<ActionResult<Client>> GetSmsCampaign(long id)
+        {
+            var smsCampaign = await _context.SmsCampaigns.Where(c => c.Id == id).FirstOrDefaultAsync();
+
+            if (smsCampaign == null) { return NotFound(); }
+
+            return Json(smsCampaign);
+        }
 
         [HttpPost("/api/Sms/QueueSmsCampaign")]
         public async Task<ActionResult<dtoSmsCampaigin>> PostQueueSmsCampaign(dtoSmsCampaigin p_SmsCampaigin)

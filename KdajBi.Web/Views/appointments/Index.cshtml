@@ -729,9 +729,11 @@
         var resourceA=null;
         function loadCalendar() {
             var mySlot = localStorage.getItem("Slot");
+            var myView = localStorage.getItem("View");
             var cancelSwipe = false;
             var calEvents=@Html.Raw(Model.calEvents);
             if (mySlot == null) { mySlot = "00:30"; }
+            if (myView == null) { myView = "resourceTimeGridDay"; }
                 loadLocale(navigator.language.slice(0, 2))
                     .then(function () {
                         var idate = new Date();
@@ -739,11 +741,12 @@
                         if (searchParams.has('date')) { idate = searchParams.get('date'); }
                         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                             locale: navigator.language.slice(0, 2),
+                            firstDay:1,
                             eventDisplay: 'block',
                             themeSystem: 'bootstrap',
                             stickyFooterScrollbar: true,
                             stickyHeaderDates: true,
-                            initialView: 'resourceTimeGridDay',
+                            initialView: myView,
                             initialDate: idate,
                             allDaySlot: false,
                             slotMinTime: "@Html.Raw(Model.Location.Schedule.minTime())", //"7:00:00",
@@ -808,9 +811,10 @@
                                         $("#myDatePickModal").modal("show"); }
                                 },
                             },
+
                             views: {
                                 resourceTimeGridDay: {
-                                    titleFormat: function(date) { return dayjs(date.start.marker).format("dddd, ll"); }
+                                    titleFormat: function (date) { return dayjs(date.start.marker).format("dddd, ll"); }
                                 },
                                 resourceTimeGridTwoDay: {
                                     type: 'resourceTimeGrid',
@@ -870,14 +874,20 @@
                             eventDrop: function (info) {
                                 console.info("eventDrop: info:", info);
                                 cancelSwipe = true;
-                                SaveDragedEvent(info)
-                                    .catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); })
-                                    .then(() => {
-                                        if (typeof info.event?.extendedProps?.client != "undefined") {
-                                            var client = JSON.parse(info.event.extendedProps.client);
-                                            notifyClient(info.event.start, client.mobile, client.value);
-                                        }
-                                    });
+                                Swal.fire({
+                                    title: 'Premaknem naročilo?', showDenyButton: true, confirmButtonText: 'Da', denyButtonText: 'Ne',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        SaveDragedEvent(info)
+                                            .catch((result) => { result.revert(); toastr.error("Napaka! (pritisnite tipko F5)"); })
+                                            .then(() => {
+                                                if (typeof info.event?.extendedProps?.client != "undefined") {
+                                                    var client = JSON.parse(info.event.extendedProps.client);
+                                                    notifyClient(info.event.start, client.mobile, client.value);
+                                                }
+                                            });
+                                    } else { info.revert(); }
+                                });
                             },
                             eventResize: function (event, dayDelta, minuteDelta) {
                                 //console.info("eventResize: ", event);
@@ -902,6 +912,8 @@
                             longPressDelay: 300,
                             datesSet: function (dateInfo) {
                                 console.info("date changes to:", dateInfo.start);
+                                console.info("view changes to:", dateInfo.view);
+                                localStorage.setItem("View", dateInfo.view.type);
                                 let dateE = dateInfo.end;
                                 var datum =dayjs(dateInfo.start).add(1, 'month').toDate()
                                 FetchRenderEvents(calendar, dateInfo.start)
@@ -917,9 +929,41 @@
                                 </text>
                                 }
 
+                                //show hollydays
+                                var daysOfYear = [];
+                                var de = dateInfo.end;
+                                de.setDate(dateInfo.end.getDate() - 1)
+                                for (var d = dateInfo.start; d <= de; d.setDate(d.getDate() + 1)) {
+                                    daysOfYear.push(dayjs(new Date(d)).format("YYYY-MM-DD"));
+                                }
+
+                                let endPatterns = ['01-01','01-02','02-08','04-27','05-01','05-02','06-25','08-15','10-31','11-01','12-25','12-26'];
+                                //add easter monday
+                                endPatterns.push(getEasterMonday(dateInfo.start.getFullYear()));
+                                let filtered = daysOfYear.filter(day => (
+                                    endPatterns.some(pattern => day.endsWith(pattern))
+                                ));
+                                
+                                filtered.forEach(function (item, index) {
+                                    switch (dateInfo.view.type) {
+                                        case 'resourceTimeGridDay':
+                                            $("#calendar").find('.fc-toolbar > div > h2').addClass('text-danger'); //day
+                                            break;
+                                        case 'resourceTimeGridTwoDay':
+                                        case 'timeGridWeek':
+                                            $("#calendar").find('th[data-date="' + item + '"]').addClass('text-danger'); //3dni,week
+
+                                            break;
+                                        case 'dayGridMonth':
+                                            $("#calendar").find('td[data-date="' + item + '"]').addClass('text-danger'); //month
+                                            break;
+                                        default:
+                                    }
+                                });
+                                
                             }
 
-
+                            
 
                             });
                         calendar.render();
@@ -976,7 +1020,7 @@
                                 fp = $("#dpstart").flatpickr({
                                     altInput: true,
                                     wrap:true,
-                                    minDate: new Date(),
+                                    //minDate: new Date(),
                                     locale: dayjs.locale(),
                                     plugins: [new confirmDatePlugin({ showAlways: true })],
                                     enableTime: true, //minTime: "8:00", maxTime: "20:00",
@@ -1260,10 +1304,7 @@
 
         function DeleteEvent(info) {
             Swal.fire({
-                title: 'Zbrišem naročilo?',
-                showDenyButton: true,
-                confirmButtonText: 'Da',
-                denyButtonText: 'Ne',
+                title: 'Zbrišem naročilo?', showDenyButton: true, confirmButtonText: 'Da', denyButtonText: 'Ne',
             }).then((result) => {
                 if (result.isConfirmed) {
                     var res = info.event.getResources();
@@ -1813,6 +1854,26 @@
                 }
 
         }
+
+        function getEasterMonday(year) {
+	        var f = Math.floor,
+		        // Golden Number - 1
+		        G = year % 19,
+		        C = f(year / 100),
+		        // related to Epact
+		        H = (C - f(C / 4) - f((8 * C + 13)/25) + 19 * G + 15) % 30,
+		        // number of days from 21 March to the Paschal full moon
+		        I = H - f(H/28) * (1 - f(29/(H + 1)) * f((21-G)/11)),
+		        // weekday for the Paschal full moon
+		        J = (year + f(year / 4) + I + 2 - C + f(C / 4)) % 7,
+		        // number of days from 21 March to the Sunday on or before the Paschal full moon
+		        L = I - J,
+		        month = 3 + f((L + 40)/44),
+		        day = L + 28 - 31 * f(month / 4);
+
+	        return  dayjs(new Date(year, month-1, day+1)).format("YYYY-MM-DD");
+        }
+
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoadOkay()" onerror="gapiLoadFail(event)"></script>
 

@@ -12,6 +12,7 @@
     <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+    <link href="~/plugins/icheck-bootstrap/icheck-bootstrap.min.css" rel="stylesheet" />
 }
 
 
@@ -40,10 +41,7 @@
                                         Pošlji
                                     </th>
                                     <th>
-                                        Potrjeno
-                                    </th>
-                                    <th>
-                                        Preklicano
+                                        Potrjeno Preklicano
                                     </th>
                                     <th>
                                         Poslano
@@ -51,6 +49,7 @@
                                     <th>
                                         Status pošiljanja
                                     </th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -89,7 +88,8 @@
     <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
 
     <script type="text/javascript">
-    
+
+        var table;
         var SelectedClientID;
         @await Html.PartialAsync("_ApiAccess")
 
@@ -138,14 +138,14 @@
           const subString = str.substr(0, n-1); // the original check
           return (useWordBoundary 
             ? subString.substr(0, subString.lastIndexOf(" ")) 
-            : subString) + '<a href="#" data-toggle="popover" data-content="'+str+'">&hellip;</a>';
+            : subString) + '<a href="#!" data-toggle="popover" data-content="'+str+'">&hellip;</a>';
         };
         
 
         var GetSmsTable = function () {
 
             getAPIToken().then((result) => {
-            var table = $('#dataTable').DataTable({
+            table = $('#dataTable').DataTable({
                 destroy: true,
                 responsive: true,
                 'order': [[0, 'desc']],
@@ -188,19 +188,27 @@
                     {
                         'data': 'approvedAt', className: 'text-center',
                         render: function (data, type, row, meta) {
-                            if (row.approvedAt != null)
-                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" checked="checked"><label class="custom-control-label"></label></div>'; }
-                            else
-                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" ><label class="custom-control-label"></label></div>'; }
-                        }
-                    },
-                    {
-                        'data': 'canceledAt', className: 'text-center',
-                        render: function (data, type, row, meta) {
+                            var popTxt = '';
+                            var check = '';
                             if (row.canceledAt != null)
-                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" checked="checked"><label class="custom-control-label"></label></div>'; }
+                            {
+                                popTxt = "Preklicano " + dayjs(row.canceledAt).format('L LT');
+                                check = '<div class="icheck-danger"><input type="checkbox"  checked="checked"><label ></label></div>';
+                            }
                             else
-                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" ><label class="custom-control-label"></label></div>'; }
+                            {
+                                if (row.approvedAt != null)
+                                {
+                                    popTxt = "Potrjeno " + dayjs(row.approvedAt).format('L LT');
+                                    check = '<div class="icheck-success"><input type="checkbox" checked="checked"><label ></label></div>';
+                                }
+                                else
+                                {
+                                    popTxt = "Še ni potrjeno ali preklicano"
+                                    check = '<div class="icheck-default"><input type="checkbox"><label ></label></div>';
+                                }
+                            }
+                            return '<a href="#!" data-toggle="popover" data-content="'+popTxt+'">'+check+'</a>'
                         }
                     },
                     { 'data': 'sentAt',
@@ -208,21 +216,31 @@
                             if (row.sentAt != null) { return dayjs(row.sentAt).format('L LT'); }
                             else { return "";}
                         }  },
-                    {
-                        'data': 'recipientsCount', className: 'text-center',
+                    { 'data': 'recipientsCount', className: 'text-center',
                         render: function (data, type, row, meta) {
+                            var classText = '';
+                            var apiresp = ((row.recipients[0].apiResponse !='OK' && row.recipients[0].apiResponse !=null) ? " / " + row.recipients[0].apiResponse : '');
                             if (row.recipientsCount > 1)
                             { return "<a href='/sms/campaign/" + row.id + "'>" + row.recipientsCount + "/<p class='text-success d-inline' >" + row.sentOk + "</p>/<p class='text-danger d-inline'>" + row.sentError + "</p></a>"; }
                             else {
                                 if (row.recipients[0].client != null) {
-                                    if (row.sentOk == 1) { return "<p class='text-success d-inline' >" + row.recipients[0].client.fullName + " (" + row.recipients[0].recipient + ")</p>"; }
-                                    else { return "<p class='text-danger d-inline' >" + row.recipients[0].client.fullName + " (" + row.recipients[0].recipient + ")" + (row.recipients[0].apiResponse ? " / " + row.recipients[0].apiResponse : '') + "</p>"; }
+                                    if (row.sentOk == 1) { classText = 'text-success';  }
+                                    else {
+                                        if (row.sentAt != null) { classText = "text-danger"; }
+                                    }
+                                    return "<p class='" + classText + " d-inline' >" + row.recipients[0].client.fullName + " (" + row.recipients[0].recipient + ")" + apiresp + "</p>";
                                 } else
                                     {
                                     if (row.sentOk == 1) { return "<p class='text-success d-inline' >" +  "(" + row.recipients[0].recipient + ")</p>"; }
-                                    else { return "<p class='text-danger d-inline' >" + "(" + row.recipients[0].recipient + ")" + (row.recipients[0].apiResponse ? " / " + row.recipients[0].apiResponse : '') + "</p>"; }
+                                    else { return "<p class='text-danger d-inline' >" + "(" + row.recipients[0].recipient + ")" + apiresp  + "</p>"; }
                                 }
                             }
+                        }
+                    },
+                    { data:null, 'orderable': false,
+                        render: function (data, type, row, meta) {
+                            if (row.recipientsCount == 1) { return '<a class="btn btn-default" data-id="'+meta.row+'" onclick="resendSMS(event)">Ponovno pošlji</a>'; }
+                            else { return null; }
                         }
                     }
                 ]
@@ -235,7 +253,46 @@
 
         }
 
-        
+        function resendSMS(e) {
+            console.log(e.target.getAttribute('data-id'))
+            var data = table.row(e.target.getAttribute('data-id')).data();
+            var ClientId = (data.recipients[0].client != null ? data.recipients[0].client.id : 0);
+            //resend sms campaign
+            Swal.fire({
+                title: 'Ponovno pošljem sporočilo ' + (ClientId != 0 ? data.recipients[0].client.fullName : data.recipients[0].recipient) + ' ?', html: '<p>' + data.msgTxt + '</p>',
+                showDenyButton: true, confirmButtonText: 'Da', denyButtonText: 'Ne',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var smsc = {};
+                    smsc.CampaignType = 3; //direct without approval
+                    smsc.LocationId = $("#cboLocations").val();
+                    smsc.MsgTxt = data.msgTxt;
+                    smsc.SendAfter = dayjs.utc().local();
+                    smsc.Recipients = [data.recipients[0].recipient + '|' + ClientId];
+
+                    getAPIToken().then((result) => {
+                        $.ajax({
+                            type: "post",
+                            data: JSON.stringify(smsc),
+                            url: apiURL + "/api/Sms/QueueSmsCampaign",
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (result) {
+                                if (result == "OK") {
+                                    toastr.success('SMS uspešno poslan');
+                                }
+                                else { toastr.error("Napaka pri pošiljanju:" + result); return false; }
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka pri pošiljanju:" + error.toString());
+                                return false;
+                            }
+                        });
+                    });
+                } else { return false; }
+            });
+        }
 
     </script>
 }

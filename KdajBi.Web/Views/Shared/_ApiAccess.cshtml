@@ -38,6 +38,6 @@ var apiUser='@Html.Raw(@UserManager.GetUserName(User))';
 
 async function getAPIToken() {
     return new Promise(function(resolve, reject) {
-        refreshAPIToken().then((result) => {  console.log('new api TokenExpiresAt (UTC):'+new Date((result.Expiration-621355968000000000)/10000) ); return result; }).then((result) => { resolve(result) }).catch((error) => { toastr.error("Napaka:" + error.toString()); reject(); });
+        refreshAPIToken().then((result) => { console.log('new api TokenExpiresAt (UTC):'+new Date((result.Expiration-621355968000000000)/10000) ); return result; }).then((result) => { resolve(result) }).catch((error) => { toastr.error("Napaka:" + error.toString()); reject(); });
     });
 }
