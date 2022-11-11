@@ -17,13 +17,14 @@ var apiUser='@Html.Raw(@UserManager.GetUserName(User))';
                 $.ajax({
                     type: "post",
                     data: JSON.stringify(reqdata),
-                    url: apiURL+"/api/token/refresh",
+                    url: "@Url.Action("apitoken","Account")/",
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     success: function (result) {
-                        apiToken.RefreshToken=result.refreshToken;
-                        apiToken.AccessToken=result.accessToken;
-                        apiToken.Expiration=result.expiration;
+                        let newT=JSON.parse(result);
+                        apiToken.RefreshToken=newT.RefreshToken;
+                        apiToken.AccessToken=newT.AccessToken;
+                        apiToken.Expiration=newT.Expiration;
                         resolve(apiToken);
                     },
                     error: function (xhr, status, error) {

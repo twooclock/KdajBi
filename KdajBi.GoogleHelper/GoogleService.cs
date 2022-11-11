@@ -47,19 +47,25 @@ namespace KdajBi.GoogleHelper
         public GoogleService(string p_userid, GoogleAuthToken p_googleAuthToken)
         {
             googleAuthToken = p_googleAuthToken;
-            Logger.Info("New GoogleService with token that expires on (UTC) " + googleAuthToken.expires_at.ToString());
+            Logger.Info("New GoogleService for " + p_userid + " with token that expires on (UTC) " + googleAuthToken.expires_at.ToString());
             if (p_googleAuthToken.expires_at.AddMinutes(-5) < DateTime.UtcNow)
             {
+                Logger.Info("GoogleService have to refresh token for " + p_userid + " since "+ p_googleAuthToken.expires_at.AddMinutes(-5).ToString()+" < "+ DateTime.UtcNow.ToString() + " / access token expires on (UTC) " + googleAuthToken.expires_at.ToString());
                 try
                 {
                     TokenWasRefreshed = true;
-                    var rt = RefreshTokenAsync(p_userid, p_googleAuthToken).Result;
-                    googleAuthToken.access_token = rt.access_token;
-                    Logger.Info("GoogleService TokenWasRefreshed=" + TokenWasRefreshed.ToString() + " with token that expires on (UTC) " + googleAuthToken.expires_at.ToString());
+                    if (p_googleAuthToken.refresh_token.Length == 0)
+                    {
+                        TokenWasRefreshed = false;
+                        Logger.Warn("GoogleService should RefreshAccessToken but RefreshToken is missing for "+ p_userid + "!"); }
+                    else
+                    { var rt = RefreshTokenAsync(p_userid, p_googleAuthToken).Result; }
+                    //googleAuthToken.access_token = rt.access_token;
+                    Logger.Info("GoogleService TokenWasRefreshed=" + TokenWasRefreshed.ToString() + " for "+ p_userid + " / access token expires on (UTC) " + googleAuthToken.expires_at.ToString());
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(ex);
+                    Logger.Error(ex,"Error refreshing token");
                     throw;
                 }
             }
@@ -84,6 +90,7 @@ namespace KdajBi.GoogleHelper
             var credential = new UserCredential(flow, p_userid, tokenResponse);
 
             var dobil = await credential.RefreshTokenAsync(CancellationToken.None);
+            TokenWasRefreshed = dobil;
             Logger.Info("credential.RefreshTokenAsync returned:{0}", dobil.ToString());
             if (googleAuthToken.access_token != credential.Token.AccessToken)
             {

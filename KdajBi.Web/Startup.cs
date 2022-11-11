@@ -67,6 +67,7 @@ namespace KdajBi
                    opts.Scope.Add("https://www.googleapis.com/auth/calendar");
                    opts.AccessType = "offline";
                    opts.SaveTokens=true;
+                   opts.AuthorizationEndpoint = string.Concat(opts.AuthorizationEndpoint, "?prompt=consent");
                });
 
 

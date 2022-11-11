@@ -36,12 +36,12 @@ namespace KdajBi.Web.Services
     {
         public readonly ApiSettings _apiSettings;
         protected readonly ILogger _logger;
-        private Dictionary<string, JwtToken> myToken;
+        private Dictionary<string, JwtToken> myTokens;
         public ApiTokenProvider(IOptions<ApiSettings> apiSettings, ILogger<ApiTokenProvider> logger)
         {
             _apiSettings = apiSettings.Value;
             _logger = logger;
-            myToken = new Dictionary<string, JwtToken>();
+            myTokens = new Dictionary<string, JwtToken>();
         }
 
 
@@ -50,34 +50,34 @@ namespace KdajBi.Web.Services
             try
             {
 
-                if (myToken.ContainsKey(email) == true)
+                if (myTokens.ContainsKey(email) == true)
                 {
-                    if (myToken[email].Expiration == 0)
+                    if (myTokens[email].Expiration == 0)
                     {
                         //request token
-                        _logger.LogInformation("GetToken.ExpirationRequestToken");
-                        myToken[email] = RequestToken(email);
+                        _logger.LogInformation("GetAPIToken.Expiration=0 -> RequestToken("+ email + ")");
+                        myTokens[email] = RequestToken(email);
                     }
                     else
                     {
-                        if (DateTime.UtcNow.Ticks > myToken[email].Expiration)
+                        if (DateTime.UtcNow.Ticks > myTokens[email].Expiration)
                         {
                             //refresh token if expired
-                            _logger.LogInformation("GetToken.ExpiredRefreshToken");
-                            myToken[email] = RefreshToken(email);
+                            _logger.LogInformation("GetAPIToken.Expired -> RefreshToken("+ email + ")");
+                            myTokens[email] = RefreshToken(email);
                         }
                     }
                 }
                 else {
-                    _logger.LogInformation("GetToken.FirstRequestToken");
-                    myToken[email] = RequestToken(email); }
+                    _logger.LogInformation("GetAPIToken.FirstRequestToken("+ email + ")");
+                    myTokens[email] = RequestToken(email); }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "getToken", email);
+                _logger.LogError(ex, "GetAPIToken", email);
                 throw;
             }
-            return myToken[email];
+            return myTokens[email];
         }
 
         public ApiSettings Settings()
@@ -93,8 +93,8 @@ namespace KdajBi.Web.Services
                 HttpClient client = new HttpClient();
                 client.BaseAddress = new Uri(_apiSettings.BaseAddress);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + myToken[email].AccessToken);
-                string stringData = "{\"UserEmail\":\"" + email + "\",\"Token\":\"" + myToken[email].RefreshToken + "\"}";
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + myTokens[email].AccessToken);
+                string stringData = "{\"UserEmail\":\"" + email + "\",\"Token\":\"" + myTokens[email].RefreshToken + "\"}";
                 var contentData = new StringContent(stringData, System.Text.Encoding.UTF8, "application/json");
                 HttpResponseMessage response = client.PostAsync(_apiSettings.RefreshAddress, contentData).Result;
                 string jsonstringJWT = response.Content.ReadAsStringAsync().Result;
@@ -102,11 +102,12 @@ namespace KdajBi.Web.Services
                 switch (response.StatusCode)
                 {
                     case System.Net.HttpStatusCode.OK:
-                        myToken[email] = JsonConvert.DeserializeObject<JwtToken>(jsonstringJWT);
+                        myTokens[email] = JsonConvert.DeserializeObject<JwtToken>(jsonstringJWT);
+                        _logger.LogInformation("RefreshToken(" + email + ") success got:" + jsonstringJWT);
                         break;
                     default:
-                        _logger.LogInformation("RefreshToken Unexpected StatusCode:"+response.StatusCode.ToString());
-                        myToken[email] = RequestToken(email);
+                        _logger.LogInformation("RefreshToken("+email+") Unexpected StatusCode:"+response.StatusCode.ToString()+" got:"+ jsonstringJWT+" payload was:"+ stringData);
+                        myTokens[email] = RequestToken(email);
                         break;
                 }
 
@@ -115,9 +116,9 @@ namespace KdajBi.Web.Services
             {
                 _logger.LogError(ex, "RefreshToken(" + email + ")");
                 fals.AccessToken = "RefreshToken Exception";
-                myToken[email] = fals;
+                myTokens[email] = fals;
             }
-            return myToken[email];
+            return myTokens[email];
         }
 
         private JwtToken RequestToken(string email)
@@ -142,25 +143,25 @@ namespace KdajBi.Web.Services
                 switch (response.StatusCode)
                 {
                     case System.Net.HttpStatusCode.OK:
-                        myToken[email] = JsonConvert.DeserializeObject<JwtToken>(jsonstringJWT);
+                        myTokens[email] = JsonConvert.DeserializeObject<JwtToken>(jsonstringJWT);
                         break;
                     case System.Net.HttpStatusCode.BadRequest:
                         _logger.LogWarning("RequestToken BadRequest");
                         fals.AccessToken = "RequestToken BadRequest";
-                        myToken[email] = fals;
+                        myTokens[email] = fals;
                         break;
                     default:
                         try
                         {
                             _logger.LogInformation("RequestToken Unexpected StatusCode:" + response.StatusCode.ToString());
                             _logger.LogInformation("Token:" + jsonstringJWT);
-                            myToken[email] = JsonConvert.DeserializeObject<JwtToken>(jsonstringJWT);
+                            myTokens[email] = JsonConvert.DeserializeObject<JwtToken>(jsonstringJWT);
                         }
                         catch (Exception ex)
                         {
                             _logger.LogWarning(ex, "RequestToken Unexpected StatusCode no JWT");
                             fals.AccessToken = "RequestToken UnexpectedStatusCode";
-                            myToken[email] = fals;
+                            myTokens[email] = fals;
                         }
                         break;
                 }
@@ -171,9 +172,9 @@ namespace KdajBi.Web.Services
             {
                 _logger.LogError(ex, "RequestToken(" + email + ")");
                 fals.AccessToken = "Exception";
-                myToken[email] = fals;
+                myTokens[email] = fals;
             }
-            return myToken[email];
+            return myTokens[email];
         }
     }
 }

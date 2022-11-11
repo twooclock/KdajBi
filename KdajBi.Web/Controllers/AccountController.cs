@@ -183,7 +183,10 @@ namespace KdajBi.Web.Controllers
                 if (refresh_token != null)
                 {
                     newToken.refresh_token = refresh_token;
+                    _logger.LogInformation("Got refresh_token for user {0} after user login!", appUser.Email);
                 }
+                else
+                { _logger.LogWarning( "Got no refresh_token for user {0} after user login!", appUser.Email); }
                 DateTimeOffset dateOffset;
                 if (DateTimeOffset.TryParse(info.AuthenticationTokens.SingleOrDefault(x => x.Name == "expires_at").Value, null, DateTimeStyles.AssumeUniversal, out dateOffset))
                 {
@@ -400,6 +403,17 @@ namespace KdajBi.Web.Controllers
             GoogleAuthToken myToken = _CurrentUserGooToken();
             if (myToken != null) { 
                 myToken.refresh_token = ""; 
+            }
+            return Json(JsonConvert.SerializeObject(myToken));
+        }
+
+        [HttpPost("/account/apitoken")]
+        public async Task<IActionResult> apitoken()
+        {
+            JwtToken myToken = _GetToken();
+            if (myToken != null)
+            {
+                myToken.RefreshToken = ""; //refresh token stays on server
             }
             return Json(JsonConvert.SerializeObject(myToken));
         }

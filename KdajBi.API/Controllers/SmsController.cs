@@ -279,7 +279,11 @@ namespace KdajBi.API.Controllers
             string retval = "";
             if (ModelState.IsValid)
             {
-                //get sms limit info
+                if (p_message.Length == 0) {
+                    var company = await _context.Companies.Where(c => c.Id == _CurrentUserCompanyID()).FirstOrDefaultAsync();
+                    if (company != null) { p_message=company.Name; }
+                }
+                
                 retval = _smsInfo.SmsMakeOrder("KB" + _CurrentUserCompanyID().ToString(), _CurrentUserCompanyTaxID(),"",p_quantity,p_message);
 
             }

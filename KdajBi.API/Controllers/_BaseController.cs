@@ -57,7 +57,9 @@ namespace KdajBi.API.Controllers
                 {
                     if (service.TokenWasRefreshed == true)
                     {
-                        gooToken = service.googleAuthToken;
+                        gooToken.access_token = service.googleAuthToken.access_token;
+                        gooToken.expires_at = service.googleAuthToken.expires_at;
+                        if (service.googleAuthToken.refresh_token != null) { gooToken.refresh_token = service.googleAuthToken.refresh_token; }
                         var strJson = JsonConvert.SerializeObject(gooToken);
                         var myClaim = new Claim("GooToken", strJson);
                         AppUser appUser = _userManager.FindByNameAsync(_CurrentUserEmail()).Result;
