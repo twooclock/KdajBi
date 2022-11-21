@@ -24,11 +24,10 @@ var DISCOVERY_DOCS = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/r
         // NOTE: OAuth2 'scope' and 'client_id' parameters have moved to initTokenClient().
       })
       .then(function() {  // Load the Calendar API discovery document.
-        gapi.client.load(DISCOVERY_DOCS);
+        gapi.client.load(DISCOVERY_DOCS).then(function() { resolve();});
       })
          .then(function() {  // Load the token.
         gapi.client.setToken({ access_token: gooToken.access_token, expires_at:gooToken.expires_at });
-resolve();
       });
     } catch(error) { reject(error); }
 })
@@ -36,19 +35,17 @@ resolve();
 
  async function getGAPIToken() {
     return new Promise(function(resolve, reject) {
-console.log('GOO token expires at:'+ new Date(gooToken.expires_at));
             if (Date.now() < new Date(gooToken.expires_at).getTime())
-            { console.log('serving goo token'); resolve(gooToken); }
+            { resolve(gooToken); }
             else {
                 //request new gapi token
-console.log('req new goo token')
                 $.ajax({
                     type: "post",
                     url: "@Url.Action("gapitoken","Account")/",
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     success: function (strJson) {
-var newToken=JSON.parse(strJson);
+                        var newToken=JSON.parse(strJson);
                         gooToken.access_token=newToken.access_token;
                         gooToken.expires_at=new Date(newToken.expires_at);
                         resolve(gooToken);
@@ -64,6 +61,6 @@ var newToken=JSON.parse(strJson);
 
 async function refreshGAPIToken() {
     return new Promise(function(resolve, reject) {
-        getGAPIToken().then((result) => { gapi.client.setToken({ access_token: result.access_token, expires_at:result.expires_at }); console.log('new goo TokenExpiresAt:'+result.expires_at ); return result; }).then((result) => { resolve(result) }).catch((error) => { toastr.error("Napaka:" + error.toString()); reject(); });
+        getGAPIToken().then((result) => { gapi.client.setToken({ access_token: result.access_token, expires_at:result.expires_at });  return result; }).then((result) => { resolve(result) }).catch((error) => { toastr.error("Napaka:" + error.toString()); reject(); });
     });
 }

@@ -411,11 +411,12 @@ namespace KdajBi.Web.Controllers
         public async Task<IActionResult> apitoken()
         {
             JwtToken myToken = _GetToken();
-            if (myToken != null)
-            {
-                myToken.RefreshToken = ""; //refresh token stays on server
-            }
-            return Json(JsonConvert.SerializeObject(myToken));
+            
+            JwtToken retval = new JwtToken();
+            retval.AccessToken = myToken.AccessToken;
+            retval.Expiration = myToken.Expiration;
+            retval.RefreshToken = ""; //refresh token stays on server
+            return Json(JsonConvert.SerializeObject(retval));
         }
     }
 }

@@ -1011,7 +1011,7 @@
                 loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
                     .then(async function () {
                         dayjs.locale(navigator.language.slice(0, 2));
-                        await initializeGapi().then((result) => { loadCalendar(); }).catch((err) => { toastr.error("Napaka pri komunikaciji z Googlom!\nPoskusite se odjaviti in ponovno prijaviti."); });
+                        await initializeGapi().then((result) => { if (gapi.client.calendar != null) { console.log('loading calendar'); loadCalendar(); };  }).catch((err) => { toastr.error("Napaka pri komunikaciji z Googlom!\nPoskusite se odjaviti in ponovno prijaviti."); });
 
 
 
@@ -1222,6 +1222,7 @@
                 var cHour = arg.end.getHours();
                 var cMinuts = arg.end.getMinutes();
                 var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            tp.setDate(arg.end);
             $("#txtEndTime").val(outStr);
             $("#cboGooCal").selectpicker('val', arg.resource.extendedProps.gid);
             $('#cmdDelete').addClass('invisible');
@@ -1279,6 +1280,7 @@
             var cHour = info.event.end.getHours();
             var cMinuts = info.event.end.getMinutes();
             var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+            tp.setDate(info.event.end);
             $("#txtEndTime").val(outStr);
             var res = info.event.getResources();
             $("#cboGooCal").selectpicker('val', res[0].extendedProps.gid);
@@ -1673,6 +1675,7 @@
                 var cHour = newEndTime.getHours();
                 var cMinuts = newEndTime.getMinutes();
                 var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
+                tp.setDate(newEndTime);
                 $(p_selector).val(outStr);
             }
         }

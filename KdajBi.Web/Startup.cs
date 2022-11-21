@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Collections.Generic;
 
 namespace KdajBi
@@ -70,7 +71,12 @@ namespace KdajBi
                    opts.AuthorizationEndpoint = string.Concat(opts.AuthorizationEndpoint, "?prompt=consent");
                });
 
-
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                options.Cookie.MaxAge = options.ExpireTimeSpan; 
+                options.SlidingExpiration = true;
+            });
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", p =>

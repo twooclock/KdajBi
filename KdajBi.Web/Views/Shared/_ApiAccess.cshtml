@@ -22,10 +22,13 @@ var apiUser='@Html.Raw(@UserManager.GetUserName(User))';
                     dataType: "json",
                     success: function (result) {
                         let newT=JSON.parse(result);
-                        apiToken.RefreshToken=newT.RefreshToken;
-                        apiToken.AccessToken=newT.AccessToken;
-                        apiToken.Expiration=newT.Expiration;
-                        resolve(apiToken);
+                        if (newT.AccessToken.substring(0,5)!='ERROR')
+                        {                        
+                            apiToken.RefreshToken=newT.RefreshToken;
+                            apiToken.AccessToken=newT.AccessToken;
+                            apiToken.Expiration=newT.Expiration;
+                            resolve(apiToken);
+                        } else {window.location.href = window.location.href.split('#')[0];}
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Napaka:" + error.toString());

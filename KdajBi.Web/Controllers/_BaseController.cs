@@ -92,13 +92,23 @@ namespace KdajBi.Web.Controllers
 
         protected JwtToken _GetToken()
         {
-            JwtToken retval = _apiTokenProvider.GetToken(User.Identity.Name);
-            if (retval != null)
-            { return retval; }
+            JwtToken retval;
+            if (User.Identity.IsAuthenticated)
+            {
+                retval = _apiTokenProvider.GetToken(User.Identity.Name);
+                if (retval != null)
+                { return retval; }
+                else
+                {
+                    retval = new JwtToken();
+                    retval.AccessToken = "ERROR:No token for " + User.Identity.Name;
+                    return retval;
+                }
+            }
             else
             {
                 retval = new JwtToken();
-                retval.AccessToken = "GetTokenError:"+ User.Identity.Name;
+                retval.AccessToken = "ERROR:User not authenticated";
                 return retval;
             }
         }
