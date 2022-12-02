@@ -13,7 +13,7 @@
         </div>
         <div class="card-body">
             <p>@Html.Raw(item.AppointmentToken.Service)</p>
-            <p>@Html.Raw(item.Start.ToString("dd.MM.yyyy"))</p>
+            <p><a href="~/appointments/index?date=@Html.Raw(item.Start.ToString("yyyy-MM-dd"))">@Html.Raw(item.Start.ToString("dd.MM.yyyy"))</a></p>
             <p>@Html.Raw(item.Start.ToString("HH:mm")) - @Html.Raw(item.End.ToString("HH:mm"))</p>
         </div>
         <div class="card-footer px-auto">

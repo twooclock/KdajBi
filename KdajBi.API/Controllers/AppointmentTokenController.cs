@@ -74,7 +74,39 @@ namespace KdajBi.API.Controllers
             //manjka workplace (zaposleni)
             _context.AppointmentTokens.Add(appointmentToken);
                 
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
+
+            // obvesti stranko prek sms (appointmentToken.ClientId)
+            SmsCampaign newSmsCampaign = new SmsCampaign();
+            newSmsCampaign.Company.Id = _CurrentUserCompanyID();
+            newSmsCampaign.LocationId = appointmentTokenRequest.LocationId;
+            newSmsCampaign.AppUser.Id = _CurrentUserID();
+            
+            newSmsCampaign.MsgTxt = @"Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/"+ appointmentToken.Token;
+
+            var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+            newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+
+            newSmsCampaign.Name = "AppointmentLink";
+
+            newSmsCampaign.Recipients.Add(new SmsMsg("", appointmentToken.ClientId));
+                        
+            newSmsCampaign.SendAfter = DateTime.Now;
+            newSmsCampaign.ApprovedAt = DateTime.Now;
+                    
+
+            _context.Attach(newSmsCampaign.Company);
+            _context.Attach(newSmsCampaign.AppUser);
+            _context.SmsCampaigns.Add(newSmsCampaign);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "/api/appointment-tokens Error");
+                throw;
+            }
 
             return Ok(appointmentToken);
         }

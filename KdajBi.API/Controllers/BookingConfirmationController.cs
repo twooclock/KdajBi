@@ -56,10 +56,10 @@ namespace KdajBi.API.Controllers
         {
 
             // validate timeslot
-
             BookingConfirmation bookingConfirmation = _context.BookingConfirmations
                 .Include(b => b.AppointmentToken)
                 .Include(b => b.AppointmentToken.Client)
+                .Include(b => b.AppointmentToken.Location)
                 .Include(b => b.AppointmentToken.Workplace)
                 .Where(b => b.AppointmentToken.CompanyId == _CurrentUserCompanyID())
                 .FirstOrDefault(b => b.Id == id);
@@ -74,7 +74,40 @@ namespace KdajBi.API.Controllers
                     bookingConfirmation.GCalId
                 );
             }
-            _context.SaveChanges();
+
+            // obvesti stranko prek sms (TODO: naredi prek service)
+            SmsCampaign newSmsCampaign = new SmsCampaign();
+            newSmsCampaign.Company.Id = _CurrentUserCompanyID();
+            newSmsCampaign.LocationId = bookingConfirmation.AppointmentToken.LocationId;
+            newSmsCampaign.AppUser.Id = _CurrentUserID();
+
+            newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste "+ bookingConfirmation.Start.ToString("dd.MM.yyyy")+" ob "+ bookingConfirmation.Start.ToString("HH:mm")+". Lep pozdrav! ";
+            if (string.IsNullOrEmpty(bookingConfirmation.AppointmentToken.Location.Tel) == false)
+            { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookingConfirmation.AppointmentToken.Location.Tel; }
+            var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+
+            newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+
+            newSmsCampaign.Name = "AppointmentConfimation";
+
+            newSmsCampaign.Recipients.Add(new SmsMsg(bookingConfirmation.AppointmentToken.Client.FullName, bookingConfirmation.AppointmentToken.Client.Id));
+
+            newSmsCampaign.SendAfter = DateTime.Now;
+            newSmsCampaign.ApprovedAt = DateTime.Now;
+
+
+            _context.Attach(newSmsCampaign.Company);
+            _context.Attach(newSmsCampaign.AppUser);
+            _context.SmsCampaigns.Add(newSmsCampaign);
+            try
+            {
+                 _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "/api/appointment-tokens Error");
+                throw;
+            }
 
             return Ok();
         }

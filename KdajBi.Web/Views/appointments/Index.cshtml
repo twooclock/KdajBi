@@ -376,20 +376,23 @@
         @Html.Raw("var eventsMonths = []; eventsMonths.push(dayjs(Date()).format(\"YYYYMM\"));")
         async function FetchRenderEvents(p_calendar, p_date) {
             return new Promise(function (resolve, reject) {
-                console.info("FetchRenderEvents:", p_date);
-                if (isInArray(eventsMonths, dayjs(p_date).format("YYYYMM")) == false) {
-                    console.info("asking for events for ", dayjs(p_date).format("YYYY-MM"));
-                    var firstDayOfMonth = dayjs.utc().year(p_date.getFullYear()).month(p_date.getMonth()).startOf('month').local(); //  new Date(p_date.getFullYear(), p_date.getMonth(), 1);
-                    var lastDayOfMonth = dayjs.utc().year(p_date.getFullYear()).month(p_date.getMonth()).endOf('month').local()//new Date(p_date.getFullYear(), p_date.getMonth() + 1, 0);
+                var myDate = new Date(p_date.getTime());
+                console.info("FetchRenderEvents:", myDate);
+                eventsMonths.forEach(function (item, index) { console.log('eventsMonths' + index + ":" + item); });
+                if (isInArray(eventsMonths, dayjs(myDate).format("YYYYMM")) == false) {
+                    console.info("asking for events for ", dayjs(myDate).format("YYYY-MM"));
+                    var firstDayOfMonth = dayjs.utc().year(myDate.getFullYear()).month(myDate.getMonth()).startOf('month').local(); //  new Date(myDate.getFullYear(), myDate.getMonth(), 1);
+                    var lastDayOfMonth = dayjs.utc().year(myDate.getFullYear()).month(myDate.getMonth()).endOf('month').local()//new Date(myDate.getFullYear(), myDate.getMonth() + 1, 0);
 
                     refreshGAPIToken().then(async () => {
                         p_calendar.getResources().forEach(async function (aResource) {
                             //for each goo calendar
                             console.log(aResource.extendedProps.gid)
-                            await getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,"").catch(e => { console.log(e); eventsMonths = eventsMonths.filter(function(item) { return item !== dayjs(p_date).format("YYYYMM")})});
+                            await getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,"").catch(e => { console.log(e); eventsMonths = eventsMonths.filter(function(item) { return item !== dayjs(myDate).format("YYYYMM")})});
                         });
-
-                        eventsMonths.push(dayjs(p_date).format("YYYYMM"));
+                        console.log("eventsMonths.push myDate:" + myDate);
+                        console.log("eventsMonths.push myDate:" + dayjs(myDate).format("YYYYMM"));
+                        eventsMonths.push(dayjs(myDate).format("YYYYMM"));
                         resolve(true);
                     });
                 }
@@ -417,7 +420,7 @@
                     }
                     else {
                         getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,response.nextPageToken).catch(e => { console.log(e); });
-                        //var myEvents=[];
+                        
                         calendar.batchRendering(function() {
                             response.items.forEach(function (item) {
                                 calendar.addEvent({
@@ -448,14 +451,15 @@
         @Html.Raw("var resourceswd=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.resourcesWD));
         @Html.Raw("var exMonths = [];")
 
-         @{
+        @{
+             string val = "";
              bool nakaziUrnike = false;
              if (Model.Settings.TryGetValue("cbAppointments_ShowTimetables", out val) == true)
              {
                  nakaziUrnike =bool.Parse(val);
              }
 
-            }
+        }
 
         function isInArray(array, value) {
             return (array.find(item => { return item == value }) || []).length > 0;
@@ -508,14 +512,15 @@
 
         async function FetchRenderExceptions(p_calendar, p_date) {
             return new Promise(function (resolve, reject) {
-                console.info("FetchRenderExceptions:", p_date);
-                if (isInArray(exMonths, dayjs(p_date).format("YYYYMM")) == false) {
-                    console.info("asking for exceptions for ", dayjs(p_date).format("YYYY-MM"));
+                var myDate = new Date(p_date.getTime());
+                console.info("FetchRenderExceptions:", myDate);
+                if (isInArray(exMonths, dayjs(myDate).format("YYYYMM")) == false) {
+                    console.info("asking for exceptions for ", dayjs(myDate).format("YYYY-MM"));
                     getAPIToken().then((result) => {
                         $.ajax({
                             type: "post",
                             data: "",
-                            url: apiURL + "/api/GetLocationScheduleExceptions/@Html.Raw(Model.Location.Id)/" + dayjs(p_date).format("YYYYMMDD"),
+                            url: apiURL + "/api/GetLocationScheduleExceptions/@Html.Raw(Model.Location.Id)/" + dayjs(myDate).format("YYYYMMDD"),
                             contentType: "application/json; charset=utf-8",
                             headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                             dataType: "json",
@@ -542,7 +547,7 @@
                                 });
                                 RenderBackgroundEvents(p_calendar);
 
-                                exMonths.push(dayjs(p_date).format("YYYYMM"));
+                                exMonths.push(dayjs(myDate).format("YYYYMM"));
                                 resolve(true);
                             },
                             error: function (xhr, status, error) {
@@ -741,7 +746,16 @@
                         if (searchParams.has('date')) { idate = searchParams.get('date'); }
                         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                             locale: navigator.language.slice(0, 2),
-                            firstDay:1,
+                            firstDay: 1,
+@{
+    if (Model.Settings.TryGetValue("AppointmentsMinColWidth", out val) == true)
+    {
+        if (String.IsNullOrEmpty(val) == false)
+        {
+            @Html.Raw("dayMinWidth: "+val+",")
+        }
+    }
+}
                             eventDisplay: 'block',
                             themeSystem: 'bootstrap',
                             stickyFooterScrollbar: true,
@@ -943,7 +957,7 @@
                                 let filtered = daysOfYear.filter(day => (
                                     endPatterns.some(pattern => day.endsWith(pattern))
                                 ));
-                                
+
                                 filtered.forEach(function (item, index) {
                                     switch (dateInfo.view.type) {
                                         case 'resourceTimeGridDay':
@@ -960,10 +974,10 @@
                                         default:
                                     }
                                 });
-                                
+
                             }
 
-                            
+
 
                             });
                         calendar.render();
@@ -1716,6 +1730,12 @@
 
         function showSendLink() {
             PrepareModal('link');
+            $("#txtClientsearch").val('');
+            $("#txtClientMobile").val('');
+            $("#txtNotes").val('');
+            $("#txtNotes").tokenfield('setTokens', ' ');
+            $('#txtMinDuration').val('');
+
             $("#myModal").modal("show");
         }
 
@@ -1723,20 +1743,23 @@
             if (p_prepareFor == 'event') {
                 $('#cmdDelete').show();
                 $('#cmdSave').show();
+                $('#cmdMove').show();
                 $('#cmdSendLink').hide();
                 $('#rowMinDuration').hide();
                 $('#rowDT').show();
-                $("#cboGooCal option[value='0']").remove();
+                //$("#cboGooCal option[value='0']").remove();
                 $('#cboGooCal').selectpicker('refresh');
             }
             else {
                 $('#cmdSendLink').show();
+                $('#cmdMove').hide();
                 $('#cmdDelete').hide();
                 $('#cmdSave').hide();
                 $('#rowMinDuration').show();
                 $('#rowDT').hide();
-                $("#cboGooCal").prepend("<option value='0' selected='selected'>Kdorkoli</option>");
-                $('#cboGooCal').selectpicker('refresh');
+                //$("#cboGooCal option[value='0']").remove();
+                //$("#cboGooCal").prepend("<option value='0' selected='selected'>Kdorkoli</option>");
+                //$('#cboGooCal').selectpicker('refresh');
             }
         }
 
@@ -1761,11 +1784,11 @@
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
                     success: function (retval) {
-                        if (retval.hasOwnProperty('id')) { toastr.success("Link sent!"); }
-                        else { toastr.error("Link NOT sent!"); return false; }
+                        if (retval.hasOwnProperty('id')) { toastr.success("Povezava za naročanje je bila uspešno poslana stranki..."); }
+                        else { toastr.error("Nekaj je šlo narobe! Povezava za naročanje ni bila poslana stranki!"); return false; }
                     },
                     error: function (xhr, status, error) {
-                        toastr.error("Error saving client:" + error.toString());
+                        toastr.error("Nekaj je šlo narobe:" + error.toString());
                         return false;
                     }
                 });

@@ -55,7 +55,12 @@
                                                     </label>
                                                     <input type="text" id="txtRowHeight" name="txtRowHeight" class="form-control" />
                                                 </div>
-                                                
+                                                <div class="form-group">
+                                                    <label for="txtMinColWidth">
+                                                        Min. širina stolpca:
+                                                    </label>
+                                                    <input type="text" id="txtMinColWidth" name="txtMinColWidth" class="form-control" />
+                                                </div>
                                             </form>
                                             <div class="form-group">
                                                     <div class="col-sm-offset-2 col-sm-10">
@@ -180,7 +185,8 @@
             var settings = new Object();
             settings["AppointmentsShow3Calendars"] = $("#cbShow3Calendars").prop("checked");
             settings["AppointmentsRowHeight"] = $("#txtRowHeight").val(); 
-
+            settings["AppointmentsMinColWidth"] = $("#txtMinColWidth").val(); 
+        
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
@@ -205,6 +211,7 @@
             var settings = new Object();
             settings["AppointmentsShow3Calendars"] = 'false';
             settings["AppointmentsRowHeight"] = '';
+            settings["AppointmentsMinColWidth"] = '';
             
             getAPIToken().then((result) => {
                 $.ajax({
@@ -220,6 +227,9 @@
                          }
                          if (result["AppointmentsRowHeight"] != undefined) {
                              if (result["AppointmentsRowHeight"].length > 0) { $('#txtRowHeight').val(result["AppointmentsRowHeight"]); }
+                         }
+                         if (result["AppointmentsMinColWidth"] != undefined) {
+                             if (result["AppointmentsMinColWidth"].length > 0) { $('#txtMinColWidth').val(result["AppointmentsMinColWidth"]); }
                          }
                     },
                     error: function (xhr, status, error) {

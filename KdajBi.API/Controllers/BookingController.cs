@@ -148,7 +148,7 @@ namespace KdajBi.API.Controllers
 
             //urnik lokacije
             var location = _context.Locations.Include(s => s.Schedule).Where(x => x.Id == workplace.LocationId).FirstOrDefault();
-
+            
             if (location.Schedule.EventsJson != null)
             {
                 //not yet
@@ -245,6 +245,7 @@ namespace KdajBi.API.Controllers
             
             appointmentToken.Active = false;
             _context.SaveChanges();
+
 
             return Ok();
         }

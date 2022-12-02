@@ -59,7 +59,13 @@ namespace KdajBi.Core
                     .HasForeignKey(ur => ur.CompanyId)
                     .IsRequired();
             });
-            //builder.Entity<Location>().HasOne(s=>s.Schedule).WithOne().IsRequired();
+            //builder.Entity<Location>(b =>
+            //{
+            //    b.HasOne(e => e.Schedule)
+            //        .WithOne()
+            //        .IsRequired();
+            //});
+            builder.Entity<Location>().HasOne(s=>s.Schedule).WithOne().IsRequired();
             //builder.Entity<SmsCampaign>().HasOne(s => s.Company).WithOne().IsRequired();
 
             builder.Entity<ClientTag>().HasIndex(p => new { p.ClientId, p.TagId }).IsUnique(true);

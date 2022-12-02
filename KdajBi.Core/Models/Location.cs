@@ -23,7 +23,7 @@ namespace KdajBi.Core.Models
 
         [ForeignKey("Schedule"), Required]
         public long ScheduleId { get; set; }
-        public Schedule Schedule { get; set; }
+        public virtual Schedule Schedule { get; set; }
 
         public ICollection<Workplace> Workplaces { get; set; }
 

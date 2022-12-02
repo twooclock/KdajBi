@@ -28,7 +28,8 @@
     <h1 class="mb-2">KdajBi naročanje</h1>
     <div class="row">
       <div class="col">
-        <h3>@Html.Raw(@Model.token.Company.Name)</h3>
+        <h3>@Html.Raw(@Model.token.Location.Name)</h3>
+          <h3>(@Html.Raw(@Model.token.Company.Name))</h3>
       </div>
       <div class="col" id="appointments">
         <div class="mb-2 align-center d-flex justify-content-between align-items-center">

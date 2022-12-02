@@ -27,7 +27,8 @@ namespace KdajBi.Web.Controllers
         [Route("/booking/{token}")]
         public IActionResult Index(string token)
         {
-            AppointmentToken appointmentToken = _context.AppointmentTokens.Include(s => s.Company).FirstOrDefault(x => x.Token == token);
+            AppointmentToken appointmentToken = _context.AppointmentTokens.Include(l=>l.Location).Include(s => s.Company).FirstOrDefault(x => x.Token == token);
+            
             vmBooking vm = new vmBooking();
             vm.token = appointmentToken;
             return View(vm);
