@@ -286,7 +286,7 @@ namespace KdajBi.Web.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex,"couldnt create company!");
+                _logger.LogWarning(ex,"couldn't create company!");
                 throw;
             }
             IdentityResult identResult = await _userManager.CreateAsync(user);
@@ -314,7 +314,7 @@ namespace KdajBi.Web.Controllers
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "couldnt create location!");
+                        _logger.LogWarning(ex, "couldn't create location!");
                         throw;
                     }
 

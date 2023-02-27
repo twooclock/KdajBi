@@ -592,7 +592,6 @@
     <None Include="wwwroot\plugins\ekko-lightbox\ekko-lightbox.js.map" />
     <None Include="wwwroot\plugins\ekko-lightbox\ekko-lightbox.min.js" />
     <None Include="wwwroot\plugins\ekko-lightbox\ekko-lightbox.min.js.map" />
-    <None Include="wwwroot\plugins\fastclick\fastclick.js" />
     <None Include="wwwroot\plugins\filterizr\filterizr.min.js" />
     <None Include="wwwroot\plugins\filterizr\jquery.filterizr.min.js" />
     <None Include="wwwroot\plugins\filterizr\vanilla.filterizr.min.js" />

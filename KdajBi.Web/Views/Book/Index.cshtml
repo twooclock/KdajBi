@@ -1,0 +1,532 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+@inject KdajBi.Web.Services.IApiTokenProvider apiTP
+@model vmPublicBooking
+@{
+    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+    ViewData["Title"] = "Naročanje";
+}
+
+@section styles{
+    <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
+    <link href="~/plugins/bs-stepper/css/bs-stepper.min.css" rel="stylesheet" />
+    <style>
+        .appointment {
+            cursor: pointer;
+        }
+
+            .appointment.card:hover {
+                background: #007bff22;
+            }
+
+        .selektor {
+            cursor: pointer;
+        }
+
+            .selektor.card:hover {
+                color: #28a745;
+                border-color: #28a745;
+            }
+
+        .card-selected {
+        }
+    </style>
+}
+
+
+<!-- page content -->
+
+<div class="card mt-5">
+    <div class="card-body login-card-body">
+        <h3 class="mb-2 font-weight-bold">Naročanje</h3>
+        <div class="row">
+            <div class="col">
+                <h6>@Html.Raw(@Model.Location.Name)</h6>
+                <h6>@Html.Raw(@Model.CompanyName)</h6>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h6>Naslov:&nbsp;@Html.Raw(@Model.Location.Address)</h6>
+                <h6>Urnik:&nbsp;@Html.Raw(@Model.Location.Timetable)</h6>
+                <h6>Telefon:&nbsp;<a href="tel:@Html.Raw(@Model.Location.Tel)">@Html.Raw(@Model.Location.Tel)</a></h6>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 mt-1">
+                <div id="stepper2" class="bs-stepper">
+                    <div class="bs-stepper-header" role="tablist">
+                        <div class="step" data-target="#step-1">
+                            <button type="button" class="step-trigger" role="tab" aria-controls="step-1" id="step-1-trigger">
+                                <span class="bs-stepper-circle">1</span>
+                                <span class="bs-stepper-label">Zaposleni</span>
+                                <span id="step-1-selected" class="bs-stepper-label">&nbsp;</span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#step-2">
+                            <button type="button" class="step-trigger" role="tab" aria-controls="step-2" id="step-2-trigger">
+                                <span class="bs-stepper-circle">2</span>
+                                <span class="bs-stepper-label">Storitev</span>
+                                <span id="step-2-selected" class="bs-stepper-label">&nbsp;</span>
+                            </button>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step" data-target="#step-3">
+                            <button type="button" class="step-trigger" role="tab" aria-controls="step-3" id="step-3-trigger">
+                                <span class="bs-stepper-circle">3</span>
+                                <span class="bs-stepper-label">Termin</span>
+                                <span id="step-3-selected" class="bs-stepper-label">&nbsp;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bs-stepper-content pb-0">
+                        <div id="step-1" class="content" role="tabpanel" aria-labelledby="step-1-trigger">
+                            <div id="workplaces" class="row">
+
+                            </div>
+
+                        </div>
+                        <div id="step-2" class="content" role="tabpanel" aria-labelledby="step-2-trigger">
+                            <div id="services" class="row">
+
+                            </div>
+                            <div id="services-loader" class="card card-outline card-primary p-1" style="display: none">
+                                    <div class="card-body text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="sr-only">Nalagam storitve...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                        <div id="step-3" class="content" role="tabpanel" aria-labelledby="step-3-trigger">
+                            <div class="col" id="appointments">
+                                <div class="mb-2 align-center d-flex justify-content-between align-items-center">
+                                    <button type="button" class="btn btn-outline-primary" id="previous-day"><</button>
+                                    <button type="button" class="btn btn-outline-primary" id="selected-date"></button>
+                                    <button type="button" class="btn btn-outline-primary" id="next-day">></button>
+                                </div>
+                                <div id="no-appointments" class="card card-outline card-primary p-1" style="display: none">
+                                    <div class="card-body text-center">
+                                        <h4>Žal, ni prostih terminov</h4>
+                                    </div>
+                                </div>
+                                <div id="appointments-loader" class="card card-outline card-primary p-1" style="display: none">
+                                    <div class="card-body text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="sr-only">Nalagam proste termine...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col">
+                <h6>@Html.Raw(@Model.PublicBooking_Text)</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="select-appointment" tabindex="-1" aria-labelledby="select-appointment-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="select-appointment-label">Izbran termin</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="font-size: 18px">
+                Ali ste prepričani, da se želite naročiti na termin <br /><b><span id="selected-appointment-date"></span> ob <span id="selected-appointment-time"></span></b>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Zapri</button>
+                <button type="button" id="create-appointment" class="btn btn-primary">Naroči se</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DatePick modal content-->
+<div id="myDatePickModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: fit-content;">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">skoči na datum</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body ui-front">
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="datepick" style="visibility: hidden" aria-describedby="emailHelp">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+@section scripts{
+    <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
+    <script src="~/plugins/flatpickr/plugins/confirmDate/confirmDate.js"></script>
+    <script src="~/plugins/dayjs/dayjs.min.js"></script>
+    <script src="~/plugins/dayjs/plugin/utc.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_utc)</script>
+    <script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localizedFormat);</script>
+    <script src="~/plugins/dayjs/plugin/localeData.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
+    <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
+    <script src="~/plugins/AlloyFinger/alloy_finger.js"></script>
+    <script src="~/plugins/bs-stepper/js/bs-stepper.min.js"></script>
+
+    <script type="text/javascript">
+        var apiURL = "@Html.Raw(apiTP.Settings().BaseAddress)"
+
+        var pbid = "@Html.Raw(@Model.PublicBoookingId)";
+        var wpid = -1;
+        var sid = 0;
+        var date = new Date();
+        var stepper2;
+
+
+        function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                const s = document.createElement('script');
+                let r = false;
+                s.type = 'text/javascript';
+                s.src = src;
+                s.async = true;
+                s.onerror = function (err) {
+                    reject(err, s);
+                };
+                s.onload = s.onreadystatechange = function () {
+                    // console.log(this.readyState); // uncomment this line to see which ready states are called.
+                    if (!r && (!this.readyState || this.readyState == 'complete')) {
+                        r = true;
+                        resolve();
+                    }
+                };
+                const t = document.getElementsByTagName('script')[0];
+                t.parentElement.insertBefore(s, t);
+            });
+        }
+
+        function selectService(item)
+        {
+            $("#step-2-selected").text(item.textContent);
+            $('#services .card').each(function () {
+                $(this).removeClass('text-success');
+                $(this).removeClass('border-success');
+            });
+            $(item).addClass('text-success');
+            $(item).addClass('border-success');
+            sid = item.id.split('s_')[1];
+            stepper2.next();
+        }
+
+        function createService(id, text) {
+            var newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1").attr({ id: 's_' + id })
+                .attr({ style: "min-width: 18rem; border-width: 3px;" });
+            var lbl = $('<div/>').addClass("card-body");
+            var input = $('<h5/>').text(text).addClass("card-title");
+
+            lbl.append(input);
+            newDiv.append(lbl);
+            newDiv.click(function () { selectService(this); });
+            $('#services').append(newDiv);
+        }
+
+        function createServices(p_items) {
+            p_items.forEach((element) => {
+                createService(element.id,element.name);
+            });
+        }
+
+        function selectWP(item)
+        {
+            $("#services-loader").show();
+            stepper2.next();
+            $("#step-1-selected").text(item.textContent);
+            $("#step-2-selected").text("");
+            $('#workplaces .card').each(function () {
+                $(this).removeClass('text-success');
+                $(this).removeClass('border-success');
+            });
+            $(item).addClass('text-success');
+            $(item).addClass('border-success');
+            wpid = item.id.split('wp_')[1];
+            sid = 0;
+            //load wp services
+            $("#services").empty();
+            $.ajax({
+                type: "POST",
+                url: apiURL + "/api/publicbooking/getservices/" + pbid + "/" + wpid,
+                contentType: "application/json; charset=utf-8",
+                data: "",
+                success: function (result) {
+                    $("#services-loader").hide();
+                    createServices(result);
+                    
+                },
+                error: function (error) {
+                    // TODO
+                }
+            });
+        }
+
+        function createWorkplace(id, text) {
+            var newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1").attr({ id: 'wp_' + id })
+                .attr({ style: "min-width: 18rem; border-width: 3px;" });
+            var lbl = $('<div/>').addClass("card-body");
+            var input = $('<h5/>').text(text).addClass("card-title");
+
+            lbl.append(input);
+            newDiv.append(lbl);
+            newDiv.click(function () { selectWP(this); });
+            $('#workplaces').append(newDiv);
+        }
+
+        function loadWorkplaces() {
+            @if (Model.Location.Workplaces.Count > 1)
+            { @Html.Raw("createWorkplace(0, 'Vseeno kdo');"); }
+            @foreach (var item in Model.Location.Workplaces)
+            {
+                @Html.Raw("createWorkplace("+@item.Id.ToString()+",\""+@item.Name+"\");");
+            }
+
+        }
+
+
+    $(document).ready(function () {
+
+        loadWorkplaces();
+
+
+        stepper2 = new Stepper($('.bs-stepper')[0], {
+            linear: false,
+            animation: true
+        });
+
+        document.getElementById('stepper2').addEventListener('shown.bs-stepper', function (event) {
+            if (event.detail.indexStep == 1 && wpid == -1) {
+                stepper2.to(1);
+                event.preventDefault();
+            }
+            if (event.detail.indexStep == 2 ) {
+                if (wpid == -1 || sid == 0) {
+                    if (wpid == -1)
+                    { stepper2.to(1); }
+                    else
+                    { stepper2.to(2); }
+                    event.preventDefault();
+                }
+                loadFreeAppointments();
+            }
+        })
+
+
+        loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
+            .then(async function () {
+                dayjs.locale(navigator.language.slice(0, 2));
+                loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
+                    .then(function () {
+
+                        dp = $("#datepick").flatpickr({
+                            dateFormat: "d.m.Y",
+                            locale: dayjs.locale(),
+                            defaultDate: new Date(),
+                            minDate: "today",
+                            time_24hr: true, inline: true,
+                            onChange: function (selectedDates, dateStr, instance) {
+                                console.log(selectedDates);
+                                //calendar.gotoDate(selectedDates[0]);
+                                date = selectedDates[0];
+                                loadFreeAppointments();
+                                $("#myDatePickModal").modal("hide");
+                            }
+                        });
+                        var af = new AlloyFinger(document.getElementById('myDatePickModal'), {
+                            swipe: function (evt) {
+                                switch (evt.direction) {
+                                    case "Left": dp.changeMonth(1);
+                                        break;
+                                    case "Right": dp.changeMonth(-1);
+                                        break;
+                                }
+                            }
+                        });
+                    });
+            });
+
+
+        $("#previous-day").click(function () {
+            changeDate(-1)
+        });
+
+        $("#selected-date").click(function () {
+            $("#myDatePickModal").modal("show");
+        });
+
+        $("#next-day").click(function () {
+            changeDate(1)
+        });
+
+        $('#select-appointment').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var appointment = button.data('appointment');
+            var appwpid = button.data('appointmentwpid');
+            var modal = $(this)
+            modal.find('#selected-appointment-date').text(formatDate(date));
+            modal.find('#selected-appointment-time').text(appointment);
+            modal.find('#create-appointment').off();
+            modal.find('#create-appointment').on("click", function () {
+                $.ajax({
+                    type: "POST",
+                    url: apiURL + "/api/publicbooking/" +pbid + "/"+appwpid+"/"+sid+"/",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        "date": onlyISODate(date),
+                        "timeSlot":  appointment 
+                    }),
+                    success: function (result) {
+                        window.location.href = "/booked";
+                    },
+                    error: function (error) {
+                        window.location.href = "/book-error?token=@Model.token";
+                    }
+                });
+            });
+        })
+
+        var dateString = getQueryParameter('date');
+        dateFormatRegex = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
+
+        if (dateFormatRegex.test(dateString)) {
+            date = new Date(dateString);
+        }
+
+
+    });
+
+  function formatDate( date ) {
+    var days = [
+      'Nedelja',
+      'Ponedeljek',
+      'Torek',
+      'Sreda',
+      'Četrtek',
+      'Petek',
+      'Sobota'
+    ];
+    var months = [
+      'januar',
+      'februar',
+      'marec',
+      'april',
+      'maj',
+      'junij',
+      'julij',
+      'avgust',
+      'september',
+      'oktober',
+      'november',
+      'december',
+    ];
+
+    return days[date.getDay()] + ", " + date.getDate() + ". " + months[date.getMonth()];
+        }
+
+        function onlyISODate(p_date) {
+            return dayjs(p_date).format("YYYY-MM-DD") ;
+        }
+
+        function loadFreeAppointments() {
+            $("#selected-date").text(formatDate(date));
+
+            $("#previous-day").prop("disabled", false);
+            if (date <= new Date()) {
+                $("#previous-day").prop("disabled", true);
+            }
+
+            $(".appointment").remove();
+            $("#no-appointments").hide();
+            $("#appointments-loader").show();
+
+            $.ajax({
+                type: "GET",
+                url: apiURL + "/api/publicbooking/" + pbid + "/"+wpid+"/"+sid+"/?date=" + onlyISODate(date),
+                contentType: "application/json; charset=utf-8",
+                success: function (result) {
+                    $("#appointments-loader").hide();
+                    $("#no-appointments").hide();
+                    if (result.length === 0) {
+                        $("#no-appointments").show();
+                        return;
+                    }
+                        result.forEach(appointment => {
+                            $("#appointments").append(`
+              <div
+                class="appointment card card-outline card-primary p-1"
+                data-toggle="modal"
+                data-target="#select-appointment"
+                data-appointment="` + formatAppointmentDate(appointment) + `"
+                data-appointmentwpid="` + appointment.wpid + `"
+              >
+                <div class="card-body text-center">
+                  <h4>` + formatAppointmentDate(appointment) + `</h4>
+                </div>
+              </div>
+              `);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    $("#appointments-loader").hide();
+                    $("#no-appointments").show();
+                    // TODO: Show invalid token error
+                    return false;
+                }
+            });
+        }
+
+  function formatAppointmentDate( appointment ) {
+    var start = new Date( appointment.start );
+    var end = new Date( appointment.end );
+
+    return start.getHours() + ":"
+      + ( start.getMinutes() < 10 ? "0" + start.getMinutes() : start.getMinutes() )
+      + " - " + end.getHours() + ":"
+      + ( end.getMinutes() < 10 ? "0" + end.getMinutes() : end.getMinutes() );
+  }
+
+  function changeDate( noOfDays ) {
+    var newDate = new Date( date );
+    newDate.setDate( newDate.getDate() + noOfDays );
+    var url = new URL( window.location.href );
+    url.searchParams.set( "date", onlyISODate( newDate) ); // setting your param
+    window.history.pushState( { path: url.href }, '', url.href );
+    date = newDate;
+    loadFreeAppointments();
+  }
+
+  function getQueryParameter( name ) {
+    var results = new RegExp( '[\?&]' + name + '=([^&#]*)' )
+      .exec( window.location.search );
+
+    return ( results !== null ) ? results[1] || 0 : false;
+  }
+    </script>
+}

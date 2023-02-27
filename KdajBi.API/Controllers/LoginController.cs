@@ -39,6 +39,7 @@ namespace KdajBi.API.Controllers
             return Ok(accessTokenResource);
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
         [HttpPost("/api/loginas")]
         public async Task<IActionResult> LoginAsAsync([FromBody] UserCredentialsResource userCredentials)

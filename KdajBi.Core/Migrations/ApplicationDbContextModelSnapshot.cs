@@ -215,6 +215,9 @@ namespace KdajBi.Core.Migrations
                     b.Property<long>("AppUserId")
                         .HasColumnType("bigint");
 
+                    b.Property<DateTime?>("BookingCreated")
+                        .HasColumnType("datetime2");
+
                     b.Property<long>("ClientId")
                         .HasColumnType("bigint");
 
@@ -228,6 +231,13 @@ namespace KdajBi.Core.Migrations
                     b.Property<int?>("CreatedUserID")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("End")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GCalId")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
                     b.Property<long>("LocationId")
                         .HasColumnType("bigint");
 
@@ -237,6 +247,12 @@ namespace KdajBi.Core.Migrations
                     b.Property<string>("Service")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Start")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("Status")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Token")
                         .IsRequired()
@@ -263,51 +279,6 @@ namespace KdajBi.Core.Migrations
                     b.HasIndex("WorkplaceId");
 
                     b.ToTable("AppointmentTokens");
-                });
-
-            modelBuilder.Entity("KdajBi.Core.Models.BookingConfirmation", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool?>("Active")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit");
-
-                    b.Property<long>("AppointmentTokenId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedUserID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("End")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("GCalId")
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
-
-                    b.Property<DateTime>("Start")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedUserID")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppointmentTokenId");
-
-                    b.ToTable("BookingConfirmations");
                 });
 
             modelBuilder.Entity("KdajBi.Core.Models.Client", b =>
@@ -531,6 +502,10 @@ namespace KdajBi.Core.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit");
 
+                    b.Property<string>("Address")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
                     b.Property<long>("CompanyId")
                         .HasColumnType("bigint");
 
@@ -546,12 +521,20 @@ namespace KdajBi.Core.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<string>("PublicBookingToken")
+                        .HasMaxLength(25)
+                        .HasColumnType("nvarchar(25)");
+
                     b.Property<long>("ScheduleId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Tel")
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("Timetable")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .ValueGeneratedOnAdd()
@@ -564,9 +547,92 @@ namespace KdajBi.Core.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("PublicBookingToken")
+                        .IsUnique()
+                        .HasFilter("[PublicBookingToken] IS NOT NULL");
+
+                    b.HasIndex("ScheduleId")
+                        .IsUnique();
 
                     b.ToTable("Locations");
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.PublicBooking", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool?>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("Authorized")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("ClientId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedUserID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("End")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GCalId")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<long>("LocationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Mobile")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("PIN")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("ServiceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("Start")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("Status")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(25)
+                        .HasColumnType("nvarchar(25)");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedUserID")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("WorkplaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("WorkplaceId");
+
+                    b.ToTable("PublicBookings");
                 });
 
             modelBuilder.Entity("KdajBi.Core.Models.Schedule", b =>
@@ -692,6 +758,9 @@ namespace KdajBi.Core.Migrations
 
                     b.Property<int?>("UpdatedUserID")
                         .HasColumnType("int");
+
+                    b.Property<bool>("UsedInClientBooking")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -979,6 +1048,29 @@ namespace KdajBi.Core.Migrations
                     b.ToTable("Workplaces");
                 });
 
+            modelBuilder.Entity("KdajBi.Core.Models.WorkplaceExcludedService", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("ServiceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WorkplaceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("WorkplaceId", "ServiceId")
+                        .IsUnique();
+
+                    b.ToTable("WorkplaceExcludedServices");
+                });
+
             modelBuilder.Entity("KdajBi.Core.Models.WorkplaceSchedule", b =>
                 {
                     b.Property<long>("Id")
@@ -1197,17 +1289,6 @@ namespace KdajBi.Core.Migrations
                     b.Navigation("Workplace");
                 });
 
-            modelBuilder.Entity("KdajBi.Core.Models.BookingConfirmation", b =>
-                {
-                    b.HasOne("KdajBi.Core.Models.AppointmentToken", "AppointmentToken")
-                        .WithMany()
-                        .HasForeignKey("AppointmentTokenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppointmentToken");
-                });
-
             modelBuilder.Entity("KdajBi.Core.Models.ClientTag", b =>
                 {
                     b.HasOne("KdajBi.Core.Models.Client", "Client")
@@ -1236,12 +1317,41 @@ namespace KdajBi.Core.Migrations
                         .IsRequired();
 
                     b.HasOne("KdajBi.Core.Models.Schedule", "Schedule")
-                        .WithMany()
-                        .HasForeignKey("ScheduleId")
+                        .WithOne()
+                        .HasForeignKey("KdajBi.Core.Models.Location", "ScheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Schedule");
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.PublicBooking", b =>
+                {
+                    b.HasOne("KdajBi.Core.Models.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId");
+
+                    b.HasOne("KdajBi.Core.Models.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KdajBi.Core.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId");
+
+                    b.HasOne("KdajBi.Core.Models.Workplace", "Workplace")
+                        .WithMany()
+                        .HasForeignKey("WorkplaceId");
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Location");
+
+                    b.Navigation("Service");
+
+                    b.Navigation("Workplace");
                 });
 
             modelBuilder.Entity("KdajBi.Core.Models.SmsCampaign", b =>
@@ -1296,6 +1406,25 @@ namespace KdajBi.Core.Migrations
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("KdajBi.Core.Models.WorkplaceExcludedService", b =>
+                {
+                    b.HasOne("KdajBi.Core.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KdajBi.Core.Models.Workplace", "Workplace")
+                        .WithMany()
+                        .HasForeignKey("WorkplaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Service");
+
+                    b.Navigation("Workplace");
                 });
 
             modelBuilder.Entity("KdajBi.Core.Models.WorkplaceSchedule", b =>

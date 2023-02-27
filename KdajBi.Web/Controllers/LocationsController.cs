@@ -53,7 +53,6 @@ namespace KdajBi.Web.Controllers
                 if (myVM.Location != null)
                 {
                     //fill google calendars
-                    
                     var gt = _CurrentUserGooToken();
                     if (gt != null)
                     {

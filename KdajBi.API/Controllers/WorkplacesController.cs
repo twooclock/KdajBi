@@ -192,6 +192,41 @@ namespace KdajBi.API.Controllers
             return Json("OK");
         }
 
+        // GET: api/workplaceservices/5
+        [HttpGet("/api/workplaceexcludedservices/{wpid}")]
+        public async Task<ActionResult<dtoUser>> GetWorkplaceExcludedServices(long wpid)
+        {
+            var myExServices = _context.WorkplaceExcludedServices.Where(es => es.WorkplaceId == wpid).ToList();
+
+            return Json(myExServices);
+        }
+
+        [HttpPost("/api/workplaceexcludedservices/{locationid}/{wpid}")]
+        public async Task<ActionResult<Workplace>> PostWorkplaceServices(long locationid, long wpid, string[] p_Ids)
+        {
+            try
+            {
+                //remove all exclusions for a workplace
+                _context.WorkplaceExcludedServices.RemoveRange(_context.WorkplaceExcludedServices.Where(u =>  u.WorkplaceId== wpid));
+                _context.SaveChanges();
+
+                if (p_Ids[0] != "0")
+                {
+                    foreach (var item in p_Ids)
+                    {
+                        _context.WorkplaceExcludedServices.Add(new WorkplaceExcludedService(wpid, long.Parse(item.Split('_')[1])));
+                    }
+                }
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+            return Json("OK");
+
+        }
         private bool WorkplaceExists(long id)
         {
             return _context.Workplaces.Any(e => e.Id == id);

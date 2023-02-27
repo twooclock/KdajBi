@@ -70,6 +70,42 @@
                                                     <input class="form-control" id="inputTel" placeholder="Telefon" value="@Html.Raw(@Model.Location.Tel)">
                                                 </div>
                                             </div>
+                                            <div class="form-group">
+                                                <label for="inputAddress" class="col-sm-2 control-label">Naslov</label>
+                                                <div class="col-sm-10">
+                                                    <input class="form-control" id="inputAddress" placeholder="Naslov" value="@Html.Raw(@Model.Location.Address)">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputTimetable" class="col-sm-2 control-label">Urnik</label>
+                                                <div class="col-sm-10">
+                                                    <input class="form-control" id="inputTimetable" placeholder="Urnik" value="@Html.Raw(@Model.Location.Timetable)">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="form-group col-sm-8">
+                                                    <label for="inputPublicBookingToken" class="control-label">Naslov za samostojno naročanje strank</label>
+                                                    <a href="#!" data-toggle="popover" data-content="Samostojno nočanje bo omogočeno na povezavi https://kdajbi.si/narocanje/[Del naslova za naročanje]. Stranka, s katero boste delili naslov, se bo lahko samostojno naročila."><i class="fa fa-info-circle"></i></a>
+                                                    <div>
+                                                        <input class="form-control" id="inputPublicBookingToken" placeholder="[Če želite omogočiti vtipkajte vsaj 3 znake]" value="@Html.Raw(@Model.Location.PublicBookingToken)">
+                                                        @if (string.IsNullOrEmpty(@Model.Location.PublicBookingToken) == false)
+                                                        {<span id="lblPublicBookingToken" for="inputPublicBookingToken">Samostojno naročanje je omogočeno na povezavi <a href="https://kdajbi.si/narocanje/@Model.Location.PublicBookingToken" target="_blank"> https://kdajbi.si/narocanje/@Model.Location.PublicBookingToken</a></span> }
+                                                    else
+                                                    {<span id="lblPublicBookingToken" for="inputPublicBookingToken">[Samostojno naročanje ni omogočeno]</span>}
+                                                    <a href="#/" class="btn btn-default float-right" onclick="shareTheLink()" ><i class="fa fa-share-alt"></i>&nbsp;Deli povezavo</a>
+                                                    </div>
+
+                                                </div><div class="col-sm-2">
+                                                    <img id="imgQR" class="float-right" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="txtPublicBookingText" class="control-label">Tekst pri samostojnem naročanju</label>
+                                                <a href="#!" data-toggle="popover" data-content="Tekst se prikaže na dnu strani za naročanje. Mišljen je kot dodatne informacije za stranko, mogoče urnik, kontakt ipd."><i class="fa fa-info-circle"></i></a>
+                                                <div class="col-sm-10">
+                                                    <input class="form-control" id="txtPublicBookingText" placeholder="" value="">
+                                                </div>
+                                            </div>
                                         </form>
 
                                         <div class="form-group">
@@ -193,6 +229,10 @@
                                                                         Barva
                                                                     </th>
                                                                     <th>
+                                                                        Samostojno naročanje
+                                                                        <a href="#!" data-toggle="popover" data-content="Storitev je na voljo pri samostojnem naročanju strank."><i class="fa fa-info-circle"></i></a>
+                                                                    </th>
+                                                                    <th>
                                                                         Aktivno
                                                                     </th>
                                                                     <th>
@@ -229,46 +269,33 @@
                                     <div class="tab-pane" id="sms" role="tabpanel" aria-labelledby="sms-tab">
                                         <form class="form-horizontal">
                                             <div class="form-group">
-                                                <label for="SMS_SenderName" class="col-sm-2 control-label">Ime pošiljatelja
-                                                <a href="#!" data-toggle="popover" data-html="true" data-content="Privzeto bo sms sporočilo za uporabnika prišlo iz številke 2929. <br/>Lahko se dogovorite za besedo do 11 znakov ali uporabite poljubno telefonsko številko."><i class="fa fa-info-circle"></i></a>
+                                                <label for="SMS_SenderName" class="col-sm-2 control-label">
+                                                    Ime pošiljatelja
+                                                    <a href="#!" data-toggle="popover" data-html="true" data-content="Privzeto bo sms sporočilo za uporabnika prišlo iz številke 2929. <br/>Lahko se dogovorite za besedo do 11 znakov ali uporabite poljubno telefonsko številko."><i class="fa fa-info-circle"></i></a>
                                                 </label>
                                                 <div class="col-sm-10">
                                                     <input type="text" class="form-control" id="SMS_SenderName" placeholder="2929" value="">
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                    <label id="lblMessage" for="SMS_GOO_Msg" class="col-sm-2 control-label">Sporočilo:
-                                                <a href="#!" data-toggle="popover" data-content="Sms sporočilo. Kode (<DANESJUTRI>, <DATUM>, ...) bodo zamenjane z dejanskimi vrednostmi pred pošiljanjem."><i class="fa fa-info-circle"></i></a>
+                                                <label id="lblMessage" for="SMS_GOO_Msg" class="col-sm-2 control-label">
+                                                    Sporočilo:
+                                                    <a href="#!" data-toggle="popover" data-content="Sms sporočilo. Kode (<DANESJUTRI>, <DATUM>, ...) bodo zamenjane z dejanskimi vrednostmi pred pošiljanjem."><i class="fa fa-info-circle"></i></a>
                                                 </label>
-                                                    <div class="row">
-                                                        <div class="col-sm-10">
-                                                            <textarea rows="2" id="SMS_GOO_Msg" name="SMS_GOO_Msg" class="form-control" placeholder="Pozdravljeni naročeni ste..."></textarea>
-                                                        </div>
-                                                        <div class="col-sm-2">
-                                                            <button type="button" class="btn btn-info" onclick="resetSMSText()">Privzeto sporočilo</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" id="SMS_genRDsms" onclick="$('#SMS_RD_Props').toggle(1000);">
-                                                    <label class="form-check-label" for="SMS_genRDsms">Generiraj sporočila za rojstni dan stranke</label>
-                                                </div>
-                                            </div>
-                                            <div id="SMS_RD_Props" style="display: none;" class="ml-4">
-                                                <div class="form-group">
-                                                    <label for="SMS_RD_Time" class="col-sm-2 control-label">Ob:</label>
+                                                <div class="row">
                                                     <div class="col-sm-10">
-                                                        <input type="text" class="form-control" id="SMS_RD_Time" placeholder="8:00" value="">
+                                                        <textarea rows="2" id="SMS_GOO_Msg" name="SMS_GOO_Msg" class="form-control" placeholder="Pozdravljeni naročeni ste..." oninput="showSMSInfo(this.value,'lblGOO_MsgSMSinfo')"></textarea>
+                                                        <label id="lblGOO_MsgSMSinfo" class="form-check-label">
+                                                            [Pri pošiljanju se sporočilo lahko razdeli na več delov!]
+                                                        </label>
+                                                        <a href="#!" data-toggle="popover" data-content="Sporočilo se pri pošiljanju razdeli na dele dolge 160 znakov, če pa vsebuje šumnike ali posebne znake pa na dele dolge 67 znakov. Limit se porablja glede na število poslanih delov. Če želite prihraniti limit, naj bodo vaša sporočila kratka in brez šumnikov in posebnih znakov."><i class="fa fa-info-circle"></i></a>
                                                     </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label id="lblMessage" for="SMS_RD_Msg" class="col-sm-2 control-label">Sporočilo:</label>
-                                                    <div class="col-sm-10">
-                                                        <textarea rows="2" id="SMS_RD_Msg" name="SMS_RD_Msg" class="form-control" placeholder="Voščilo..."></textarea>
+                                                    <div class="col-sm-2">
+                                                        <button type="button" class="btn btn-info" onclick="resetSMSText()">Privzeto sporočilo</button>
                                                     </div>
                                                 </div>
                                             </div>
+
                                             <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
                                                 <div class="form-check">
                                                     <input type="checkbox" class="form-check-input" id="SMS_genGOOsms" onclick="$('#SMS_GOO_Props').toggle(1000);">
@@ -307,25 +334,56 @@
                                                         </div>
                                                     }
                                                 </div>
-                                                
+
                                                 <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
                                                     <div class="form-check">
                                                         <input type="checkbox" class="form-check-input" id="SMS_GOO_AutoApprove">
-                                                        <label class="form-check-label" for="SMS_GOO_AutoApprove">Pred pošiljanjem želim sporočila pregledati in potrditi pošiljanje
-                                                        <a href="#!" data-toggle="popover" data-content="Uro pred pošiljanjem sms boste po el. pošti prejeli seznam sms sporočil, ki jih boste lahko potrdili ali preklicali."><i class="fa fa-info-circle"></i></a>
+                                                        <label class="form-check-label" for="SMS_GOO_AutoApprove">
+                                                            Pred pošiljanjem želim sporočila pregledati in potrditi pošiljanje
+                                                            <a href="#!" data-toggle="popover" data-content="Uro pred pošiljanjem sms boste po el. pošti prejeli seznam sms sporočil, ki jih boste lahko potrdili ali preklicali."><i class="fa fa-info-circle"></i></a>
                                                         </label>
                                                     </div>
                                                 </div>
-                                                
+
                                             </div>
                                             <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
                                                 <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" id="SMS_AppointmentSMS" >
-                                                    <label class="form-check-label" for="SMS_AppointmentSMS">Obvesti stranko ob vpisu naročila 
-                                                    <a href="#!" data-toggle="popover" data-content="Ob vpisu ali premiku naročila pošlje stranki sms s terminom"><i class="fa fa-info-circle"></i></a>
+                                                    <input type="checkbox" class="form-check-input" id="SMS_AppointmentSMS">
+                                                    <label class="form-check-label" for="SMS_AppointmentSMS">
+                                                        Obvesti stranko ob vpisu naročila
+                                                        <a href="#!" data-toggle="popover" data-content="Ob vpisu ali premiku naročila pošlje stranki sms s terminom"><i class="fa fa-info-circle"></i></a>
                                                     </label>
                                                 </div>
                                             </div>
+                                            <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" id="SMS_genRDsms" onclick="$('#SMS_RD_Props').toggle(1000);">
+                                                    <label class="form-check-label" for="SMS_genRDsms">Generiraj sporočila za rojstni dan stranke</label>
+                                                </div>
+                                            </div>
+                                            <div id="SMS_RD_Props" style="display: none;" class="ml-4">
+                                                <div class="form-group">
+                                                    <label for="SMS_RD_Time" class="col-sm-2 control-label">Ob:</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="text" class="form-control" id="SMS_RD_Time" placeholder="8:00" value="">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label id="lblMessage" for="SMS_RD_Msg" class="col-sm-2 control-label">Sporočilo:</label>
+                                                    <div class="row">
+                                                        <div class="col-sm-10">
+                                                            <textarea rows="2" id="SMS_RD_Msg" name="SMS_RD_Msg" class="form-control" placeholder="Voščilo..." oninput="showSMSInfo(this.value,'lblRD_MsgSMSinfo')"></textarea>
+                                                            <label id="lblRD_MsgSMSinfo" class="form-check-label">
+                                                                [Pri pošiljanju se sporočilo lahko razdeli na več delov!]
+                                                            </label>
+                                                            <a href="#!" data-toggle="popover" data-content="Sporočilo se pri pošiljanju razdeli na dele dolge 160 znakov, če pa vsebuje šumnike ali posebne znake pa na dele dolge 67 znakov. Limit se porablja glede na število poslanih delov. Če želite prihraniti limit, naj bodo vaša sporočila kratka in brez šumnikov in posebnih znakov."><i class="fa fa-info-circle"></i></a>
+                                                        </div>
+                                                        <div class="col-sm-2">
+                                                            <button type="button" class="btn btn-info" onclick="resetRDSMSText()">Privzeto sporočilo</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>                                            
                                             <div class="form-group">
                                                 <div class="col-sm-offset-2 col-sm-10">
                                                     <button type="button" class="btn btn-danger" onclick="saveSMS()">Shrani</button>
@@ -383,14 +441,14 @@
                             <option value="0">[Create new calendar]</option>
                             @foreach (var item in Model.GoogleCalendars)
                             {
-                            <option value="@item.Key">@Html.Raw(item.Value)</option>
+                                <option value="@item.Key">@Html.Raw(item.Value)</option>
                             }
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="cbActive" value="true" checked="">
+                            <input type="checkbox" class="custom-control-input" id="cbWPActive" value="true" checked="">
                             <span class="custom-control-label">Aktivno</span>
                         </label>
                     </div>
@@ -432,20 +490,27 @@
                         <input id="txtServiceMinutes" type="number" pattern="[0-9.]+" name="txtServiceMinutes" class="form-control" />
                     </div>
                     <div class="form-group">
-                  <label>Barva:</label>
+                        <label>Barva:</label>
 
-                  <div id="cpServiceColor" class="input-group">
-                    <input type="text" class="form-control">
-                    <div class="input-group-append">
-                      <span class="input-group-text"><i class="fas fa-square"></i></span>
+                        <div id="cpServiceColor" class="input-group">
+                            <input type="text" class="form-control">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="fas fa-square"></i></span>
+                            </div>
+                        </div>
+                        <!-- /.input group -->
                     </div>
-                  </div>
-                  <!-- /.input group -->
-                </div>
+                    <div class="form-group">
+                        <label class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="cbUsedInClientBooking" value="true" checked="">
+                            <span class="custom-control-label">Uporabi za samostojno naročanje</span>
+                        <a href="#!" data-toggle="popover" data-content="Storitev bo na voljo pri samostojnem naročanju strank."><i class="fa fa-info-circle"></i></a>
+                        </label>
+                    </div>
                     <div class="form-group">
                         <label class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="cbActive" value="true" checked="">
-                            <span class="custom-control-label">Active</span>
+                            <span class="custom-control-label">Aktivno</span>
                         </label>
                     </div>
                 </form>
@@ -463,6 +528,33 @@
 </div>
 <!-- /modal content-->
 
+<!-- modal WorkplaceServices content-->
+<div id="WorkplaceServicesModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="ServiceModalLabel">Storitve delovnega mesta</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="formService" id="WorkplaceServices" style="height: 70vh; overflow-y: auto; ">
+                   
+                    
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <div class="float-left">
+                <button type="button" class="btn btn-default" id="cmdServiceDisableAll" onclick="ChangeWPSChecks(false);">Onemogoči vse</button>
+                <button type="button" class="btn btn-default" id="cmdServiceEnableAll" onclick="ChangeWPSChecks(true);">Omogoči vse</button>
+                </div>
+                    <button type="button" class="btn btn-primary" id="cmdsaveWPExcludedServices" onclick="saveWPExcludedServices()">Shrani</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+
 @section scripts{
     <!-- datables.net -->
     <script src="~/plugins/datatables/jquery.dataTables.js"></script>
@@ -470,10 +562,15 @@
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
     <script src="~/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
+    <script src="~/plugins/sms-counter/sms_counter.min.js"></script>
+    <script src="~/plugins/js-qrcode/qrcode.web.js"></script>
+    <script src="~/plugins/share-api-polyfill/share-min.js"></script>
+    
+
 
 
     <script type="text/javascript">
-    
+
         var workplacesLoaded=false;
         var servicesLoaded=false;
         @await Html.PartialAsync("_ApiAccess")
@@ -491,6 +588,7 @@
         }, "Konec mora biti večji od začetka.");
 
         $(document).ready(function () {
+            loadGeneral();
             //swal inside modal!
             $.fn.modal.Constructor.prototype._enforceFocus = function() {};
             //gapi init
@@ -651,9 +749,57 @@
             })
 
             //init popovers
-            $('[data-toggle="popover"]').popover({trigger: "click hover"});
+            $('[data-toggle="popover"]').popover({ trigger: "click hover" });
+
+            $('#inputPublicBookingToken').on('keyup', function () {showQRCode(); });
+            //show qrcode
+            showQRCode();
 
         });
+
+        function shareTheLink() {
+            var pbhandle = $('#inputPublicBookingToken').val();
+            if (pbhandle.length > 2) {
+                navigator.share({
+                    title: 'Spletno naročanje',
+                    text: 'V salonu @Model.Location.Name se lahko naročite tudi prek spleta!',
+                    url: 'https://kdajbi.si/narocanje/' + pbhandle,
+
+                    hashtags: ['salon @Model.Location.Name', 'spletno naročanje', 'kdajbi.si', ]
+                },
+                    {
+                        copy: true,
+                        email: true,
+                        print: true,
+                        sms: true,
+                        messenger: true,
+                        facebook: true,
+                        whatsapp: true,
+                        twitter: true,
+                        linkedin: true,
+                        telegram: true,
+                        skype: true,
+                        language: 'sl'
+                    });
+            }
+        }
+
+        function showQRCode() {
+            var pbt = $('#inputPublicBookingToken').val();
+            if (pbt.length > 2) {
+                const config = {
+                    level: 'H', // use high error correction level
+                    padding: 0, // do not use padding around qr code data
+                    size: 100
+                };
+                const qrCanvas = new jsqrcode.QRCodeCanvas('https://KdajBi.si/narocanje/' + $('#inputPublicBookingToken').val(), config);
+                const promise = qrCanvas.toDataUrl();
+                document.getElementById("imgQR").src = promise;
+            }
+            else {
+            document.getElementById("imgQR").src="";}
+        }
+
         function SaveRadio(p_Opt) {
             saveSettings();
         }
@@ -663,7 +809,7 @@
         async function loadSettings() {
             var settings = new Object();
             settings["AppointmentsSumServicesLength"] = 'false';
-            
+
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
@@ -676,7 +822,7 @@
                          if (result["AppointmentsSumServicesLength"] != undefined) {
                              if (result["AppointmentsSumServicesLength"] == "true") { $('#optAppointmentsSumServicesLength').prop('checked', true);}
                          }
-                     
+
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Napaka:" + error.toString());
@@ -736,6 +882,10 @@
                 location.id = @Model.Location.Id;
                 location.name = $('#inputName').val();
                 location.tel = $('#inputTel').val();
+                location.address = $('#inputAddress').val();
+                location.timetable = $('#inputTimetable').val();
+                location.publicBookingToken = $('#inputPublicBookingToken').val();
+                if (location.publicBookingToken.length < 3) { location.publicBookingToken = null; $('#inputPublicBookingToken').val(""); }
                 getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
@@ -745,7 +895,7 @@
                     headers: { 'Authorization': 'Bearer '+result.AccessToken },
                     dataType: "json",
                     success: function (result) {
-                         if (result == "OK") { return true; }
+                         if (result == "OK") { toastr.success("Shranjeno"); return true; }
                         else { toastr.error("Napaka:"+result); return false; }
                     },
                     error: function (xhr, status, error) {
@@ -754,8 +904,58 @@
                     }
                 });
                 });
+                //save public booking text
+                var settings = new Object();
+                settings["PublicBooking_Text"] = $("#txtPublicBookingText").val();
+                getAPIToken().then((result) => {
+                    $.ajax({
+                        type: "post",
+                        data: JSON.stringify(settings),
+                        url: apiURL + "/api/Settings/Save/" + $("#cboLocations").val(),
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result == "OK") { toastr.success("Shranjeno"); return true; }
+                            else { toastr.error("Napaka:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka:" + error.toString());
+                            return false;
+                        }
+                    });
+                });
             } else { return false; }
         }
+        function loadGeneral() {
+             var settings = new Object();
+            settings["PublicBooking_Text"] = $("#txtPublicBookingText").val();
+            
+            getAPIToken().then((result) => {
+            $.ajax({
+                type: "post",
+                data: JSON.stringify(settings),
+                url: apiURL+"/api/Settings/Load/" + $("#cboLocations").val(),
+                contentType: "application/json; charset=utf-8",
+                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                dataType: "json",
+                 success: function (result) {
+                     $("#txtPublicBookingText").val(result["PublicBooking_Text"]);
+                    
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("Napaka:" + error.toString());
+                    return false;
+                }
+            });
+            });
+        }
+        document.getElementById('inputPublicBookingToken').onkeyup = function () {
+            if (this.value.length > 2)
+            { document.getElementById('lblPublicBookingToken').innerHTML = "Samostojno naročanje bo omogočeno na povezavi <a href=' https://kdajbi.si/narocanje/' + (this.value) +' target='_blank'> https://kdajbi.si/narocanje/" + (this.value) + "</a>"; }
+            else
+            { document.getElementById('lblPublicBookingToken').innerHTML = "[Samostojno naročanje ne bo omogočeno]"; }
+            };
         //#endregion
 
         //#region Schedule
@@ -849,7 +1049,7 @@
                     {
                         data: null, 'orderable': false,
                         render: function (data, type, row, meta) {
-                            return '<a class="btn btn-default" onclick="showDetail(' + row.id + ');">Urejanje</a><a class="btn btn-default" onclick="showScheduleForWorkplace(' + row.id + ');">Urnik</a>';
+                            return '<a class="btn btn-default" onclick="showDetail(' + row.id + ');">Urejanje</a><a class="btn btn-default" onclick="showScheduleForWorkplace(' + row.id + ');">Urnik</a><a class="btn btn-default" onclick="showWorkplaceServices(' + row.id + ');">Storitve</a>';
                         }
                     }
                 ]
@@ -888,7 +1088,7 @@
                 $("#txtPosition").val('');
                 $("#txtName").val('');
                 $("#cboGooCal").selectpicker('val', '');
-                $("#cbActive").prop('checked', true);
+                $("#cbWPActive").prop('checked', true);
             }
             else {
                 //fill form
@@ -904,7 +1104,7 @@
                         $("#txtPosition").val(result.sortPosition);
                         $("#txtName").val(result.name);
                         $("#cboGooCal").selectpicker('val',result.googleCalendarID);
-                        $("#cbActive").prop('checked', result.active);
+                        $("#cbWPActive").prop('checked', result.active);
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Napaka:" + error.toString());
@@ -966,7 +1166,7 @@
                 if (isNaN(workplace.sortPosition)) { workplace.sortPosition = 0;}
                 workplace.name = $('#txtName').val();
                 workplace.googleCalendarId = $('#cboGooCal').val();
-                workplace.active = $("#cbActive").prop('checked');
+                workplace.active = $("#cbWPActive").prop('checked');
                 getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
@@ -1013,6 +1213,100 @@
             //open schedule in new tab
             window.open('@Url.Content("~/wps/")'+p_wpid+"/0", '_blank').focus();
         }
+
+        function showWorkplaceServices(p_wpid) {
+            //show Workplace Services Modal
+            $("#WorkplaceServices").empty();
+            $("#WorkplaceServices").data('wpid',p_wpid);
+            getAPIToken().then((result) => {
+                var at = result.AccessToken;
+                $.ajax({
+                    type: "get",
+                    url: apiURL+"/api/locationservices/@Model.Location.Id",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + at },
+                    dataType: "json",
+                    async: true,
+                    success: function (result) {
+                        
+                         result.forEach(function(entry) {
+                                addWorkplaceServiceItem(entry);
+                            });
+                        //exclude services
+                        $.ajax({
+                            type: "get",
+                            url: apiURL+"/api/workplaceexcludedservices/"+p_wpid+"/",
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + at },
+                            dataType: "json",
+                            async: true,
+                            success: function (result) {
+                        
+                                 result.forEach(function(item) {
+                                        $("#wps_"+item.serviceId).attr('checked', false);
+                                    });
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka:" + error.toString());
+                            }
+                        });
+
+
+
+
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                    }
+                });
+                });
+            $("#WorkplaceServicesModal").modal("show");
+        }
+
+        function addWorkplaceServiceItem(item) {
+            var newDiv = $('<div/>').addClass("form-group");
+            var lbl = $('<label/>').addClass("custom-control custom-checkbox");
+            var input = $('<input/>').addClass("custom-control-input").attr({ type: 'checkbox', value: true, checked: '' })
+                .attr({ id: 'wps_' + item.id });
+            var span = $("<span/>").text(item.name).addClass("custom-control-label");
+            lbl.append(input).append(span);
+            newDiv.append(lbl);
+            //input.click(function () { console.log(this); });
+            $('#WorkplaceServices').append(newDiv);
+        }
+
+        function ChangeWPSChecks(p_state) {
+            $('#WorkplaceServices').find(':checkbox').each(function(){
+                $(this).attr('checked', p_state);
+            });     
+        }
+
+        function saveWPExcludedServices() {
+            var notChecked = new Array();
+            $('#WorkplaceServices').find('input[type="checkbox"]:not(:checked)').each(function () {
+                notChecked.push(this.id);
+            });
+            if (notChecked.length == 0) { notChecked.push('0'); };
+            var wpid=$('#WorkplaceServices').data('wpid');
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(notChecked),
+                    url: apiURL+"/api/workplaceexcludedservices/@Model.Location.Id/"+wpid,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Shranjeno"); $("#WorkplaceServicesModal").modal("hide"); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+            });
+        }
         //#endregion
 
         //#region Services
@@ -1039,7 +1333,6 @@
                     'url': apiURL + "/api/servicestable/" + $("#cboLocations").val(),
                     type: 'POST', dataType: 'json',
                     data: function (dtParms) {
-                        // I send it as a string to reduce the chance of an error before it reaches the server.
                         return JSON.stringify(dtParms);
                     },
                     'contentType': 'application/json; charset=utf-8',
@@ -1065,6 +1358,15 @@
                              { return '<i class="fas fa-square" style=\"color:#' + row.color + '\"></i>'; }
                             else
                             { return '<i class="far fa-square"></i>'; }
+                        }
+                    },
+                    {
+                        'data': 'usedInClientBooking', className: 'text-center',
+                        render: function (data, type, row, meta) {
+                            if (row.usedInClientBooking == true)
+                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" checked="checked"><label class="custom-control-label"></label></div>'; }
+                            else
+                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" ><label class="custom-control-label"></label></div>'; }
                         }
                     },
                     {
@@ -1108,6 +1410,7 @@
                 $("#txtServiceName").val('');
                 $("#txtServiceMinutes").val('');
                 $("#cpServiceColor").colorpicker('setValue', null);
+                $("#cbUsedInClientBooking").prop('checked', false);
                 $("#cbActive").prop('checked', true);
             }
             else {
@@ -1125,6 +1428,7 @@
                         $("#txtServiceMinutes").val(result.minutes);
                         if (result.color != null) { $("#cpServiceColor").colorpicker('setValue', '#' + result.color); }
                         else { $("#cpServiceColor").colorpicker('setValue', ''); }
+                        $("#cbUsedInClientBooking").prop('checked', result.usedInClientBooking);
                         $("#cbActive").prop('checked', result.active);
 
                     },
@@ -1192,6 +1496,7 @@
                 service.color = $('#cpServiceColor .form-control').val();
                 if (service.color.length != 6) { service.color = null; }
                 service.Active = $("#cbActive").prop('checked');
+                service.UsedInClientBooking = $("#cbUsedInClientBooking").prop('checked');
                 getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
@@ -1226,7 +1531,24 @@
         function resetSMSText() {
             $("#SMS_GOO_Msg").val('Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA> v salonu ***.\nV primeru odpovedi ali dodatnih informacij pokličite: ***.\nVeselimo se vašega obiska!');
         }
-
+        function resetRDSMSText() {
+            $("#SMS_RD_Msg").val('Ob Vašem prazniku vam iskreno čestitamo in želimo vse najboljše! Salon ***');
+        }
+        function DelovZBesedo(p_Number) {
+            if (p_Number.toString().substr(-2) == '00' ) { return "delov"; }
+            if (p_Number.toString().substr(-2) == '01' ||p_Number==1 ) { return "del";}
+            if (p_Number.toString().substr(-2) == '02' ||p_Number==2 ) { return "dela";}
+            if (p_Number.toString().substr(-2) == '03' ||p_Number==3 ) { return "dele";}
+            if (p_Number.toString().substr(-2) == '04' ||p_Number==4 ) { return "dele";}
+            if (p_Number > 4) { return "delov";}
+        }
+        function showSMSInfo(p_text,p_IdlblInfo) {
+            var smsi = SmsCounter.count(p_text);
+            if (smsi.messages > 1)
+            { document.getElementById(p_IdlblInfo).innerHTML="To sporočilo bo pri pošiljanju razdeljeno na " + smsi.messages + " " + DelovZBesedo(smsi.messages) + "."; }
+            else
+            { document.getElementById(p_IdlblInfo).innerHTML="To sporočilo bo poslano v enem delu."; }
+        }
         function saveSMS() {
             var settings = new Object();
 
@@ -1336,6 +1658,6 @@
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoadOkay()" onerror="gapiLoadFail(event)"></script>
 
-    
+
 }
 

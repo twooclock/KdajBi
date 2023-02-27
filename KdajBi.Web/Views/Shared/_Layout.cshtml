@@ -116,6 +116,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <li class="nav-item">
                         <a id="toggleRightSidebar" class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
                             <i class="fas fa-th-large"></i>
+                            <span id="RightSidebarItems" class="badge badge-danger navbar-badge" style="top: 3px;"></span>
                         </a>
                     </li>
                 </ul>
@@ -290,6 +291,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </div>
         <aside id="rightSideBar" class="control-sidebar control-sidebar-dark" style="margin-top: 46px">
                 @await Component.InvokeAsync("BookingConfirmationList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
+                @await Component.InvokeAsync("PublicBookingList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
                 @await Component.InvokeAsync("AppMessagesList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
         </aside>
         <footer class="main-footer" hidden>
@@ -366,6 +368,38 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     });
                 });
             });
+             $('#publicbooking-confirmation .btn-danger').click(function () {
+                var card = $(this).closest('.card');
+                var id = card.attr('data-id');
+                
+                getAPIToken().then(
+                    (result) => {
+                        $.ajax({
+                        url: apiURL + "/api/publicbooking-confirmation/" + id,
+                        type: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        success: function (data) {
+                            card.remove();
+                        }
+                    });
+                });
+            });
+            $('#publicbooking-confirmation .btn-success').click(function () {
+                var card = $(this).closest('.card');
+                var id = card.attr('data-id');
+                
+                getAPIToken().then(
+                    (result) => {
+                        $.ajax({
+                        url: apiURL + "/api/publicbooking-confirmation/" + id,
+                        type: 'PUT',
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        success: function (data) {
+                            card.remove();
+                        }
+                    });
+                });
+            });
             $('#app-messages .btn-success').click(function () {
                 var card = $(this).closest('.card');
                 var id = card.attr('data-id');
@@ -392,9 +426,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         function ShowHideRightSlidebar() {
             if ($("#rightSideBar").children().length > 0)
-            { $('#toggleRightSidebar').ControlSidebar('show'); $('#toggleRightSidebar').addClass('disabled'); }
+            {
+                $('#toggleRightSidebar').ControlSidebar('show');
+                $("#RightSidebarItems").text($("#rightSideBar").children().length);
+                $("#RightSidebarItems").show();
+            }
             else
-            { $('#toggleRightSidebar').ControlSidebar('collapse'); $('#toggleRightSidebar').removeClass('disabled'); }
+            {
+                $('#toggleRightSidebar').ControlSidebar('collapse');
+                $("#RightSidebarItems").hide();
+            }
         }
 
         function showLocations() {

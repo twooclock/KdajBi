@@ -64,12 +64,13 @@ namespace KdajBi.Core
 
     public class TimeSlot
     {
+        public long wpid=0;
         public DateTime start;
         public DateTime end;
         public TimeSlot() { }
         public TimeSlot(DateTime p_start, DateTime p_end) { start = p_start; end = p_end; }
 
-
+        public TimeSlot(long p_wpid, DateTime p_start, DateTime p_end) { wpid = p_wpid; start = p_start; end = p_end; }
     }
 
     public static class TimeSlotManager
@@ -87,9 +88,9 @@ namespace KdajBi.Core
                 {
                     if (start >= DateTime.Now) // we only add slots in future
                     {
-                        timeSlots.Add(new TimeSlot(start, start.AddMinutes(minutes)));
+                        timeSlots.Add(new TimeSlot(slot.wpid, start, start.AddMinutes(minutes)));
                     }
-                    start = start.AddMinutes(30); // We can change this value to get interval from settings
+                    start = start.AddMinutes(minutes); // We can change this value to get interval from settings
                 }
             }
 

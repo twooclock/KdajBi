@@ -43,9 +43,8 @@ namespace KdajBi.API.Controllers
         [HttpGet("/api/booking-confirmation")]
         public ActionResult<List<TimeSlot>> Index()
         {
-            List<BookingConfirmation> BookingConfirmation = _context.BookingConfirmations
-                .Include(b => b.AppointmentToken)
-                .Where(b => b.AppointmentToken.CompanyId == _CurrentUserCompanyID())
+            List<AppointmentToken> BookingConfirmation = _context.AppointmentTokens
+                .Where(b => b.CompanyId == _CurrentUserCompanyID() && b.GCalId !=null && b.Status==0)
                 .ToList();
 
             return Ok(BookingConfirmation);
@@ -56,21 +55,21 @@ namespace KdajBi.API.Controllers
         {
 
             // validate timeslot
-            BookingConfirmation bookingConfirmation = _context.BookingConfirmations
-                .Include(b => b.AppointmentToken)
-                .Include(b => b.AppointmentToken.Client)
-                .Include(b => b.AppointmentToken.Location)
-                .Include(b => b.AppointmentToken.Workplace)
-                .Where(b => b.AppointmentToken.CompanyId == _CurrentUserCompanyID())
+            AppointmentToken bookingConfirmation = _context.AppointmentTokens
+                .Include(b => b.Client)
+                .Include(b => b.Location)
+                .Include(b => b.Workplace)
+                .Where(b => b.CompanyId == _CurrentUserCompanyID())
                 .FirstOrDefault(b => b.Id == id);
 
-            bookingConfirmation.Active = false;
+            bookingConfirmation.Status = 1;
+            bookingConfirmation.UpdatedUserID = _CurrentUserID();
 
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {
                 myGoogleHelper.UpdateEvent(
-                    bookingConfirmation.AppointmentToken.Client.FullName + " - " + bookingConfirmation.AppointmentToken.Service,
-                    bookingConfirmation.AppointmentToken.Workplace.GoogleCalendarID,
+                    bookingConfirmation.Client.FullName + " - " + bookingConfirmation.Service,
+                    bookingConfirmation.Workplace.GoogleCalendarID,
                     bookingConfirmation.GCalId
                 );
             }
@@ -78,19 +77,19 @@ namespace KdajBi.API.Controllers
             // obvesti stranko prek sms (TODO: naredi prek service)
             SmsCampaign newSmsCampaign = new SmsCampaign();
             newSmsCampaign.Company.Id = _CurrentUserCompanyID();
-            newSmsCampaign.LocationId = bookingConfirmation.AppointmentToken.LocationId;
+            newSmsCampaign.LocationId = bookingConfirmation.LocationId;
             newSmsCampaign.AppUser.Id = _CurrentUserID();
 
-            newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste "+ bookingConfirmation.Start.ToString("dd.MM.yyyy")+" ob "+ bookingConfirmation.Start.ToString("HH:mm")+". Lep pozdrav! ";
-            if (string.IsNullOrEmpty(bookingConfirmation.AppointmentToken.Location.Tel) == false)
-            { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookingConfirmation.AppointmentToken.Location.Tel; }
+            newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste "+ bookingConfirmation.Start.Value.ToString("dd.MM.yyyy")+" ob "+ bookingConfirmation.Start.Value.ToString("HH:mm")+". Lep pozdrav! ";
+            if (string.IsNullOrEmpty(bookingConfirmation.Location.Tel) == false)
+            { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookingConfirmation.Location.Tel; }
             var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
 
             newSmsCampaign.MsgSegments = mySmsInfo.Messages;
 
             newSmsCampaign.Name = "AppointmentConfimation";
 
-            newSmsCampaign.Recipients.Add(new SmsMsg(bookingConfirmation.AppointmentToken.Client.FullName, bookingConfirmation.AppointmentToken.Client.Id));
+            newSmsCampaign.Recipients.Add(new SmsMsg(bookingConfirmation.Client.Mobile , bookingConfirmation.Client.Id));
 
             newSmsCampaign.SendAfter = DateTime.Now;
             newSmsCampaign.ApprovedAt = DateTime.Now;
@@ -115,19 +114,19 @@ namespace KdajBi.API.Controllers
         [HttpDelete("/api/booking-confirmation/{id}")]
         public ActionResult<List<TimeSlot>> Destroy(int id)
         {
-            BookingConfirmation bookingConfirmation = _context.BookingConfirmations
-                .Include(b => b.AppointmentToken)
-                .Include(b => b.AppointmentToken.Client)
-                .Include(b => b.AppointmentToken.Workplace)
-                .Where(b => b.AppointmentToken.CompanyId == _CurrentUserCompanyID())
+            AppointmentToken bookingConfirmation = _context.AppointmentTokens
+                .Include(b => b.Client)
+                .Include(b => b.Workplace)
+                .Where(b => b.CompanyId == _CurrentUserCompanyID())
                 .FirstOrDefault(b => b.Id == id);
 
-            bookingConfirmation.Active = false;
+            bookingConfirmation.Status = 2;
+            bookingConfirmation.UpdatedUserID = _CurrentUserID();
 
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {
                 myGoogleHelper.DeleteEvent(
-                    bookingConfirmation.AppointmentToken.Workplace.GoogleCalendarID,
+                    bookingConfirmation.Workplace.GoogleCalendarID,
                     bookingConfirmation.GCalId
                 );
             }

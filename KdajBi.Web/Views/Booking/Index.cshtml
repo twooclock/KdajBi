@@ -3,124 +3,230 @@
 @inject KdajBi.Web.Services.IApiTokenProvider apiTP
 @model vmBooking
 @{
-  Layout = "~/Views/Shared/_EmptyLayout.cshtml";
-  ViewData["Title"] = "Naročilo";
+    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+    ViewData["Title"] = "Naročilo";
 }
 
 @section styles{
+    <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
 
-<style>
-  .appointment {
-    cursor: pointer;
-  }
-
-  .appointment.card:hover {
-    background: #007bff22;
-  }
-</style>
+    <style>
+        .appointment { cursor: pointer; }
+        .appointment.card:hover { background: #007bff22; }
+    </style>
 }
 
 
 <!-- page content -->
 
 <div class="card mt-5">
-  <div class="card-body login-card-body">
-    <h1 class="mb-2">KdajBi naročanje</h1>
-    <div class="row">
-      <div class="col">
-        <h3>@Html.Raw(@Model.token.Location.Name)</h3>
-          <h3>(@Html.Raw(@Model.token.Company.Name))</h3>
-      </div>
-      <div class="col" id="appointments">
-        <div class="mb-2 align-center d-flex justify-content-between align-items-center">
-          <button type="button" class="btn btn-outline-primary" id="previous-day"><</button>
-              <span id="selected-date"></span>
-              <button type="button" class="btn btn-outline-primary" id="next-day">></button>
-        </div>
-        <div id="no-appointments" class="card card-outline card-primary p-1" style="display: none">
-          <div class="card-body text-center">
-            <h4>Ni prostih terminov</h4>
-          </div>
-        </div>
-        <div id="appointments-loader" class="card card-outline card-primary p-1" style="display: none">
-          <div class="card-body text-center">
-            <div class="spinner-border" role="status">
-              <span class="sr-only">Nalagam...</span>
+    <div class="card-body login-card-body">
+        <h1 class="mb-2">KdajBi naročanje</h1>
+        <div class="row">
+            <div class="col">
+                <h3>@Html.Raw(@Model.token.Location.Name)</h3>
+                <h3>(@Html.Raw(@Model.token.Company.Name))</h3>
             </div>
-          </div>
+            <div class="col" id="appointments">
+                <div class="mb-2 align-center d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-outline-primary" id="previous-day"><</button>
+                    <button type="button" class="btn btn-outline-primary" id="selected-date"></button>
+                    <button type="button" class="btn btn-outline-primary" id="next-day">></button>
+                </div>
+                <div id="no-appointments" class="card card-outline card-primary p-1" style="display: none">
+                    <div class="card-body text-center">
+                        <h4>Ni prostih terminov</h4>
+                    </div>
+                </div>
+                <div id="appointments-loader" class="card card-outline card-primary p-1" style="display: none">
+                    <div class="card-body text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="sr-only">Nalagam...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col" id="err" style="display: none">
+                <div class="card-body text-center">
+                        <h4>Neveljavna povezava! <br/>Ta povezava je bila že uporabljena. <br/>Za naročilo nas pokličite na <a href="#/" class="tel" >@Html.Raw(@Model.token.Location.Tel)</a> ali nam pišite. Hvala!</h4>
+                    </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>
+
 <div class="modal fade" id="select-appointment" tabindex="-1" aria-labelledby="select-appointment-label" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="select-appointment-label">Izbran termin</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body" style="font-size: 18px">
-        Ali ste prepričani, da se želite naročiti na termin <br /><b><span id="selected-appointment-date"></span> ob <span id="selected-appointment-time"></span></b>?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" id="create-appointment" class="btn btn-primary">Naroči se</button>
-      </div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="select-appointment-label">Izbran termin</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="font-size: 18px">
+                Ali ste prepričani, da se želite naročiti na termin <br /><b><span id="selected-appointment-date"></span> ob <span id="selected-appointment-time"></span></b>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" id="create-appointment" class="btn btn-primary">Naroči se</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
+<!-- DatePick modal content-->
+<div id="myDatePickModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: fit-content;">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">skoči na datum</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body ui-front">
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="datepick" style="visibility: hidden" aria-describedby="emailHelp">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
 @section scripts{
-<script type="text/javascript">
+    <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
+    <script src="~/plugins/flatpickr/plugins/confirmDate/confirmDate.js"></script>
+    <script src="~/plugins/dayjs/dayjs.min.js"></script>
+    <script src="~/plugins/dayjs/plugin/utc.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_utc)</script>
+    <script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localizedFormat);</script>
+    <script src="~/plugins/dayjs/plugin/localeData.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
+    <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
+    <script src="~/plugins/AlloyFinger/alloy_finger.js"></script>
+
+    <script type="text/javascript">
   var apiURL = "@Html.Raw(apiTP.Settings().BaseAddress)"
 
   var token = "@Html.Raw(@Model.token.Token)";
   var date = new Date();
 
-  $( document ).ready( function () {
-    $( "#previous-day" ).click( function () {
-      changeDate( -1 )
-    } );
-    $( "#next-day" ).click( function () {
-      changeDate( 1 )
-    } );
+        function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                const s = document.createElement('script');
+                let r = false;
+                s.type = 'text/javascript';
+                s.src = src;
+                s.async = true;
+                s.onerror = function (err) {
+                    reject(err, s);
+                };
+                s.onload = s.onreadystatechange = function () {
+                    // console.log(this.readyState); // uncomment this line to see which ready states are called.
+                    if (!r && (!this.readyState || this.readyState == 'complete')) {
+                        r = true;
+                        resolve();
+                    }
+                };
+                const t = document.getElementsByTagName('script')[0];
+                t.parentElement.insertBefore(s, t);
+            });
+        }
 
-    $('#select-appointment').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget);
-      var appointment = button.data('appointment');
-      var modal = $(this)
-      modal.find('#selected-appointment-date').text(formatDate(date));
-      modal.find('#selected-appointment-time').text(appointment);
-      modal.find('#create-appointment').click(function () {
-        $.ajax( {
-          type: "POST",
-          url: apiURL + "/api/booking/" + token,
-          contentType: "application/json; charset=utf-8",
-          data: JSON.stringify({
-            "date": date.toISOString(),
-            "timeSlot": appointment
-          }),
-          success: function ( result ) {
-            window.location.href = "/booking-successful";
-          },
-          error: function ( error ){
-            // TODO
-          }
+    $(document).ready(function () {
+
+        loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
+            .then(async function () {
+
+                loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
+                    .then(function () {
+
+                        dp = $("#datepick").flatpickr({
+                            dateFormat: "d.m.Y",
+                            locale: dayjs.locale(),
+                            defaultDate: new Date(),
+                            minDate: "today",
+                            time_24hr: true, inline: true,
+                            onChange: function (selectedDates, dateStr, instance) {
+                                console.log(selectedDates);
+                                //calendar.gotoDate(selectedDates[0]);
+                                date = selectedDates[0];
+                                loadFreeAppointments();
+                                $("#myDatePickModal").modal("hide");
+                            }
+                        });
+                        var af = new AlloyFinger(document.getElementById('myDatePickModal'), {
+                            swipe: function (evt) {
+                                switch (evt.direction) {
+                                    case "Left": dp.changeMonth(1);
+                                        break;
+                                    case "Right": dp.changeMonth(-1);
+                                        break;
+                                }
+                            }
+                        });
+                    });
+            });
+
+
+        $("#previous-day").click(function () {
+            changeDate(-1)
         });
-      });
-    })
 
-    var dateString = getQueryParameter( 'date' );
-    dateFormatRegex = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
+        $("#selected-date").click(function () {
+            $("#myDatePickModal").modal("show");
+        });
 
-    if ( dateFormatRegex.test( dateString ) ) {
-      date = new Date( dateString );
-    }
+        $("#next-day").click(function () {
+            changeDate(1)
+        });
 
-    loadFreeAppointments();
-  } );
+        $('#select-appointment').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var appointment = button.data('appointment');
+            var modal = $(this)
+            modal.find('#selected-appointment-date').text(formatDate(date));
+            modal.find('#selected-appointment-time').text(appointment);
+            modal.find('#create-appointment').click(function () {
+                $.ajax({
+                    type: "POST",
+                    url: apiURL + "/api/booking/" + token,
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        "date": onlyISODate(date),
+                        "timeSlot": appointment
+                    }),
+                    success: function (result) {
+                        window.location.href = "/booking-successful";
+                    },
+                    error: function (error) {
+                        // TODO
+                    }
+                });
+            });
+        })
+
+        var dateString = getQueryParameter('date');
+        dateFormatRegex = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
+
+        if (dateFormatRegex.test(dateString)) {
+            date = new Date(dateString);
+        }
+        @if(Model.token.Active==true)
+        {@Html.Raw("loadFreeAppointments();"); }
+        else 
+        {@Html.Raw("$('#appointments').hide(); $('#err').show();"); }
+        
+    });
+
   function formatDate( date ) {
     var days = [
       'Nedelja',
@@ -147,7 +253,11 @@
     ];
 
     return days[date.getDay()] + ", " + date.getDate() + ". " + months[date.getMonth()];
-  }
+        }
+
+        function onlyISODate(p_date) {
+            return dayjs(p_date).format("YYYY-MM-DD") ;
+        }
 
   function loadFreeAppointments() {
     $( "#selected-date" ).text( formatDate( date ) );
@@ -162,8 +272,8 @@
     $( "#appointments-loader" ).show();
 
     $.ajax( {
-      type: "GET",
-      url: apiURL + "/api/booking/" + token + "?date=" + date.toISOString().substring( 0, 10 ),
+        type: "GET",
+        url: apiURL + "/api/booking/" + token + "?date=" + onlyISODate(date),
       contentType: "application/json; charset=utf-8",
       success: function ( result ) {
         $( "#appointments-loader" ).hide();
@@ -174,10 +284,10 @@
         }
         result.forEach( appointment => {
           $( "#appointments" ).append( `
-          <div 
-            class="appointment card card-outline card-primary p-1" 
-            data-toggle="modal" 
-            data-target="#select-appointment" 
+          <div
+            class="appointment card card-outline card-primary p-1"
+            data-toggle="modal"
+            data-target="#select-appointment"
             data-appointment="` + formatAppointmentDate( appointment ) + `"
           >
             <div class="card-body text-center">
@@ -210,7 +320,7 @@
     var newDate = new Date( date );
     newDate.setDate( newDate.getDate() + noOfDays );
     var url = new URL( window.location.href );
-    url.searchParams.set( "date", newDate.toISOString().substring( 0, 10 ) ); // setting your param
+    url.searchParams.set( "date", onlyISODate( newDate) ); // setting your param
     window.history.pushState( { path: url.href }, '', url.href );
     date = newDate;
     loadFreeAppointments();
@@ -222,5 +332,5 @@
 
     return ( results !== null ) ? results[1] || 0 : false;
   }
-</script>
+    </script>
 }

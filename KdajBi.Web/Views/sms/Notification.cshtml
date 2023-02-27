@@ -151,23 +151,34 @@
                         <label id="lblMessage" for="txtMessage">
                             Sporočilo:
                         </label>
-                        <textarea rows="5" id="txtMessage" name="txtMessage" class="form-control" maxlength="640"></textarea>
+                        <textarea rows="5" id="txtMessage" name="txtMessage" class="form-control" maxlength="640" oninput="showSMSInfo(this.value,'lblMessageSMSinfo')"></textarea>
+                        <label id="lblMessageSMSinfo">
+                            [Pri pošiljanju se posamezno sporočilo lahko razdeli na več delov!]
+                        </label>
+                        <a href="#!" data-toggle="popover" data-content="Sporočilo se pri pošiljanju razdeli na dele dolge 160 znakov, če pa vsebuje šumnike ali posebne znake pa na dele dolge 67 znakov. Limit se porablja glede na število poslanih delov. Če želite prihraniti limit, naj bodo vaša sporočila kratka in brez šumnikov in posebnih znakov."><i class="fa fa-info-circle"></i></a>
                     </div>
                     <button class="btn btn-primary" onclick="ToNextStep(3);">Naprej</button>
                 </div>
                 <div id="step-nl-3" class="content">
                     <div class="row">
                         <div class="col-md-6">
-                            <textarea rows="5" id="lblMsg" name="txtMessage" class="form-control" readonly></textarea>
+                            <label id="lblMsg" for="txtMsg">
+                            Sporočilo:
+                        </label>
+                            <textarea rows="5" id="txtMsg" name="txtMessage" class="form-control" readonly></textarea>
+                            <label id="lblMsgSMSinfo" class="form-check-label">
+                            [Pri pošiljanju se posamezno sporočilo lahko razdeli na več delov!]
+                        </label>
                         </div>
                     </div>
                     <div class="row">
-                        <div id="lblSending" class="col-md-6 font-weight-bold">V pošiljanju...</div>
-                        <div id="lblSmsInfo" class="col-md-6"></div>
+                        <div id="lblSending" class="col-auto">V pošiljanju...</div>
+                        <div id="lblSmsInfo" class="col-auto"></div>
                     </div>
                     <div class="form-group mb-1 ">
-                        <label for="txtNotificationTime">
+                        <label class="mb-0 mt-2" for="txtNotificationTime">
                             Sporočila pošlji:
+                            <a href="#!" data-toggle="popover" data-content="Nastavite lahko datum in uro pošiljanja."><i class="fa fa-info-circle"></i></a>
                         </label>
                         <div class="input-group flatpickr col-md-6 p-0">
                             <input type="text" id="txtNotificationTime" name="txtNotificationTime" class="form-control " aria-describedby="basic-addonY" data-input />
@@ -217,6 +228,7 @@
     <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
     <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
     <script src="~/plugins/bs-stepper/js/bs-stepper.min.js"></script>
+    <script src="~/plugins/sms-counter/sms_counter.min.js"></script>
 
     <script type="text/javascript">
 
@@ -332,6 +344,15 @@
             $('#txtDebug').val(tekst)
             return false;
         }
+
+        function showSMSInfo(p_text,p_IdlblInfo) {
+            var smsi = SmsCounter.count(p_text);
+            if (smsi.messages > 1)
+            { document.getElementById(p_IdlblInfo).innerHTML="To sporočilo bo pri pošiljanju razdeljeno na " + smsi.messages + " " + DelovZBesedo(smsi.messages) + "."; }
+            else
+            { document.getElementById(p_IdlblInfo).innerHTML="To sporočilo bo poslano v enem delu."; }
+        }
+
         function ToNextStep(p_Step) {
             if (p_Step == 2)
             {
@@ -346,6 +367,7 @@
             }
 
         }
+
         function getSmscObject() {
 
             var smsc={};
@@ -400,7 +422,7 @@
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") {
-                                Swal.fire('Sporočila so v pošiljanju.').then((result) => {
+                                Swal.fire('Sporočila so v pošiljanju. \nPrejeli boste el. pošto, kjer morate dokončno potrditi pošiljanje!').then((result) => {
                                     window.location.href = '@Url.Action("Index", "Home")';
                                     return true;
                                 });
@@ -463,6 +485,7 @@
             console.info(new Date(),'checkClient',id);
             document.getElementById('lblStranke').innerHTML = 'Stranke ' + getSelected() + '/' + myClients.length + ':';
         }
+
         function SporocilZBesedo(p_Number) {
             if (p_Number.toString().substr(-2) == '00' ) { return "sporočil"; }
             if (p_Number.toString().substr(-2) == '01' ||p_Number==1 ) { return "sporočilo";}
@@ -470,6 +493,15 @@
             if (p_Number.toString().substr(-2) == '03' ||p_Number==3 ) { return "sporočila";}
             if (p_Number.toString().substr(-2) == '04' ||p_Number==4 ) { return "sporočila";}
             if (p_Number > 4) { return "sporočil";}
+        }
+
+        function DelovZBesedo(p_Number) {
+            if (p_Number.toString().substr(-2) == '00' ) { return "delov"; }
+            if (p_Number.toString().substr(-2) == '01' ||p_Number==1 ) { return "del";}
+            if (p_Number.toString().substr(-2) == '02' ||p_Number==2 ) { return "dela";}
+            if (p_Number.toString().substr(-2) == '03' ||p_Number==3 ) { return "dele";}
+            if (p_Number.toString().substr(-2) == '04' ||p_Number==4 ) { return "dele";}
+            if (p_Number > 4) { return "delov";}
         }
 
         $(document).ready(function () {
@@ -507,9 +539,12 @@
 
             document.getElementById('stepper2').addEventListener('shown.bs-stepper', function (event) {
                 if (event.detail.indexStep == 2) {
-                document.getElementById('lblMsg').innerHTML = $('#txtMessage').val();
+                    document.getElementById('txtMsg').innerHTML = $('#txtMessage').val();
+                    document.getElementById('lblMsgSMSinfo').innerHTML = $('#lblMessageSMSinfo').html();
+                    document.getElementById('lblMsg').innerHTML = $('#lblMessage').html();
+                    
 
-                    //show sms limit info
+                    //show sms limit info (for a message specified!)
                     getAPIToken().then((result) => {
                         $.ajax({
                             type: "post",
@@ -520,18 +555,21 @@
                             dataType: "json",
                             success: function (result) {
                                 var smsInfo = "";
-                                var cssClass = "text-success";
-                                if (result.limit >= result.recipients) { smsInfo = "Pošljete lahko " + result.limit + " " + SporocilZBesedo(result.limit) + "." }
+                                var cssClass = "d-none";
+                                var eachSMSSegments = SmsCounter.count($('#txtMessage').val()).messages;
+                                var limitForExactSMS = Math.floor(result.limit / eachSMSSegments);
+                                var totalSMSSpent = result.recipients * eachSMSSegments;
+                                if (result.limit >= totalSMSSpent) { smsInfo = "Pošljete lahko " + limitForExactSMS + " " + SporocilZBesedo(result.limit) + "." }
                                 else {
-                                    smsInfo = "Pošljete lahko " + result.limit + " "+SporocilZBesedo(result.limit)+"."
-                                    smsInfo = (result.recipients - result.limit) + " "+SporocilZBesedo(result.recipients - result.limit)+" ne bo poslanih! Naročite dodatne sms-e!";
+                                    smsInfo = "Pošljete lahko " + limitForExactSMS + " "+SporocilZBesedo(limitForExactSMS)+"."
+                                    smsInfo = (result.recipients - limitForExactSMS) + " "+SporocilZBesedo(result.recipients - limitForExactSMS)+" ne bo poslanih! Naročite dodatne sms-e! (Potrebnih je "+(result.recipients - limitForExactSMS)*eachSMSSegments+".)";
                                     cssClass = "text-warning";
                                 }
                                 if (result.limit == 0) { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
                                 if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
 
-                                $('#lblSending').text("Pripravljenih sporočil: " + result.recipients);
-                                $('#lblSmsInfo').removeClass("text-success");
+                                $('#lblSending').text("Prejemnikov: " + result.recipients);
+                                $('#lblSmsInfo').removeClass("d-none");
                                 $('#lblSmsInfo').removeClass("text-warning");
                                 $('#lblSmsInfo').removeClass("text-danger");
                                 $('#lblSmsInfo').addClass(cssClass);
@@ -550,7 +588,7 @@
 
             //count message characters
             document.getElementById('txtMessage').onkeyup = function () {
-                document.getElementById('lblMessage').innerHTML = "Sporočilo (" + (640 - this.value.length) + "/640):";
+                document.getElementById('lblMessage').innerHTML = "Sporočilo (" + ( this.value.length) + "/640):";
             };
 
             // load locale and Get flatpicker localized instance
@@ -604,6 +642,9 @@
             //init toastr
             toastr.options.preventDuplicates = true;
             toastr.options.timeOut = 1000;
+
+            //init popovers
+            $('[data-toggle="popover"]').popover({trigger: "click hover"});
 
         });
 

@@ -4,6 +4,7 @@ using System.Text;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+
 namespace KdajBi.Core.Models
 {
     //could be salon, dental office, etc.
@@ -29,8 +30,13 @@ namespace KdajBi.Core.Models
 
         public Location() { Active = true; Schedule = new Schedule(); Workplaces = new List<Workplace>(); }
 
-        
+        [MinLength(3), MaxLength(25)]
+        public string PublicBookingToken { get; set; }
 
+        [ MaxLength(150)]
+        public string Address { get; set; }
 
+        [MaxLength(150)]
+        public string Timetable { get; set; }
     }
 }

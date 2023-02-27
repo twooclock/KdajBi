@@ -1,0 +1,116 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+
+@model vmPublicBooking
+@{
+    Layout = "";
+    ViewData["Title"] = "Naročilo";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <title>Spletno naročanje @Model.Location.Name</title>
+
+    <!-- Bootstrap -->
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/plugins/fontawesome-free/css/all.min.css" rel="stylesheet">
+
+    
+    <link rel="stylesheet" href="~/css/adminlte.min.css">
+    <!-- Google Font: Source Sans Pro -->
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+    <link href="~/css/site.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+
+<!-- page content -->
+
+<div class="card mt-5">
+    <div class="card-body login-card-body">
+        <h3 class="mb-2 font-weight-bold">Naročanje</h3>
+        <div class="row">
+            <div class="col">
+                <h6>@Html.Raw(@Model.Location.Name)</h6>
+                <h6>@Html.Raw(@Model.CompanyName)</h6>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h6>Naslov:&nbsp;@Html.Raw(@Model.Location.Address)</h6>
+                <h6>Urnik:&nbsp;@Html.Raw(@Model.Location.Timetable)</h6>
+                <h6>Telefon:&nbsp;<a href="tel:@Html.Raw(@Model.Location.Tel)">@Html.Raw(@Model.Location.Tel)</a></h6>
+            </div>
+        </div>
+        <div class="row">
+            <form id="formMobile" name="formMobile" class="form-horizontal" action="@Html.Raw("/book/auth/mobile")" method="POST">
+                <input type="hidden" name="token" value="@Html.Raw(@Model.token)">
+                <input type="hidden" name="pbid" value="@Html.Raw(@Model.PublicBoookingId)">
+                <div class="form-group">
+                    <label for="inputMobile" class="control-label pl-2">Mobilna številka</label>
+                    <div class="col-sm-10">
+                        <input type="tel" class="form-control" id="inputMobile" name="inputMobile" placeholder="[Vaša mobilna številka]" minlength ="9" value="@Html.Raw(@Model.Mobile)">
+                    </div>
+                </div>
+                @if (Model.Mobile!=null)
+                { 
+                <div class="form-group">
+                    <label for="inputPIN" class="control-label pl-2">PIN (počakajte, prejeli boste sms sporočilo)</label>
+                    <div class="col-sm-10">
+                        <input type="number" class="form-control" id="inputPIN" name="inputPIN" placeholder="" value="" min="1000" max="9999"
+                               required autocorrect="off" spellcheck="false" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                    </div>
+                </div>
+                }
+                <input type="submit" value="Potrdi" class="btn btn-primary ml-2" />
+            </form>
+        </div>
+        <div class="row pt-2">
+            <div class="col">
+                <h6>@Html.Raw(@Model.PublicBooking_Text)</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+    <!-- jQuery -->
+    <script src="~/plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    
+
+    <script type="text/javascript">
+       
+    $(document).ready(function () {
+
+        @if (Model.Mobile == null)
+            {@Html.Raw("document.getElementById('inputMobile').focus();"); }
+        else
+            {@Html.Raw("document.getElementById('inputPIN').focus();"); }
+
+        $('inputPIN').attr('autocomplete', 'off');
+    });
+
+ 
+    </script>
+
+
+</body>
+
+
+</html>
+
+
+
+
+
+   

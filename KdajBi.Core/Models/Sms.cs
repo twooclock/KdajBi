@@ -86,6 +86,11 @@ namespace KdajBi.Core.Models
 
         public SmsMsg() { }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p_Recipient">Recipient mobile number</param>
+        /// <param name="p_ClientId">Recipient clientid</param>
         public SmsMsg(string p_Recipient, long p_ClientId)
         {
             Recipient = p_Recipient; ClientId = p_ClientId;

@@ -26,6 +26,7 @@ namespace KdajBi.Core.Models
         [MinLength(6), MaxLength(6)]
         public string Color { get; set; }
         public int SortPosition { get; set; }
+        public bool UsedInClientBooking { get; set; }
 
     }
 }

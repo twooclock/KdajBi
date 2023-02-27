@@ -1,0 +1,37 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+@inject KdajBi.Web.Services.IApiTokenProvider apiTP
+@model vmBooking
+@{
+  Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+  ViewData["Title"] = "Naročilo";
+}
+
+@section styles{
+
+}
+
+
+<!-- page content -->
+
+<div class="card mt-5">
+    <div class="card-body login-card-body">
+        <h1 class="mb-2">KdajBi naročanje</h1>
+        <div>
+            Hvala, uspešno ste oddali naročilo na termin!
+            <br />Po sms-u boste v kratkem prejeli potrditev vašega izbranega termina.
+        </div>
+    </div>
+    <div class="card-footer px-auto">
+    </div>
+</div>
+@section scripts{
+<script type="text/javascript">
+    $(document).ready(function () {
+        //prevent back button
+        history.pushState(null, null, window.location.href);
+        history.back();
+        window.onpopstate = () => history.forward();
+    });
+</script>
+}

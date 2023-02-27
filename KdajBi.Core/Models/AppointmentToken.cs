@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
 
 namespace KdajBi.Core.Models
 {
@@ -37,6 +38,16 @@ namespace KdajBi.Core.Models
 
         [ForeignKey("AppUser"), Required]
         public long AppUserId { get; set; }
+
+        //actual booking
+        public DateTime? BookingCreated { get; set; }
+        public DateTime? Start { get; set; }
+        public DateTime? End { get; set; }
+
+        [MaxLength(1024)]
+        public string GCalId { get; set; }
+
+        public long Status { get; set; } //0-needs confirmation 1-confirmed 2-rejected
 
     }
 }

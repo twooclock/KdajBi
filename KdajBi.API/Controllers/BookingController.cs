@@ -19,6 +19,7 @@ using System.Linq.Dynamic.Core;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace KdajBi.API.Controllers
 {
@@ -39,7 +40,12 @@ namespace KdajBi.API.Controllers
         {
             _calendarV3Provider = calendarV3Provider;
         }
-
+        /// <summary>
+        /// returns a list of available timeslots for a specified token
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="date"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("/api/booking/{token}")]
         public ActionResult<List<TimeSlot>> Get(
@@ -100,7 +106,7 @@ namespace KdajBi.API.Controllers
             return Ok(availableAppointments);
         }
 
-        private List<TimeSlot> getWorkplaceWorkhours(Workplace workplace, DateTime date, DateTime dateEnd)
+        private List<TimeSlot> getWorkplaceWorkhours(Workplace p_workplace, DateTime date, DateTime dateEnd)
         {
             List<TimeSlot> schedule = new List<TimeSlot>();
 
@@ -108,7 +114,7 @@ namespace KdajBi.API.Controllers
 
             dynamic data = JObject.Parse("{}");
 
-            var workplaceScheduleException = _context.WorkplaceScheduleExceptions.Where(x => x.WorkplaceId == workplace.Id && x.Date == date).ToList();
+            var workplaceScheduleException = _context.WorkplaceScheduleExceptions.Where(x => x.WorkplaceId == p_workplace.Id && x.Date == date).ToList();
             if (workplaceScheduleException.Count > 0)
             {
                 //extra urnik
@@ -125,10 +131,23 @@ namespace KdajBi.API.Controllers
                 return schedule;
             }
 
-            if (workplace.Schedules.Count > 0)
+            if (p_workplace.Schedules.Count > 0)
             {
                 //urnik za dan
-                JArray jsonArray = JArray.Parse(workplace.Schedules.First().EventsJson);
+                //check setting cbEmployee_AlternatingWeeks to determine appropriate schedule
+                long companyId = _context.Locations.Where(l => l.Id == p_workplace.LocationId).FirstOrDefault().CompanyId;
+                long schTypeId = 0;
+                if (bool.Parse(SettingsHelper.getSetting(_context, companyId, null, "cbEmployee_AlternatingWeeks", "false")) == true)
+                {
+                    Calendar cal = new CultureInfo("en-US").Calendar; //TODO!
+                    int weeks = cal.GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
+                    var wno = ISOWeek.GetWeekOfYear(date);
+                    if (weeks % 2 == 0) { schTypeId = 2; } else { schTypeId = 1; }
+                    if (p_workplace.Schedules.Where(s => s.Type == schTypeId).FirstOrDefault() == null)
+                    { schTypeId = 0; }
+                }
+                
+                JArray jsonArray = JArray.Parse(p_workplace.Schedules.Where(s => s.Type == schTypeId).First().EventsJson);
                 foreach (var exSch in jsonArray.Children())
                 {
                     data = JObject.Parse(exSch.ToString());
@@ -138,8 +157,8 @@ namespace KdajBi.API.Controllers
                     }
                     schedule.Add(
                         new TimeSlot(
-                            date.Add(TimeSpan.Parse(data.startTime)),
-                            date.Add(TimeSpan.Parse(data.endTime))
+                            date.Add(TimeSpan.Parse(data.startTime.ToString())),
+                            date.Add(TimeSpan.Parse(data.endTime.ToString()))
                         )
                     );
                 }
@@ -147,7 +166,7 @@ namespace KdajBi.API.Controllers
             }
 
             //urnik lokacije
-            var location = _context.Locations.Include(s => s.Schedule).Where(x => x.Id == workplace.LocationId).FirstOrDefault();
+            var location = _context.Locations.Include(s => s.Schedule).Where(x => x.Id == p_workplace.LocationId).FirstOrDefault();
             
             if (location.Schedule.EventsJson != null)
             {
@@ -156,7 +175,7 @@ namespace KdajBi.API.Controllers
                 foreach (var exSch in jsonArray.Children())
                 {
                     data = JObject.Parse(exSch.ToString());
-                    data.workplaceid = workplace.Id;
+                    data.workplaceid = p_workplace.Id;
                     if (data.resourceId == (int)dayOfTheWeek)
                     {
                         schedule.Add(data);
@@ -165,7 +184,7 @@ namespace KdajBi.API.Controllers
                 return schedule;
             }
 
-            data.workplaceid = workplace.Id;
+            data.workplaceid = p_workplace.Id;
             switch (dayOfTheWeek)
             {
                 case DayOfWeek.Sunday:
@@ -204,6 +223,12 @@ namespace KdajBi.API.Controllers
             return schedule;
         }
 
+        /// <summary>
+        /// makes an appointment (adds an event to google calendar)
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="bookingRequest"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("/api/booking/{token}")]
         public ActionResult<List<TimeSlot>> Store(
@@ -218,30 +243,22 @@ namespace KdajBi.API.Controllers
                 .Where(x => x.Active == true)
                 .FirstOrDefault(x => x.Token == token);
 
-            // validate timeslot
-            
-            BookingConfirmation bookingConfirmation = new BookingConfirmation();
-            bookingConfirmation.Active = true;
-            bookingConfirmation.CreatedDate = DateTime.Now;
-            bookingConfirmation.AppointmentToken = appointmentToken;
-            bookingConfirmation.Start = bookingRequest.TimeSlot.start;
-            bookingConfirmation.End = bookingRequest.TimeSlot.end;
-
+            appointmentToken.BookingCreated = DateTime.Now;
+            appointmentToken.Start = bookingRequest.TimeSlot.start;
+            appointmentToken.End = bookingRequest.TimeSlot.end;
             
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {
                 var gEvent = myGoogleHelper.AddEvent(
                     appointmentToken.Workplace.GoogleCalendarID,
-                    "Čaka na potrditev: " + appointmentToken.Client.FullName + " - " + appointmentToken.Service,
-                    null,
-                    null,
-                    bookingRequest.TimeSlot.start,
-                    bookingRequest.TimeSlot.end
+                    "Čaka na potrditev: " + appointmentToken.Client.FullName +  " ("+ appointmentToken.Client.Mobile + ") - " + appointmentToken.Service,
+                    bookingRequest.TimeSlot.start, bookingRequest.TimeSlot.end,
+                    appointmentToken.Client.Id, appointmentToken.Client.FullName, 
+                    appointmentToken.Client.Mobile, appointmentToken.Service
                 );
-                
-                bookingConfirmation.GCalId = gEvent.Id;
+
+                appointmentToken.GCalId = gEvent.Id;
             }
-            _context.BookingConfirmations.Add(bookingConfirmation);
             
             appointmentToken.Active = false;
             _context.SaveChanges();

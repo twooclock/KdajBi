@@ -154,6 +154,9 @@ namespace KdajBi.API.Controllers
                 Locationindb.UpdatedDate = DateTime.Now;
                 Locationindb.Name = Location.Name;
                 Locationindb.Tel = Location.Tel;
+                Locationindb.Address = Location.Address;
+                Locationindb.Timetable = Location.Timetable;
+                Locationindb.PublicBookingToken = (Location.PublicBookingToken!=null?Location.PublicBookingToken:"");
                 Locationindb.Active = Location.Active;
 
                 _context.Entry(Locationindb).State = EntityState.Modified;
@@ -177,7 +180,7 @@ namespace KdajBi.API.Controllers
         [HttpDelete("/api/Location/{id}")]
         public async Task<ActionResult<Location>> DeleteLocation(long id)
         {
-            if (LocationIsMine(id))
+            if (LocationIsMine(id)==false)
             {
                 return NotFound();
             }
@@ -227,6 +230,32 @@ namespace KdajBi.API.Controllers
             return Json("[]");
 
         }
+
+        [HttpGet("/api/GetLocationWorkplaces/{id}")]
+        public async Task<ActionResult<Location>> GetLocationWorkplaces(long id)
+        {
+            var Location =  _context.Locations.Include(l=>l.Workplaces).Where(l=>l.Id==id).FirstOrDefault();
+
+            if (Location == null)
+            {
+                return NotFound();
+            }
+
+            return Location;
+        }
+
+        
+        [HttpGet("/api/locationservices/{id}")]
+        public async Task<ActionResult<Service>> GetLocationsServices(long id)
+        {
+            //get location services
+            if (LocationIsMine(id) == false) { return NotFound(); }
+            
+            var myServices = _context.Services.Where(s => s.LocationId == id && s.Active == true).ToList();
+
+            return Json(myServices);
+        }
+
         private bool LocationExists(long id)
         {
             return _context.Locations.Any(e => e.Id == id);

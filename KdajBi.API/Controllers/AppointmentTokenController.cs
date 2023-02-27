@@ -59,7 +59,10 @@ namespace KdajBi.API.Controllers
         [HttpPost("/api/appointment-tokens")]
         public async Task<ActionResult<AppointmentToken>> Store(AppointmentTokenRequest appointmentTokenRequest)
         {
-            AppointmentToken appointmentToken = new AppointmentToken();
+            Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == appointmentTokenRequest.ClientId && a.Mobile != null && a.AllowsSMS == true).SingleOrDefault();
+            if (client != null)
+            {
+                AppointmentToken appointmentToken = new AppointmentToken();
 
             appointmentToken.Token = generateToken(); 
             appointmentToken.Service = appointmentTokenRequest.Service.Trim(); 
@@ -71,11 +74,9 @@ namespace KdajBi.API.Controllers
             appointmentToken.WorkplaceId= appointmentTokenRequest.WorkplaceId;
             appointmentToken.CreatedDate = DateTime.Now;
             appointmentToken.CreatedUserID= _CurrentUserID();
-            //manjka workplace (zaposleni)
+
             _context.AppointmentTokens.Add(appointmentToken);
                 
-            //await _context.SaveChangesAsync();
-
             // obvesti stranko prek sms (appointmentToken.ClientId)
             SmsCampaign newSmsCampaign = new SmsCampaign();
             newSmsCampaign.Company.Id = _CurrentUserCompanyID();
@@ -86,11 +87,9 @@ namespace KdajBi.API.Controllers
 
             var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
             newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-
             newSmsCampaign.Name = "AppointmentLink";
+            newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, appointmentToken.ClientId));
 
-            newSmsCampaign.Recipients.Add(new SmsMsg("", appointmentToken.ClientId));
-                        
             newSmsCampaign.SendAfter = DateTime.Now;
             newSmsCampaign.ApprovedAt = DateTime.Now;
                     
@@ -109,6 +108,8 @@ namespace KdajBi.API.Controllers
             }
 
             return Ok(appointmentToken);
+            }
+            return NotFound();
         }
 
         [HttpDelete("/api/appointment-tokens/{id}")]

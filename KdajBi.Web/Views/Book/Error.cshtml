@@ -1,0 +1,61 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+@inject KdajBi.Web.Services.IApiTokenProvider apiTP
+@model vmPublicBooking
+@{
+    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+    ViewData["Title"] = "Naročanje - napaka";
+}
+
+@section styles{
+
+
+}
+
+
+<!-- page content -->
+
+<div class="card mt-5">
+    <div class="card-body login-card-body">
+        <h1 class="mb-2">KdajBi naročanje - NAPAKA!</h1>
+        @if (Model.Location!=null)
+        {
+        <div class="row">
+            <div class="col">
+                <h3>@(string.IsNullOrEmpty(Model.Location.Name)?"":Html.Raw(Model.Location.Name))</h3>
+                <h6>@(string.IsNullOrEmpty(Model.CompanyName)?"":Html.Raw(Model.CompanyName))</h6>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h6>Naslov:&nbsp;@(string.IsNullOrEmpty(Model.Location.Address)?"":Html.Raw(Model.Location.Address))</h6>
+                <h6>Urnik:&nbsp;@(string.IsNullOrEmpty(Model.Location.Timetable)?"":Html.Raw(Model.Location.Timetable))</h6>
+                <h6>Telefon:&nbsp;<a href="tel:@(string.IsNullOrEmpty(Model.Location.Tel)?"":Html.Raw(Model.Location.Tel))">@(string.IsNullOrEmpty(Model.Location.Tel)?"":Html.Raw(Model.Location.Tel))</a></h6>
+            </div>
+        </div>
+        }
+        <div class="row">
+            <div class="col">
+                <h3>@Html.Raw(@Model.ErrorMsg)</h3>
+                @if(Model.ErrorMsg!="Naslov ne obstaja")
+                {
+                <h3><a class="btn btn-primary" href="~/book/@Model.token">Poskusite znova</a></h3>
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h6>@(string.IsNullOrEmpty(Model.PublicBooking_Text)?"":Html.Raw(Model.PublicBooking_Text))</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- /modal content-->
+@section scripts{
+
+
+}

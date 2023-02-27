@@ -21,11 +21,10 @@ namespace KdajBi.Web.ViewComponents
         public async Task<IViewComponentResult> InvokeAsync(int CompanyId)
         {
             return View(
-                db.BookingConfirmations
-                    .Include(b => b.AppointmentToken)
-                    .Include(b => b.AppointmentToken.Client)
-                    .Where(b => b.AppointmentToken.CompanyId == CompanyId)
-                    .Where(b => b.Active == true)
+                db.AppointmentTokens
+                    .Include(b => b.Client)
+                    .Where(b => b.CompanyId == CompanyId)
+                    .Where(b => b.GCalId!=null && b.Status==0)
                     .ToList()
                 );
         }

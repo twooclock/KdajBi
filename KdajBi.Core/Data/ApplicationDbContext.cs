@@ -32,10 +32,13 @@ namespace KdajBi.Core
         public DbSet<ContactMail> ContactMails { get; set; }
         
         public DbSet<AppointmentToken> AppointmentTokens { get; set; }
-        public DbSet<BookingConfirmation> BookingConfirmations { get; set; }
 
         public DbSet<AppMessage> AppMessages { get; set; }
         public DbSet<UserAppMessage> UserAppMessages { get; set; }
+
+        public DbSet<PublicBooking> PublicBookings { get; set; }
+        public DbSet<WorkplaceExcludedService> WorkplaceExcludedServices { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -71,6 +74,8 @@ namespace KdajBi.Core
             builder.Entity<ClientTag>().HasIndex(p => new { p.ClientId, p.TagId }).IsUnique(true);
             builder.Entity<Tag>().HasIndex(p => new { p.Title }).IsUnique(true);
             builder.Entity<WorkplaceSchedule>().HasIndex(p => new { p.WorkplaceId, p.ScheduleId }).IsUnique(true);
+            builder.Entity<Location>().HasIndex(p => new { p.PublicBookingToken }).IsUnique(true);
+            builder.Entity<WorkplaceExcludedService>().HasIndex(p => new { p.WorkplaceId, p.ServiceId }).IsUnique(true);
 
         }
     }
