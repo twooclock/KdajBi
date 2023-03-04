@@ -1,7 +1,7 @@
 # KdajBi
  Yet another the best appointment application/appointment scheduler/appointment system
 
-Plan is to have:
+~~Plan is to have~~ We have:
 1. Backend (core 3.1 webapp) and ~~frontend (vue.js)~~ [adminlte.io](https://adminlte.io) frontend for managing and accepting appointments. 
 2. User authentication via Google. 
 3. Google Calendar for storing appointments.
@@ -15,5 +15,7 @@ Done functionalities:
 4. Services (used for making appointments)
 5. Clients records
 6. Lock/unlock admin mode
-7. SMS client notifications
+7. SMS client notifications (sms messagaging is not part of this repo, since it is done trough local sms provider)
 8. Making appointments
+9. Sending a private booking link to a client 
+10. Public link for clients to book appointments

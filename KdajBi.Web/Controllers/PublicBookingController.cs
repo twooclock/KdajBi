@@ -51,7 +51,7 @@ namespace KdajBi.Web.Controllers
         [Route("/narocanje/auth/mobile")]
         [Route("/book/auth/mobile")]
         [HttpPost]
-        public IActionResult mobile(string token, string inputMobile, string inputPIN, string pbid)
+        public IActionResult mobile(string token, string inputMobile, string inputClientFirstName, string inputClientLastName, string inputPIN, string pbid)
         {
             var bookinglocation = _context.Locations.Include(l=>l.Workplaces).Where(l => l.PublicBookingToken == token).FirstOrDefault();
             
@@ -76,53 +76,76 @@ namespace KdajBi.Web.Controllers
             if (inputMobile != null && inputPIN == null)
             {
                 var newbooking = new PublicBooking();
-                //TODO:check if mobile is valid and allowed
+
                 if (bookinglocation != null)
                 {
-                    //create public booking 
-                    newbooking.Token = token;
-                    newbooking.Mobile = inputMobile;
-                    Random _rdm = new Random();
-                    int myPIN= _rdm.Next(1000, 9999);
-                    newbooking.PIN = myPIN;
-                    newbooking.LocationId = bookinglocation.Id;
-
-                    var myClient = _context.Clients.Where(c => c.CompanyId == bookinglocation.CompanyId && c.Mobile.EndsWith(inputMobile.Substring(1))).FirstOrDefault();
-                    if (myClient != null) { newbooking.ClientId = myClient.Id;  }
-
-                    _context.PublicBookings.Add(newbooking);
-                    _context.SaveChanges();
-
-                    // obvesti stranko prek sms (TODO: naredi prek service)
-                    SmsCampaign newSmsCampaign = new SmsCampaign();
-                    newSmsCampaign.Company.Id = bookinglocation.CompanyId;
-                    newSmsCampaign.LocationId = bookinglocation.Id;
-                    newSmsCampaign.AppUser.Id = _context.Users.AsNoTracking().Where(u => u.CompanyId == bookinglocation.CompanyId).First().Id;
-
-                    newSmsCampaign.MsgTxt = @"PIN za prijavo je "+myPIN.ToString()+". Lep pozdrav! ";
-                    if (string.IsNullOrEmpty(bookinglocation.Tel) == false)
-                    { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookinglocation.Tel; }
-                    var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
-
-                    newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-                    newSmsCampaign.Name = "PublicBookingAuthorization";
-                    newSmsCampaign.Recipients.Add(new SmsMsg(inputMobile, (newbooking.ClientId.HasValue?newbooking.ClientId.Value:0)));
-
-                    newSmsCampaign.SendAfter = DateTime.Now;
-                    newSmsCampaign.ApprovedAt = DateTime.Now;
-
-
-                    _context.Attach(newSmsCampaign.Company);
-                    _context.Attach(newSmsCampaign.AppUser);
-                    _context.SmsCampaigns.Add(newSmsCampaign);
-                    try
+                    //allow only 3 bookings from one mobile number a day
+                    if (_context.PublicBookings.Where(pb => pb.Token == token && pb.Mobile == inputMobile && pb.CreatedDate.Value.Date == DateTime.Now.Date).Count() < 3)
                     {
-                        _context.SaveChanges();
+                        //allow only slovenian mobile numbers
+                        if (Utils.siMobilePrefixes.Any(x => inputMobile.StartsWith(x)))
+                        {
+                            //create public booking 
+                            newbooking.Token = token;
+                            newbooking.Mobile = inputMobile;
+                            Random _rdm = new Random();
+                            int myPIN = _rdm.Next(1000, 9999);
+                            newbooking.PIN = myPIN;
+                            newbooking.LocationId = bookinglocation.Id;
+
+                            var myClient = _context.Clients.Where(c => c.CompanyId == bookinglocation.CompanyId && c.Mobile.EndsWith(inputMobile.Substring(1))).FirstOrDefault();
+                            if (myClient != null)
+                            {
+                                newbooking.ClientId = myClient.Id;
+                            }
+                            else
+                            { vm.EnterClientName = true; }
+
+                            _context.PublicBookings.Add(newbooking);
+                            _context.SaveChanges();
+
+                            // obvesti stranko prek sms (TODO: naredi prek service)
+                            SmsCampaign newSmsCampaign = new SmsCampaign();
+                            newSmsCampaign.Company.Id = bookinglocation.CompanyId;
+                            newSmsCampaign.LocationId = bookinglocation.Id;
+                            newSmsCampaign.AppUser.Id = _context.Users.AsNoTracking().Where(u => u.CompanyId == bookinglocation.CompanyId).First().Id;
+
+                            newSmsCampaign.MsgTxt = @"PIN za prijavo je " + myPIN.ToString() + ". Lep pozdrav! ";
+                            if (string.IsNullOrEmpty(bookinglocation.Tel) == false)
+                            { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookinglocation.Tel; }
+                            var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+
+                            newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+                            newSmsCampaign.Name = "PublicBookingAuthorization";
+                            newSmsCampaign.Recipients.Add(new SmsMsg(inputMobile, (newbooking.ClientId.HasValue ? newbooking.ClientId.Value : 0)));
+
+                            newSmsCampaign.SendAfter = DateTime.Now;
+                            newSmsCampaign.ApprovedAt = DateTime.Now;
+
+
+                            _context.Attach(newSmsCampaign.Company);
+                            _context.Attach(newSmsCampaign.AppUser);
+                            _context.SmsCampaigns.Add(newSmsCampaign);
+                            try
+                            {
+                                _context.SaveChanges();
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "/api/publicbooking-confirmation");
+                                throw;
+                            }
+                        }
+                        else
+                        {
+                            vm.ErrorMsg = "Neveljavna mobilna številka? Pokličte nas.";
+                            return View("~/Views/Book/Error.cshtml", vm);
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _logger.LogError(ex, "/api/publicbooking-confirmation");
-                        throw;
+                        vm.ErrorMsg = "Iz varnostnih razlogov so dovoljene le tri prijave na dan. Hvala za razumevanje, pokličite nas ali poskusite spet jutri!";
+                        return View("~/Views/Book/Error.cshtml", vm);
                     }
                 }
                 
@@ -142,8 +165,32 @@ namespace KdajBi.Web.Controllers
                     }
                     if (inputPIN == myPB.PIN.ToString())
                     {
+                        long clientid = 0;
                         //ok mobile is authorized
+                        if (string.IsNullOrEmpty(inputClientFirstName)==false || string.IsNullOrEmpty(inputClientLastName) == false)
+                        {
+                            try
+                            {
+                                //store client
+                                Client myClient = new Client();
+                                myClient.LastName = (string.IsNullOrEmpty(inputClientLastName) ? "" : inputClientLastName);
+                                myClient.FirstName = (string.IsNullOrEmpty(inputClientFirstName) ? "" : inputClientFirstName);
+                                myClient.Mobile = inputMobile;
+                                myClient.CompanyId = bookinglocation.CompanyId;
+                                myClient.LocationId = bookinglocation.Id;
+                                myClient.Sex = "F"; //mandatory - default is female
+                                _context.Clients.Add(myClient);
+                                _context.SaveChanges();
+                                clientid = myClient.Id;
+                            }
+                            catch (Exception ex)
+                            {
+
+                                //ignore as its not needed...
+                            }
+                        }
                         myPB.Authorized = DateTime.Now;
+                        if (clientid > 0) { myPB.ClientId = clientid; }
                         _context.SaveChanges();
                         vm.PublicBoookingId = myPB.Id;
 

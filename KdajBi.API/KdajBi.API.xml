@@ -97,5 +97,142 @@
         <member name="F:KdajBi.DataTableResultSet.data">
             <summary>Array of records.</summary>
         </member>
+        <member name="T:KdajBi.SmsCounter">
+            <summary>
+            SMS Information class
+            </summary>
+            <remarks>
+            Inspired by the Javascript library https://github.com/danxexe/sms-counter
+            @author: troll31
+            @date: 26th March, 2020
+            
+            Released under the MIT License
+            
+            -------------------------------------------------------------------------------
+            License Information
+            -------------------------------------------------------------------------------
+            Permission is hereby granted, free of charge, to any person obtaining a copy
+            of this software and associated documentation files (the "Software"), to deal
+            in the Software without restriction, including without limitation the rights
+            to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+            copies of the Software, and to permit persons to whom the Software is
+            furnished to do so, subject to the following conditions:
+            
+            The above copyright notice and this permission notice shall be included in
+            all copies or substantial portions of the Software.
+            
+            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+            IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+            AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+            LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+            OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+            THE SOFTWARE.
+            -------------------------------------------------------------------------------
+            </remarks>
+        </member>
+        <member name="F:KdajBi.SmsCounter.GSM_7BIT_CHARSET">
+            <summary>
+            GSM 7 bit charset
+            </summary>
+        </member>
+        <member name="F:KdajBi.SmsCounter.GSM_7BIT_EX_CHARSET">
+            <summary>
+            GSM 7 bit Extended charset
+            </summary>
+        </member>
+        <member name="T:KdajBi.SmsCounter.EncodingEnum">
+            <summary>
+            Sms Encodings
+            </summary>
+        </member>
+        <member name="F:KdajBi.SmsCounter.EncodingEnum.GSM_7BIT">
+            <summary>
+            GSM 7 bit (GSM 03.38)
+            </summary>
+        </member>
+        <member name="F:KdajBi.SmsCounter.EncodingEnum.GSM_7BIT_EX3">
+            <summary>
+            GSM 7 bit Extended (GSM 03.38 Extension)
+            </summary>
+        </member>
+        <member name="F:KdajBi.SmsCounter.EncodingEnum.UNICODE">
+            <summary>
+            Unicode (UCS-2)
+            </summary>
+        </member>
+        <member name="F:KdajBi.SmsCounter.MaxCharsInSimpleSms">
+            <summary>
+            Message length by charset
+            </summary>
+        </member>
+        <member name="F:KdajBi.SmsCounter.MaxCharsInMultiSms">
+            <summary>
+            Multi message length by charset
+            </summary>
+        </member>
+        <member name="P:KdajBi.SmsCounter.Encoding">
+            <summary>
+            Encoding used
+            </summary>
+        </member>
+        <member name="P:KdajBi.SmsCounter.Length">
+            <summary>
+            Number of chars
+            </summary>
+        </member>
+        <member name="P:KdajBi.SmsCounter.Messages">
+            <summary>
+            Number of messages
+            </summary>
+        </member>
+        <member name="P:KdajBi.SmsCounter.PerMessage">
+            <summary>
+            Number of char per message
+            </summary>
+        </member>
+        <member name="P:KdajBi.SmsCounter.Remaining">
+            <summary>
+            Number of char remaining in current message
+            </summary>
+        </member>
+        <member name="M:KdajBi.SmsCounter.#ctor">
+            <summary>
+            SMS Counter
+            </summary>
+        </member>
+        <member name="M:KdajBi.SmsCounter.#ctor(System.String)">
+            <summary>
+            SMS Counter
+            </summary>
+            <param name="text">SMS text</param>
+        </member>
+        <member name="M:KdajBi.SmsCounter.Count(System.String)">
+            <summary>
+            Count SMS Message
+            </summary>
+            <param name="text">SMS text</param>
+        </member>
+        <member name="M:KdajBi.SmsCounter.GetEncoding(System.String)">
+            <summary>
+            Get text encoding
+            </summary>
+            <param name="text">SMS text</param>
+            <returns>Encoding</returns>
+        </member>
+        <member name="M:KdajBi.SmsCounter.ExtractExtendedGsm7bitChars(System.String)">
+            <summary>
+            Extract Extended GSM 7bit chars
+            </summary>
+            <param name="text">SMS text</param>
+            <returns>List of extented chars</returns>
+        </member>
+        <member name="M:KdajBi.SmsCounter.ExtractNonGsmCharacters(System.String)">
+            <summary>
+            Extract non GSM chars
+            </summary>
+            <param name="text">SMS text</param>
+            <returns>List of non Gsm chars</returns>
+        </member>
     </members>
 </doc>

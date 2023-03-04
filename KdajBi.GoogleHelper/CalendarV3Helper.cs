@@ -1,15 +1,15 @@
-﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Calendar.v3;
-using Google.Apis.Calendar.v3.Data;
-using Google.Apis.Requests;
-using Google.Apis.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Calendar.v3;
+using Google.Apis.Calendar.v3.Data;
+using Google.Apis.Http;
+using Google.Apis.Requests;
+using Google.Apis.Services;
+using Newtonsoft.Json;
+using NLog;
+using static Google.Apis.Calendar.v3.Data.Event;
 using static Google.Apis.Calendar.v3.EventsResource.ListRequest;
 
 namespace KdajBi.GoogleHelper
@@ -21,7 +21,7 @@ namespace KdajBi.GoogleHelper
         static string[] scopes = { CalendarService.Scope.Calendar };
         static string ApplicationName = "My project";
 
-        CalendarService myCALservice = null;
+        CalendarService myCALservice;
 
         //used to communicate with google via service_account (json file)
         public CalendarV3Helper(string p_jsonFileName)
@@ -56,6 +56,10 @@ namespace KdajBi.GoogleHelper
 
         public IEnumerable<Event> GetAllEvents(string calendarId, DateTime? startData, DateTime? endData = null)
         {
+            if (calendarId == null)
+            {
+                return new List<Event>();
+            }
             try
             {
                 EventsResource.ListRequest request = myCALservice.Events.List(calendarId);
@@ -86,14 +90,26 @@ namespace KdajBi.GoogleHelper
         }
 
 
-        public Event AddEvent(string calendarId, string title, string contents, string location, DateTime startTime, DateTime endTime)
+        public Event AddEvent(string calendarId, string title, DateTime startTime, DateTime endTime, long p_ClientId, string p_ClientFullName, string p_ClientMobile, string p_Notes)
         {
+            Event.ExtendedPropertiesData myExtendedProperties = new Event.ExtendedPropertiesData();
+            myExtendedProperties.Shared = new Dictionary<string, string>();
+            if (p_ClientId > 0)
+            {
+                string objClient = JsonConvert.SerializeObject(new
+                {
+                    label = p_ClientFullName,
+                    value = p_ClientId,
+                    mobile = p_ClientMobile
+                });
+                myExtendedProperties.Shared.Add(new KeyValuePair<string, string>("clientid", p_ClientId.ToString()));
+                myExtendedProperties.Shared.Add(new KeyValuePair<string, string>("client", objClient));
+            }
+            myExtendedProperties.Shared.Add(new KeyValuePair<string, string>("notes", p_Notes));
 
             Event newEvent = new Event()
             {
                 Summary = title,
-                Location = location,
-                Description = contents,
                 Start = new EventDateTime()
                 {
                     DateTime = startTime
@@ -101,33 +117,30 @@ namespace KdajBi.GoogleHelper
                 End = new EventDateTime()
                 {
                     DateTime = endTime
-                }
+                },
+                ExtendedProperties = myExtendedProperties
 
             };
-
-            EventsResource.InsertRequest insRequest = myCALservice.Events.Insert(newEvent, calendarId);
-            Event createdEvent = insRequest.Execute();
-            return createdEvent;
+            
+            
+            return myCALservice.Events.Insert(newEvent, calendarId).Execute();
         }
 
         public Event UpdateEvent(string title, string calendarId, string eventId)
         {
             EventsResource.GetRequest getRequest = myCALservice.Events.Get(calendarId, eventId);
-            Console.WriteLine(calendarId);
-            Console.WriteLine(eventId);
+            //Console.WriteLine(calendarId);
+            //Console.WriteLine(eventId);
             Event evt = getRequest.Execute();
             
             evt.Summary = title;
 
-            EventsResource.UpdateRequest updateRequest = myCALservice.Events.Update(evt, calendarId, eventId);
-            Event createdEvent = updateRequest.Execute();
-            return createdEvent;
+            return myCALservice.Events.Update(evt, calendarId, eventId).Execute();
         }
 
         public void DeleteEvent( string calendarId, string eventId)
         {
-            EventsResource.DeleteRequest deleteRequest = myCALservice.Events.Delete(calendarId, eventId);
-            deleteRequest.Execute();
+            myCALservice.Events.Delete(calendarId, eventId).Execute();
         }
 
         public void Dispose()

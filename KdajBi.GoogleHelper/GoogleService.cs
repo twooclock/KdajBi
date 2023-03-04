@@ -26,9 +26,9 @@ namespace KdajBi.GoogleHelper
     {
         public static string RemoveRefreshToken(string p_Token)
         {
-            GoogleAuthToken myToken = JsonConvert.DeserializeObject<GoogleAuthToken>(p_Token);
-            myToken.refresh_token = "";
-            return JsonConvert.SerializeObject(myToken);
+            GoogleAuthToken googleAuthToken = JsonConvert.DeserializeObject<GoogleAuthToken>(p_Token);
+            googleAuthToken.refresh_token = "";
+            return JsonConvert.SerializeObject(googleAuthToken);
         }
     }
 
@@ -83,9 +83,7 @@ namespace KdajBi.GoogleHelper
             };
             ClientSecrets cSecrets = new ClientSecrets() { ClientId = config["GoogleSettings:ClientId"], ClientSecret = config["GoogleSettings:ClientSecret"] };
 
-            var flowInitializer = new GoogleAuthorizationCodeFlow.Initializer { ClientSecrets = cSecrets };
-
-            var flow = new GoogleAuthorizationCodeFlow(flowInitializer);
+            var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer { ClientSecrets = cSecrets });
 
             var credential = new UserCredential(flow, p_userid, tokenResponse);
 

@@ -16,5 +16,6 @@ namespace KdajBi.Web.ViewModels
         public string Mobile;
         public long PublicBoookingId;
         public string ErrorMsg;
+        public bool EnterClientName;
     }
 }

@@ -346,12 +346,24 @@ namespace KdajBi.API.Controllers
             var services = _context.Services.Where(s => s.UsedInClientBooking == true && s.LocationId == myPB.LocationId).ToList();
 
             //remove all services not done by specified workplace (if supplied)
-            if (wpid>0)
-            { 
+            if (wpid > 0)
+            {
                 var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wpid).ToList();
                 if (wpExServices.Count > 0)
                 {
                     var wpServices = services.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
+                    return Ok(wpServices);
+                }
+            }
+            else
+            {
+                //remove all services not done by any workplace 
+                var allWPIds = _context.Workplaces.Where(wp => wp.LocationId == myPB.LocationId).Select(wp=>wp.Id).ToList();
+                var wpExServices = _context.WorkplaceExcludedServices.Where(w => allWPIds.Contains(w.WorkplaceId)).ToList();
+                if (wpExServices.Count > 0)
+                {
+                    var neki = wpExServices.GroupBy(x => x.ServiceId).Where(n => n.Count() == allWPIds.Count()).ToList();
+                    var wpServices = services.Where(p => neki.All(p2 => p2.Key != p.Id)).ToList();
                     return Ok(wpServices);
                 }
             }
@@ -378,6 +390,15 @@ namespace KdajBi.API.Controllers
 
             myPB.Status = 1; //confirmed
             myPB.UpdatedDate = DateTime.Now;
+            try
+            {
+                _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "/api/publicbooking-confirmation");
+                throw;
+            }
 
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {

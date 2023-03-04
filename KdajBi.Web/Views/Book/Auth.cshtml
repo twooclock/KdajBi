@@ -62,6 +62,17 @@
                 </div>
                 @if (Model.Mobile!=null)
                 { 
+                    @if (Model.EnterClientName==true)
+                    { 
+                    <div class="form-group row">
+                        <div class="col-sm-5">
+                            <input class="form-control ml-2" id="inputClientFirstName" name="inputClientFirstName" placeholder="Priimek" value="" maxlength="150">
+                        </div>
+                        <div class="col-sm-5">
+                            <input class="form-control" id="inputClientLastName" name="inputClientLastName" placeholder="Ime" value="" maxlength="150">
+                        </div>
+                    </div>
+                    }
                 <div class="form-group">
                     <label for="inputPIN" class="control-label pl-2">PIN (počakajte, prejeli boste sms sporočilo)</label>
                     <div class="col-sm-10">

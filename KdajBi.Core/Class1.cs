@@ -75,25 +75,39 @@ namespace KdajBi.Core
 
     public static class TimeSlotManager
     {
-        public static List<TimeSlot> generateTimeSlots(List<TimeSlot> workhours, long minutes)
+        /// <summary>
+        /// generates appropriate TimeSlots of serviceLength with a offset of minOffset
+        /// </summary>
+        /// <param name="workhours"></param>
+        /// <param name="serviceLength"></param>
+        /// <returns></returns>
+        public static List<TimeSlot> generateTimeSlots(List<TimeSlot> workhours, long serviceLength)
         {
             List<TimeSlot> timeSlots = new List<TimeSlot>();
-
+            const int minOffset = 30; // We can change this value to get interval from settings
             foreach (TimeSlot slot in workhours)
             {
                 DateTime start = slot.start;
                 DateTime end = slot.end;
-
-                while (start.AddMinutes(minutes) <= end)
+                int i = 0;
+                while (slot.start.AddMinutes(i * minOffset + serviceLength) < end)
                 {
-                    if (start >= DateTime.Now) // we only add slots in future
+                    start = slot.start.AddMinutes(i * minOffset);
+                    while (start.AddMinutes(serviceLength) <= end)
                     {
-                        timeSlots.Add(new TimeSlot(slot.wpid, start, start.AddMinutes(minutes)));
+                        if (start >= DateTime.Now) // we only add slots in future
+                        {
+                            if (timeSlots.Where(x => x.wpid == slot.wpid && x.start == start).Any()==false)
+                            { timeSlots.Add(new TimeSlot(slot.wpid, start, start.AddMinutes(serviceLength))); }
+                        }
+                        start = start.AddMinutes(serviceLength); 
                     }
-                    start = start.AddMinutes(minutes); // We can change this value to get interval from settings
+                    i++;
                 }
-            }
 
+            }
+            //sort by wpid, start
+            timeSlots = timeSlots.OrderBy(x => x.wpid).ThenBy(x => x.start).ToList();
             return timeSlots;
         }
 
