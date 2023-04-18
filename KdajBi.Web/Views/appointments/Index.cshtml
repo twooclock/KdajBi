@@ -223,7 +223,7 @@
                             <label for="txtEndTime">
                                 Do (ura):
                             </label>
-                            <input type="text" id="txtEndTime" class="form-control flatpickr flatpickr-input" data-id="timePicker24" />
+                            <input type="text" id="txtEndTime" name="txtEndTime" class="form-control flatpickr flatpickr-input" data-id="timePicker24" />
                         </div>
                     </div>
                     <div class="form-group">
@@ -742,8 +742,8 @@
         $.validator.addMethod("greaterThan", function (value, element, param) {
             var cas = value.split(":");
             var endDate = new Date(fp.selectedDates[0]);
-            if (cas[0] != undefined) {  endDate.setHours(cas[0]); }
-            if (cas[1] != undefined) {  endDate.setMinutes(cas[1]); }
+            if (cas[0] != undefined) { endDate.setHours(cas[0]); }
+            if (cas[1] != undefined) { endDate.setMinutes(cas[1]); }
             return (endDate > fp.selectedDates[0]);
         }, "Konec mora biti večji od začetka.");
 
@@ -1328,8 +1328,8 @@
             fp.setDate(info.event.start);
             var cHour = info.event.end.getHours();
             var cMinuts = info.event.end.getMinutes();
-            var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
             tp.setDate(info.event.end);
+            var outStr = (cHour <= 0 ? ('0' + cHour) : cHour) + ':' + (cMinuts <= 9 ? ('0' + cMinuts) : cMinuts);
             $("#txtEndTime").val(outStr);
             var res = info.event.getResources();
             $("#cboGooCal").selectpicker('val', res[0].extendedProps.gid);

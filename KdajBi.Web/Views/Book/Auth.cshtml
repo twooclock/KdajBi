@@ -28,6 +28,18 @@
     <!-- Google Font: Source Sans Pro -->
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
     <link href="~/css/site.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<style>
+        /* CSS */
+:root { font-family: 'Inter', sans-serif; }
+@@supports (font-variation-settings: thin) {
+  :root { font-family: 'Inter var', sans-serif; }
+}
+    body, #images, #images a {
+        font-family: 'Inter var', sans-serif;
+    }
+</style>
 </head>
 <body>
     <div class="container">
@@ -36,7 +48,7 @@
 
 <div class="card mt-5">
     <div class="card-body login-card-body">
-        <h3 class="mb-2 font-weight-bold">Naročanje</h3>
+        @*<h3 class="mb-2 font-weight-bold">Naročanje</h3>*@
         <div class="row">
             <div class="col">
                 <h6>@Html.Raw(@Model.Location.Name)</h6>
@@ -45,17 +57,25 @@
         </div>
         <div class="row">
             <div class="col">
-                <h6>Naslov:&nbsp;@Html.Raw(@Model.Location.Address)</h6>
-                <h6>Urnik:&nbsp;@Html.Raw(@Model.Location.Timetable)</h6>
-                <h6>Telefon:&nbsp;<a href="tel:@Html.Raw(@Model.Location.Tel)">@Html.Raw(@Model.Location.Tel)</a></h6>
+                <h6><i class="fas fa-home"></i>&nbsp;&nbsp;@Html.Raw(@Model.Location.Address)</h6>
+                <h6><i class="far fa-clock"></i>&nbsp;&nbsp;@Html.Raw(@Model.Location.Timetable)</h6>
+                <h6><i class="fas fa-phone"></i>&nbsp;&nbsp;<a href="tel:@Html.Raw(@Model.Location.Tel)">@Html.Raw(@Model.Location.Tel)</a></h6>
             </div>
         </div>
         <div class="row">
             <form id="formMobile" name="formMobile" class="form-horizontal" action="@Html.Raw("/book/auth/mobile")" method="POST">
                 <input type="hidden" name="token" value="@Html.Raw(@Model.token)">
                 <input type="hidden" name="pbid" value="@Html.Raw(@Model.PublicBoookingId)">
-                <div class="form-group">
-                    <label for="inputMobile" class="control-label pl-2">Mobilna številka</label>
+                <div class="form-group mt-3">
+                    @if (Model.Mobile == null)
+                    {
+                    <label for="" class="control-label pl-2 mb-0">Naročite se lahko v treh enostavnih korakih,</label>
+                    <label for="inputMobile" class="control-label pl-2">za začetek naročanja vpišite vašo številko:</label>
+                    }
+                    else
+                    {
+                    <label for="inputMobile" class="control-label pl-2">Mobilna številko:</label>
+                    }
                     <div class="col-sm-10">
                         <input type="tel" class="form-control" id="inputMobile" name="inputMobile" placeholder="[Vaša mobilna številka]" minlength ="9" value="@Html.Raw(@Model.Mobile)">
                     </div>

@@ -11,7 +11,25 @@
     <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
     <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
     <link href="~/plugins/bs-stepper/css/bs-stepper.min.css" rel="stylesheet" />
+ <link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <style>
+        /* CSS */
+        :root {
+            font-family: 'Inter', sans-serif;
+        }
+
+        @@supports (font-variation-settings: thin) {
+            :root {
+                font-family: 'Inter var', sans-serif;
+            }
+        }
+
+        body, #images, #images a {
+            font-family: 'Inter var', sans-serif;
+        }
+
+
         .appointment {
             cursor: pointer;
         }
@@ -39,7 +57,7 @@
 
 <div class="card mt-5">
     <div class="card-body login-card-body">
-        <h3 class="mb-2 font-weight-bold">Naročanje</h3>
+        @*<h3 class="mb-2 font-weight-bold">Naročanje</h3>*@
         <div class="row">
             <div class="col">
                 <h6>@Html.Raw(@Model.Location.Name)</h6>
@@ -48,9 +66,9 @@
         </div>
         <div class="row">
             <div class="col">
-                <h6>Naslov:&nbsp;@Html.Raw(@Model.Location.Address)</h6>
-                <h6>Urnik:&nbsp;@Html.Raw(@Model.Location.Timetable)</h6>
-                <h6>Telefon:&nbsp;<a href="tel:@Html.Raw(@Model.Location.Tel)">@Html.Raw(@Model.Location.Tel)</a></h6>
+                <h6><i class="fas fa-home"></i>&nbsp;@Html.Raw(@Model.Location.Address)</h6>
+                <h6><i class="far fa-clock"></i>&nbsp;@Html.Raw(@Model.Location.Timetable)</h6>
+                <h6><i class="fas fa-phone"></i>&nbsp;<a href="tel:@Html.Raw(@Model.Location.Tel)">@Html.Raw(@Model.Location.Tel)</a></h6>
             </div>
         </div>
         <div class="row">
