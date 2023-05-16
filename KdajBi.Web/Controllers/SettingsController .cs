@@ -40,6 +40,8 @@ namespace KdajBi.Web.Controllers
                 }
             }
             myVM.Token = _GetToken();
+            myVM.UserUIShow = _UserUIShow();
+
             return View(myVM);
         }
 

@@ -35,6 +35,7 @@ namespace KdajBi.Web.Controllers
                 vmClient myVM = new vmClient();
                 myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName }).ToList()).Replace(@"\", @"\\");
                 myVM.Token = _GetToken();
+                myVM.UserUIShow = _UserUIShow();
                 return View(myVM);
             }
             return NotFound();
@@ -86,6 +87,7 @@ namespace KdajBi.Web.Controllers
                     }
                 }
                 myVM.Token = _GetToken();
+                myVM.UserUIShow = _UserUIShow();
                 return View(myVM);
             }
             return NotFound();
@@ -99,6 +101,7 @@ namespace KdajBi.Web.Controllers
                 vmClient myVM = new vmClient();
                 myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId() && c.AllowsSMS == true && c.Mobile != "").OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { Id = p.Id, FullName = p.FullName, ct = "#" + String.Join("#", p.ClientTags.Select(t => t.TagId.ToString())) + "#" }).ToList()).Replace(@"\", @"\\");
                 myVM.Token = _GetToken();
+                myVM.UserUIShow = _UserUIShow();
                 return View(myVM);
             }
             return NotFound();

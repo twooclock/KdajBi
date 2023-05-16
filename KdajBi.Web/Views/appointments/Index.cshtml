@@ -317,6 +317,7 @@
     <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/main.js'></script>
     <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/rrule.min.js'></script>
     <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/main.global.min.js'></script>
+    
 
     <script src="~/plugins/AlloyFinger/alloy_finger.js"></script>
 
@@ -478,22 +479,29 @@
         //#endregion
 
     //#region background events
+        var calBGEvents;
+    
+
         @Html.Raw("var resourceswd=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.resourcesWD));
         @Html.Raw("var exMonths = [];")
 
         @{
-             string val = "";
-             bool nakaziUrnike = false;
-             if (Model.Settings.TryGetValue("cbAppointments_ShowTimetables", out val) == true)
-             {
-                 nakaziUrnike =bool.Parse(val);
+            string val = "";
+            bool nakaziUrnike = false;
+            if (Model.Settings.TryGetValue("cbAppointments_ShowTimetables", out val) == true)
+            {
+                if (val=="true"){
+                    nakaziUrnike =true;
+                    if (Model.calBGEvents != null) { val = Model.calBGEvents; } else { val = ""; }
+                    <text>calBGEvents=JSON.parse('</text> @Html.Raw(val.Replace(@"\",@"\\"))<text>');</text>
+                 }
              }
-
         }
 
         function isInArray(array, value) {
             return (array.find(item => { return item == value }) || []).length > 0;
         }
+
         function getEventStart(p_rruleString) {
             //parse start time from rrule
             //rrule example: DTSTART:20210101T070000\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO
@@ -503,45 +511,37 @@
             return "T" + retval;
 
         }
-        function RenderBackgroundEvents(p_calendar) {
+
+        function RenderBackgroundEvents(p_calendar) { 
             console.info("RenderBackgroundEvents");
 
-            p_calendar.getResources().forEach(function (aResource) {
-                resourceswd.forEach(function (rwd) {
-                    if (rwd.resourceId == aResource.id) {
-                        rwd.WeekDays.forEach(function (arrayItem, idx) {
-                            var reswd = rwd.WeekDays[idx];
-                            if (arrayItem.changed == true) {
-                                //remove events by Id
-                                aResource.getEvents().forEach(function (rEvent) {
-                                    if (rEvent.id == idx.toString() && rEvent.display=="background") { rEvent.remove(); }
-                                });
+            calBGEvents=JSON.parse('[]');
+            resourceswd.forEach(function (rwd) {
+                    
+                rwd.WeekDays.forEach(function (arrayItem, idx) {
+                    var reswd = rwd.WeekDays[idx];
 
-                                //re-set background events (rrule events for a given weekday with exceptions set)
-                                for (var k = 0; k < reswd.calEvents.length; k++) {
-                                    var caleventbase = reswd.calEvents[k];
-                                    var oldrrule = caleventbase.rrule;
-                                    var eventstart = getEventStart(oldrrule);
-                                    for (var j = 0; j < reswd.exDates.length; j++) {
-                                        caleventbase.rrule = caleventbase.rrule + "\nEXDATE:" + dayjs(reswd.exDates[j]).format('YYYYMMDD') + eventstart;
-                                    }
-                                    console.info("add:", caleventbase.rrule.replace(/(\r\n|\n|\r)/gm, " "));
-                                    p_calendar.addEvent(reswd.calEvents[k]);
-                                    caleventbase.rrule = oldrrule;
-                                }
-
-                                arrayItem.changed = false;
-                            }
-                        });
+                    //re-set background events (rrule events for a given weekday with exceptions set)
+                    for (var k = 0; k < reswd.calEvents.length; k++) {
+                        var caleventbase = reswd.calEvents[k];
+                        var oldrrule = caleventbase.rrule;
+                        var eventstart = getEventStart(oldrrule);
+                        for (var j = 0; j < reswd.exDates.length; j++) {
+                            caleventbase.rrule = caleventbase.rrule + "\nEXDATE:" + dayjs(reswd.exDates[j]).format('YYYYMMDD') + eventstart;
+                        }
+                        //console.info("add:", caleventbase.rrule.replace(/(\r\n|\n|\r)/gm, " "));
+                        calBGEvents.push(JSON.parse(JSON.stringify(reswd.calEvents[k])));
+                        caleventbase.rrule = oldrrule;
                     }
                 });
-
-
+                    
             });
+
+            p_calendar.getEventSourceById('bgevents').refetch();
         }
 
-        async function FetchRenderExceptions(p_calendar, p_date) {
-            return new Promise(function (resolve, reject) {
+        async function FetchRenderExceptions(p_calendar, p_date) { 
+            return new Promise(function (resolve, reject) { 
                 var myDate = new Date(p_date.getTime());
                 console.info("FetchRenderExceptions:", myDate);
                 if (isInArray(exMonths, dayjs(myDate).format("YYYYMM")) == false) {
@@ -555,6 +555,7 @@
                             headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                             dataType: "json",
                             success: function (result) {
+                                console.log('got: ',result.length,"exceptions");
                                 result.forEach(function (aWorkplaces) {
                                     aWorkplaces.exceptions.forEach(function (aException) {
                                         //add to exDates
@@ -564,9 +565,11 @@
                                             if (rwd.resourceId == aWorkplaces.id) {
                                                 rwd.WeekDays[dantedna].exDates.push(dayjs(aException.date).format("YYYYMMDD"));
                                                 rwd.WeekDays[dantedna].changed = true;
+                                                
                                                 JSON.parse(aException.eventsJson).forEach(function (eventItem) {
                                                     eventItem.resourceId = aWorkplaces.id;
                                                     eventItem.display = "background";
+                                                    
                                                     p_calendar.addEvent(eventItem);
                                                 });
                                             }
@@ -766,7 +769,7 @@
             var mySlot = localStorage.getItem("Slot");
             var myView = localStorage.getItem("View");
             var cancelSwipe = false;
-            var calEvents=@Html.Raw(Model.calEvents);
+            //var calEvents=@Html.Raw(Model.calEvents);
             if (mySlot == null) { mySlot = "00:30"; }
             if (myView == null) { myView = "resourceTimeGridDay"; }
                 loadLocale(navigator.language.slice(0, 2))
@@ -891,6 +894,21 @@
                             }
                             ],
                             events:@Html.Raw(Model.calEvents),
+                            @if (nakaziUrnike == true)
+                            {
+                                <text>
+                                eventSources: [
+                                    {
+                                        id:'bgevents',
+                                        events: function(fetchInfo, successCallback, failureCallback) {
+                                        successCallback(calBGEvents)
+                                      },
+                                      display: 'background'
+                                    }
+                                  ],
+                                </text>
+                            }
+                            
                             //events: function (info, successCallback, failureCallback) {
                             //pazi, če delaš prek funkcije moraš spreminjat calevents tudi pri SaveMoveEvent!
                             //    if (resourceA == null) { successCallback(calEvents); return; }
@@ -960,6 +978,7 @@
                                 localStorage.setItem("View", dateInfo.view.type);
                                 let dateE = dateInfo.end;
                                 var datum =dayjs(dateInfo.start).add(1, 'month').toDate()
+                                
                                 FetchRenderEvents(calendar, dateInfo.start)
                                     .then(result => { if (dateE.getMonth() > datum.getMonth()) { FetchRenderEvents(calendar, datum ) } })
                                     .then(result => { FetchRenderEvents(calendar, dateInfo.end) });
@@ -1225,7 +1244,7 @@
                     window.location.reload(true);
                 });
 
-                //ad exitFullScreen handler (če user pressing Esc to exit fullscreen)
+                //add exitFullScreen handler (user pressing Esc to exit fullscreen)
                 if (document.addEventListener) {
                     document.addEventListener('webkitfullscreenchange', exitHandler, false);
                     document.addEventListener('mozfullscreenchange', exitHandler, false);

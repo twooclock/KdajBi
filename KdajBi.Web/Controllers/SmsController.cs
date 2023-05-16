@@ -28,6 +28,7 @@ namespace KdajBi.Web.Controllers
         {
             _BaseViewModel vmModel = new _BaseViewModel();
             vmModel.Token = _GetToken();
+            vmModel.UserUIShow = _UserUIShow();
             return View(vmModel);
         }
 
@@ -36,6 +37,7 @@ namespace KdajBi.Web.Controllers
         {
             _BaseViewModel vmModel = new _BaseViewModel();
             vmModel.Token = _GetToken();
+            vmModel.UserUIShow = _UserUIShow();
             vmModel.Id = Id;
             return View(vmModel);
         }
@@ -48,6 +50,7 @@ namespace KdajBi.Web.Controllers
                 vmClient myVM = new vmClient();
                 myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId() && c.AllowsSMS == true && c.Mobile != "").OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { Id = p.Id, FullName = p.FullName, ct = "#" + String.Join("#", p.ClientTags.Select(t => t.TagId.ToString())) + "#" }).ToList()).Replace(@"\", @"\\");
                 myVM.Token = _GetToken();
+                myVM.UserUIShow = _UserUIShow();
                 return View(myVM);
             }
             return NotFound();
@@ -58,6 +61,7 @@ namespace KdajBi.Web.Controllers
         {
             _BaseViewModel vmModel = new _BaseViewModel();
             vmModel.Token = _GetToken();
+            vmModel.UserUIShow = _UserUIShow();
             vmModel.Id= _context.SmsCampaigns.Where(s => s.CompanyId == _CurrentUserCompanyID() && s.SentAt > DateTime.Now.AddDays(-30)).Sum(a => a.MsgSegments * a.RecipientsCount);
             return View(vmModel);
         }

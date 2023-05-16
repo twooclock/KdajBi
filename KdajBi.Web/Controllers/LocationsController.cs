@@ -38,6 +38,7 @@ namespace KdajBi.Web.Controllers
             vmLocations myVM = new vmLocations();
             myVM.Locations = currUserLocations;
             myVM.Token = _GetToken();
+            myVM.UserUIShow = _UserUIShow();
             return View(myVM);
         }
 
@@ -52,6 +53,17 @@ namespace KdajBi.Web.Controllers
 
                 if (myVM.Location != null)
                 {
+                    //create location schedule events  
+                    var events = new List<FullCalendar.rEventShow>();
+                    if (string.IsNullOrEmpty(myVM.Location.Schedule.EventsJson))
+                    { 
+                        events = FullCalendar.getWeekrEventShowFromSchedule(myVM.Location.Schedule);
+                        myVM.calWEvents = Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray());
+                    }
+                    else
+                    { myVM.calWEvents = myVM.Location.Schedule.EventsJson; }
+                    
+
                     //fill google calendars
                     var gt = _CurrentUserGooToken();
                     if (gt != null)
@@ -65,6 +77,7 @@ namespace KdajBi.Web.Controllers
                         }
                     }
                     myVM.Token = _GetToken();
+                    myVM.UserUIShow = _UserUIShow();
                     return View(myVM);
                 }
                 else

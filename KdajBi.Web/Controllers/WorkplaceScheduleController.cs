@@ -93,13 +93,13 @@ namespace KdajBi.Web.Controllers
 
             //events.AddRange(events2);
             devents.AddRange(d2events);
-            myVM.calWEvents = Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray());
+            myVM.calWEvents = Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray()).Replace(@"""title"":null,","").Replace(@",""display"":null","");
             myVM.calBGEvents = Newtonsoft.Json.JsonConvert.SerializeObject(devents.ToArray());
             //add revents to weekdays
             WeekDay myWeekday;
             foreach (var item in devents)
             {
-                int idx = int.Parse(item.id);
+                int idx = int.Parse(item.id[1].ToString());
                 if (myVM.WeekDays[idx] != null)
                 {
                     myWeekday = myVM.WeekDays[idx];
@@ -117,6 +117,8 @@ namespace KdajBi.Web.Controllers
             
 
             myVM.Token = _GetToken();
+            myVM.UserUIShow = _UserUIShow();
+
             return View(myVM);
         }
 

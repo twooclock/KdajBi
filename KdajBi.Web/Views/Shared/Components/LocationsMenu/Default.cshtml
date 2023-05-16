@@ -1,5 +1,6 @@
 ﻿@using KdajBi.Core.Models;
 @model IEnumerable<Location>
+
 <li class="nav-item @if (Model.Count() > 1) { <text>has-treeview</text>}">
     @if(Model.Count()>1)
     { 
@@ -14,20 +15,19 @@
     { @Html.Raw(@"<ul class=""nav nav-treeview"" style=""display: none;"">"); }
     
 
-        @foreach (var item in Model)
-        {
-            <li class="nav-item">
-                <a href="@Url.Content("~/location/"+item.Id)" class="nav-link">
-                        @if (Model.Count() > 1)
-                        { @Html.Raw(@"<i class=""far nav-icon""></i>"); }
-                        else
-                        { @Html.Raw(@"<i class=""nav-icon fas fa-th""></i>"); }
+    @foreach (var item in Model)
+    {
+        @:<li class="nav-item">
+            @:<a href="@Url.Content("~/location/"+item.Id)" class="nav-link">
+                    @if (Model.Count() > 1)
+                    { @Html.Raw(@"<i class=""far nav-icon""></i>"); }
+                    else
+                    { @Html.Raw(@"<i class=""nav-icon fas fa-th""></i>"); }
                     
-                    <p>@Html.Raw(item.Name)</p>
-                </a>
-            </li>
-        }
+                <p>@Html.Raw(item.Name)</p>
+            @:</a>
+        @:</li>
+    }
     @if (Model.Count() > 1) { @Html.Raw(@"</ul>"); }
     
 </li>
-

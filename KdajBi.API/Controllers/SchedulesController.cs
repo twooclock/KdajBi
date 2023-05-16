@@ -1,6 +1,7 @@
 ﻿using KdajBi.Core;
 using KdajBi.Core.dtoModels;
 using KdajBi.Core.Models;
+using KdajBi.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,12 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KdajBi.API.Controllers
@@ -141,22 +144,32 @@ namespace KdajBi.API.Controllers
 
                 Scheduleindb.UpdatedUserID = _CurrentUserID();
                 Scheduleindb.UpdatedDate = DateTime.Now;
+                
                 Scheduleindb.Active  = Schedule.Active;
-                Scheduleindb.MondayStart = Schedule.MondayStart;
-                Scheduleindb.MondayEnd = Schedule.MondayEnd;
-                Scheduleindb.TuesdayStart = Schedule.TuesdayStart;
-                Scheduleindb.TuesdayEnd = Schedule.TuesdayEnd;
-                Scheduleindb.WednesdayStart = Schedule.WednesdayStart;
-                Scheduleindb.WednesdayEnd = Schedule.WednesdayEnd;
-                Scheduleindb.ThursdayStart = Schedule.ThursdayStart;
-                Scheduleindb.ThursdayEnd = Schedule.ThursdayEnd;
-                Scheduleindb.FridayStart = Schedule.FridayStart;
-                Scheduleindb.FridayEnd = Schedule.FridayEnd;
-                Scheduleindb.SaturdayStart = Schedule.SaturdayStart;
-                Scheduleindb.SaturdayEnd = Schedule.SaturdayEnd;
-                Scheduleindb.SundayStart = Schedule.SundayStart;
-                Scheduleindb.SundayEnd = Schedule.SundayEnd;
-                var utcDate = Schedule.SundayStart.ToUniversalTime();
+                if (string.IsNullOrEmpty(Schedule.EventsJson))
+                {
+                    Scheduleindb.MondayStart = Schedule.MondayStart;
+                    Scheduleindb.MondayEnd = Schedule.MondayEnd;
+                    Scheduleindb.TuesdayStart = Schedule.TuesdayStart;
+                    Scheduleindb.TuesdayEnd = Schedule.TuesdayEnd;
+                    Scheduleindb.WednesdayStart = Schedule.WednesdayStart;
+                    Scheduleindb.WednesdayEnd = Schedule.WednesdayEnd;
+                    Scheduleindb.ThursdayStart = Schedule.ThursdayStart;
+                    Scheduleindb.ThursdayEnd = Schedule.ThursdayEnd;
+                    Scheduleindb.FridayStart = Schedule.FridayStart;
+                    Scheduleindb.FridayEnd = Schedule.FridayEnd;
+                    Scheduleindb.SaturdayStart = Schedule.SaturdayStart;
+                    Scheduleindb.SaturdayEnd = Schedule.SaturdayEnd;
+                    Scheduleindb.SundayStart = Schedule.SundayStart;
+                    Scheduleindb.SundayEnd = Schedule.SundayEnd;
+                }
+                else {
+                    //get schedule times from events
+                    List<FullCalendar.rEventShow> schEvents = JsonSerializer.Deserialize<List<FullCalendar.rEventShow>>(Schedule.EventsJson);
+                    FullCalendar.setScheduleFromWeekrEventShowEvents(ref Scheduleindb, schEvents); 
+                }
+                Scheduleindb.EventsJson = Schedule.EventsJson;
+                
                 _context.Entry(Scheduleindb).State = EntityState.Modified;
 
                 try

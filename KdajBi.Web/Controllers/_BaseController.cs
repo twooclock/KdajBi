@@ -8,11 +8,13 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace KdajBi.Web.Controllers
 {
@@ -137,6 +139,14 @@ namespace KdajBi.Web.Controllers
             return retval;
         }
 
-
+        protected List<string> _UserUIShow()
+        {
+            var retval= _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == null && a.Key == "UserUIShow").FirstOrDefault();
+            if (retval == null) { 
+                //return default menu for an ordinary user
+                return new List<string>() {"Appointments","Clients", "ClientsList","SMSCampaigns" };
+            }
+            else { return JsonConvert.DeserializeObject<List<string>>(retval.Value); }
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using KdajBi.Core.Models;
+using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -91,6 +92,7 @@ namespace KdajBi.Web
                 {
                     myREvent.display = "background";
                     myREvent.backgroundColor = p_color;
+                    
                     devents.Add(myREvent);
                 }
             }
@@ -117,7 +119,102 @@ namespace KdajBi.Web
             if (myEvent != null) { events.Add(myEvent); }
             return events;
         }
+        /// <summary>
+        /// Changes schedule start end times according to events
+        /// </summary>
+        /// <param name="p_Schedule"></param>
+        /// <param name="p_Events"></param>
+        public static void setScheduleFromWeekrEventShowEvents(ref Schedule p_Schedule, List<FullCalendar.rEventShow> p_Events)
+        {
+            //"remove" all schedules
+            p_Schedule.SundayStart = p_Schedule.SundayStart.Date;
+            p_Schedule.SundayEnd = p_Schedule.SundayEnd.Date;
+            p_Schedule.MondayStart = p_Schedule.MondayStart.Date;
+            p_Schedule.MondayEnd = p_Schedule.MondayEnd.Date;
+            p_Schedule.TuesdayStart = p_Schedule.TuesdayStart.Date;
+            p_Schedule.TuesdayEnd = p_Schedule.TuesdayEnd.Date;
+            p_Schedule.WednesdayStart = p_Schedule.WednesdayStart.Date;
+            p_Schedule.WednesdayEnd = p_Schedule.WednesdayEnd.Date;
+            p_Schedule.ThursdayStart = p_Schedule.ThursdayStart.Date;
+            p_Schedule.ThursdayEnd = p_Schedule.ThursdayEnd.Date;
+            p_Schedule.FridayStart = p_Schedule.FridayStart.Date;
+            p_Schedule.FridayEnd = p_Schedule.FridayEnd;
+            p_Schedule.SaturdayStart = p_Schedule.SaturdayStart.Date;
+            p_Schedule.SaturdayEnd = p_Schedule.SaturdayEnd.Date;
+            //you will change only days supplied in events
+            foreach (var item in p_Events)
+            {
+                switch (item.resourceId)
+                {
+                    case "0":
+                        p_Schedule.SundayStart = p_Schedule.SundayStart.Date.AddDays(1).AddSeconds(-1);
+                        break;
+                    case "1":
+                        p_Schedule.MondayStart = p_Schedule.MondayStart.Date.AddDays(1).AddSeconds(-1);
+                        break;
+                    case "2":
+                        p_Schedule.TuesdayStart = p_Schedule.TuesdayStart.Date.AddDays(1).AddSeconds(-1);
+                        break;
+                    case "3":
+                        p_Schedule.WednesdayStart = p_Schedule.WednesdayStart.Date.AddDays(1).AddSeconds(-1);
+                        break;
+                    case "4":
+                        p_Schedule.ThursdayStart = p_Schedule.ThursdayStart.Date.AddDays(1).AddSeconds(-1);
+                        break;
+                    case "5":
+                        p_Schedule.FridayStart = p_Schedule.FridayStart.Date.AddDays(1).AddSeconds(-1);
+                        break;
+                    case "6":
+                        p_Schedule.SaturdayStart = p_Schedule.SaturdayStart.Date.AddDays(1).AddSeconds(-1);
+                        break;
+                    default:
+                        break;
+                }
 
+
+            }
+
+
+            foreach (var item in p_Events)
+            {
+                TimeSpan start = TimeSpan.Parse(item.startTime);
+                TimeSpan end = TimeSpan.Parse(item.endTime);
+                switch (item.resourceId)
+                {
+                    case "0":
+                        if (p_Schedule.SundayStart.TimeOfDay > start) { p_Schedule.SundayStart = DateTime.Now.Date.Add(start); }
+                        if (p_Schedule.SundayEnd.TimeOfDay < end) { p_Schedule.SundayEnd = DateTime.Now.Date.Add(end); }
+                        break;
+                    case "1":
+                        if (p_Schedule.MondayStart.TimeOfDay > start) { p_Schedule.MondayStart = DateTime.Now.Date.Add(start); }
+                        if (p_Schedule.MondayEnd.TimeOfDay < end) { p_Schedule.MondayEnd = DateTime.Now.Date.Add(end); }
+                        break;
+                    case "2":
+                        if (p_Schedule.TuesdayStart.TimeOfDay > start) { p_Schedule.TuesdayStart = DateTime.Now.Date.Add(start); }
+                        if (p_Schedule.TuesdayEnd.TimeOfDay < end) { p_Schedule.TuesdayEnd = DateTime.Now.Date.Add(end); }
+                        break;
+                    case "3":
+                        if (p_Schedule.WednesdayStart.TimeOfDay > start) { p_Schedule.WednesdayStart = DateTime.Now.Date.Add(start); }
+                        if (p_Schedule.WednesdayEnd.TimeOfDay < end) { p_Schedule.WednesdayEnd = DateTime.Now.Date.Add(end); }
+                        break;
+                    case "4":
+                        if (p_Schedule.ThursdayStart.TimeOfDay > start) { p_Schedule.ThursdayStart = DateTime.Now.Date.Add(start); }
+                        if (p_Schedule.ThursdayEnd.TimeOfDay < end) { p_Schedule.ThursdayEnd = DateTime.Now.Date.Add(end); }
+                        break;
+                    case "5":
+                        if (p_Schedule.FridayStart.TimeOfDay > start) { p_Schedule.FridayStart = DateTime.Now.Date.Add(start); }
+                        if (p_Schedule.FridayEnd.TimeOfDay < end) { p_Schedule.FridayEnd = DateTime.Now.Date.Add(end); }
+                        break;
+                    case "6":
+                        if (p_Schedule.SaturdayStart.TimeOfDay > start) { p_Schedule.SaturdayStart = DateTime.Now.Date.Add(start); }
+                        if (p_Schedule.SaturdayEnd.TimeOfDay < end) { p_Schedule.SaturdayEnd = DateTime.Now.Date.Add(end); }
+                        break;
+                    default:
+                        break;
+                }
+                
+            }
+        }
         public static FullCalendar.rEventShow CreateEvent(string p_intDayOfTheWeek, DateTime p_dateStart, DateTime p_dateEnd)
         {
             //ta se uporablja na prikazu tedenskega urnika
@@ -144,7 +241,7 @@ namespace KdajBi.Web
 
                 return (new FullCalendar.rEvent()
                 {
-                    id = p_intDayOfTheWeek,
+                    id = p_scheduleType.ToString()+ p_intDayOfTheWeek,
                     title = "",
                     duration = duration.ToString("c"),
                     rrule = getRRule(p_scheduleType, p_StartTime, p_intDayOfTheWeek),

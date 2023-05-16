@@ -10,6 +10,7 @@ namespace KdajBi.Web.ViewModels
     {
         public JwtToken Token;
         public long Id;
+        public List<string> UserUIShow = new List<string>();
         public _BaseViewModel() { }
 
     }

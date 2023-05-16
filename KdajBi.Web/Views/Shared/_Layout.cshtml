@@ -1,9 +1,20 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using KdajBi.Core.Models;
-@using KdajBi.Web
+@using KdajBi.Web;
+@using KdajBi.Web.ViewModels;
+@model _BaseViewModel
 
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
+
+@{
+    bool isAdmin = User.IsInRole("Admin");
+    bool isSuper = User.IsInRole("Super");
+    bool isUser = (isAdmin==false && isSuper==false);
+    bool isNadzornik = User.HasClaim("Nadzornik", bool.TrueString);
+    int myCompanyId = int.Parse(User.FindFirst("CompanyId").Value);
+
+}
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
@@ -71,7 +82,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <a href="#" class="nav-link" data-toggle="dropdown" aria-expanded="false">
                             <img src="@User.FindFirst("picture").Value" class="user-image" alt="">
                             <span class="hidden-xs"></span>
-                            @if (User.HasClaim("Nadzornik", bool.TrueString))
+                            @if (isNadzornik==true)
                             {
                                 <span class="right badge badge-danger" style="position: absolute;right: 15px;top: 22px;">Nadzornik</span>
                             }
@@ -80,23 +91,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             <!-- User image -->
                             <a class="dropdown-item" href="#">@UserManager.GetUserName(User)</a>
                             <!-- Menu Body -->
-                            @if (User.IsInRole("Admin"))
+                            @if (isAdmin==true && isNadzornik==true)
                             {
-                                @if (User.HasClaim("Nadzornik", bool.TrueString))
-                                {
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="~/companies/mycompany">Company</a>
-                                    @*<a class="dropdown-item" id="linkLocations" href="#" onclick="showLocations()">Saloni</a>*@
-                                    <a class="dropdown-item" id="linkSettings" href="~/settings">Settings</a>
-                                }
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="~/companies/mycompany">Podjetje</a>
+                                <a class="dropdown-item" id="linkSettings" href="~/settings">Nastavitve</a>
                             }
                             <!-- /.row -->
                             <!-- Menu Footer-->
-
-                            @if (User.IsInRole("Admin"))
+                            @if (isAdmin == true)
                             {
                                 <div class="dropdown-divider"></div>
-                                @if (User.HasClaim("Nadzornik", bool.TrueString))
+                                @if (isNadzornik == true)
                                 {
                                     <a class="dropdown-item" href="#" onclick="flipNadzornik()">
                                         Zakleni
@@ -107,7 +113,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                     <a class="dropdown-item" href="#" onclick="flipNadzornik()">
                                         Odkleni
                                     </a>
-}
+                                }
                             }
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="~/Account/Logout">Odjava</a>
@@ -149,9 +155,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <!-- Sidebar Menu -->
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <!-- Add icons to the links using the .nav-icon class
-                             with font-awesome or any other icon font library -->
-                        @if (User.IsInRole("Super"))
+                        
+                        @if (isSuper==true)
                         {
                             <li class="nav-item has-treeview menu-open">
                                 <a href="#" class="nav-link">
@@ -177,65 +182,69 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                     </li>
 
                                 </ul>
-
                             </li>
                         }
-                        @if (User.IsInRole("Admin"))
+                        @if (isSuper == true || isNadzornik == true)
                         {
-                            @if (User.HasClaim("Nadzornik", bool.TrueString))
-                            {
-                                @await Component.InvokeAsync("LocationsMenu", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
-                            }
+                            @await Component.InvokeAsync("LocationsMenu", new { CompanyId = myCompanyId });
+                        }
+                        @if (Model.UserUIShow.Contains("Appointments") || isSuper == true || isNadzornik == true)
+                        { 
+                            <li class="nav-item ">
+                                <a href="@Url.Content("~/appointments/Index")" class="nav-link ">
+                                    <i class="nav-icon fa fa-calendar-alt"></i>
+                                    <p>
+                                        Naročila
+                                    </p>
+                                </a>
+                            </li>
                         }
 
-                        <li class="nav-item  ">
-                            <a href="@Url.Content("~/appointments/Index")" class="nav-link ">
-                                <i class="nav-icon fa fa-calendar-alt"></i>
-                                <p>
-                                    Naročila
-                                </p>
-                            </a>
-                        </li>
-                        @if (User.IsInRole("Admin"))
+                        @if (Model.UserUIShow.Contains("ClientsList") || isSuper == true || isNadzornik == true)
                         {
-                            @if (User.HasClaim("Nadzornik", bool.TrueString))
-                            {
-                                <li class="nav-item  ">
-                                    <a href="@Url.Content("~/clients/")" class="nav-link ">
-                                        <i class="nav-icon fas fa-address-card"></i>
-                                        <p>
-                                            Stranke (seznam)
-                                        </p>
-                                    </a>
-                                </li>
-                            }
+                            <li class="nav-item  ">
+                                <a href="@Url.Content("~/clients/")" class="nav-link ">
+                                    <i class="nav-icon fas fa-address-card"></i>
+                                    <p>
+                                        Stranke (seznam)
+                                    </p>
+                                </a>
+                            </li>
                         }
-                        <li class="nav-item  ">
-                            <a href="@Url.Content("~/clients/Index3/")" class="nav-link ">
-                                <i class="nav-icon fas fa-address-card"></i>
-                                <p>
-                                    Stranke
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item has-treeview menu-open">
-                            <a href="#" class="nav-link ">
-                                <i class="nav-icon fas fa-bullhorn"></i>
-                                <p>
-                                    Obveščanje strank
-                                </p>
-                                <i class="fas fa-chevron-down right"></i>
-                            </a>
-                            <ul class="nav nav-treeview" style="display: block;">
-                                <li class="nav-item">
-                                    <a href="@Url.Content("~/sms/Notification/")" class="nav-link">
-                                        <i class="far nav-icon"></i>
-                                        <p>Obvesti prek SMS</p>
-                                    </a>
-                                </li>
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    @if (User.HasClaim("Nadzornik", bool.TrueString))
+                        @if (Model.UserUIShow.Contains("Clients") || isSuper == true || isNadzornik == true)
+                        {
+                            <li class="nav-item  ">
+                                <a href="@Url.Content("~/clients/Index3/")" class="nav-link ">
+                                    <i class="nav-icon fas fa-address-card"></i>
+                                    <p>
+                                        Stranke
+                                    </p>
+                                </a>
+                            </li>
+                        }
+
+                        @if (Model.UserUIShow.Contains("SMSNotification") || Model.UserUIShow.Contains("SMSCampaigns") || isSuper == true || isNadzornik == true)
+                        {
+                            <li class="nav-item has-treeview menu-open">
+                                <a href="#" class="nav-link ">
+                                    <i class="nav-icon fas fa-bullhorn"></i>
+                                    <p>
+                                        Obveščanje strank
+                                    </p>
+                                    <i class="fas fa-chevron-down right"></i>
+                                </a>
+                                <ul class="nav nav-treeview" style="display: block;">
+
+                                    @if (Model.UserUIShow.Contains("SMSNotification") || isSuper == true || isNadzornik == true)
+                                    {
+                                        <li class="nav-item">
+                                            <a href="@Url.Content("~/sms/Notification/")" class="nav-link">
+                                                <i class="far nav-icon"></i>
+                                                <p>Obvesti prek SMS</p>
+                                            </a>
+                                        </li>
+                                    }
+                                    @if (Model.UserUIShow.Contains("SMSCampaigns") || isSuper == true || isNadzornik == true)
                                     {
                                         <li class="nav-item">
                                             <a href="@Url.Content("~/sms/Campaigns")" class="nav-link">
@@ -243,6 +252,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                 <p>Pregled poslanih SMS</p>
                                             </a>
                                         </li>
+                                    }
+                                    @if ( isSuper == true || isNadzornik == true)
+                                    {
                                         <li class="nav-item">
                                             <a href="@Url.Content("~/sms/OrderSms")" class="nav-link">
                                                 <i class="far nav-icon"></i>
@@ -250,35 +262,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                             </a>
                                         </li>
                                     }
-                                }
-
-                            </ul>
-                        </li>
-                        @*<li class="nav-item has-treeview menu-open">
-                                <a href="#" class="nav-link active">
-                                    <i class="nav-icon fas fa-tachometer-alt"></i>
-                                    <p>
-                                        Jobs
-                                        <i class="fas fa-chevron-down right"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview" style="display: block;">
-                                    <li class="nav-item">
-                                        <a href="@Url.Content("~/jobs/new")" class="nav-link">
-                                            <i class="far nav-icon"></i>
-                                            <p>New job</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="@Url.Content("~/jobs")" class="nav-link">
-                                            <i class="far nav-icon"></i>
-                                            <p>My jobs</p>
-                                        </a>
-                                    </li>
-
 
                                 </ul>
-                            </li>*@
+                            </li>
+                        } 
                     </ul>
                 </nav>
                 <!-- /.sidebar-menu -->
@@ -290,9 +277,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
             @RenderBody()
         </div>
         <aside id="rightSideBar" class="control-sidebar control-sidebar-dark" style="margin-top: 46px">
-                @await Component.InvokeAsync("BookingConfirmationList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
-                @await Component.InvokeAsync("PublicBookingList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
-                @await Component.InvokeAsync("AppMessagesList", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
+            @await Component.InvokeAsync("BookingConfirmationList", new { CompanyId = myCompanyId })
+            @await Component.InvokeAsync("PublicBookingList", new { CompanyId = myCompanyId })
+            @await Component.InvokeAsync("AppMessagesList", new { CompanyId = myCompanyId })
         </aside>
         <footer class="main-footer" hidden>
             <div class="float-right d-none d-sm-inline">
@@ -443,7 +430,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         }
 
         function flipNadzornik() {
-            @if (User.HasClaim("Nadzornik", bool.TrueString))
+            @if (isNadzornik==true)
             { <text>window.location = "@Url.Content("~/Account/flipNadzornik")";</text> }
             else
             {

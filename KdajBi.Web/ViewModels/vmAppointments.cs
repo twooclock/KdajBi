@@ -19,7 +19,7 @@ namespace KdajBi.Web.ViewModels
         public List<resourceWD> resourcesWD=new List<resourceWD>();
 
         public void AddcalEvents(string p_events) {
-            if (calEvents == "")
+            if (string.IsNullOrEmpty( calEvents) == true)
             { calEvents = p_events; }
             else
             {
@@ -31,7 +31,21 @@ namespace KdajBi.Web.ViewModels
             }
             calEvents = calEvents.Replace(",\"color\":null", "");
         }
-        
+        public void AddcalBGEvents(string p_events)
+        {
+            if (string.IsNullOrEmpty(calBGEvents) == true)
+            { calBGEvents = p_events; }
+            else
+            {
+                //remove []
+                calBGEvents = calBGEvents.Substring(1, calBGEvents.Length - 2);
+                if (calBGEvents != "") { calBGEvents += ","; }
+                calBGEvents += p_events.Substring(1, p_events.Length - 2);
+                calBGEvents = "[" + calBGEvents + "]";
+            }
+            calBGEvents = calBGEvents.Replace(",\"color\":null", "");
+        }
+
     }
     public class resourceWD
     {

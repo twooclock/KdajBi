@@ -153,10 +153,12 @@ namespace KdajBi.Web.Controllers
                                                             events.Add(newEvent);
                                                         }
                                                     }
-                                                    //get schedule bgEvents
-                                                    setBGEvents(myVM, item.Id, scheduletype);
-                                                    myVM.AddcalEvents(myVM.calBGEvents);
-                                                }
+													//get schedule bgEvents
+													if (globalSettings["cbAppointments_ShowTimetables"] == "true") { 
+														setBGEvents(myVM, item.Id, scheduletype);
+													}
+													
+												}
                                                 else
                                                 {
                                                     myVM.Location.Workplaces.Remove(item);
@@ -190,6 +192,7 @@ namespace KdajBi.Web.Controllers
                                 { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName, mobile = p.Mobile }).ToList()).Replace(@"\", @"\\"); }
 
                                 myVM.Token = _GetToken();
+                                myVM.UserUIShow = _UserUIShow();
                                 return View(myVM);
                             }
                             else
@@ -292,12 +295,12 @@ namespace KdajBi.Web.Controllers
                     item.resourceId = p_WorkplaceId.ToString();
                     item.backgroundColor = "";
                 }
-                p_myVM.calBGEvents = Newtonsoft.Json.JsonConvert.SerializeObject(devents.ToArray());
+                p_myVM.AddcalBGEvents(Newtonsoft.Json.JsonConvert.SerializeObject(devents.ToArray()));
                 //add revents to weekdays
                 WeekDay myWeekday;
                 foreach (var item in devents)
                 {
-                    int idx = int.Parse(item.id);
+                    int idx = int.Parse(item.id[1].ToString());
                     if (myVM.WeekDays[idx] != null)
                     {
                         myWeekday = myVM.WeekDays[idx];

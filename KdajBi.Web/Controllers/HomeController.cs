@@ -32,6 +32,7 @@ namespace KdajBi.Web.Controllers
                     {
                         _BaseViewModel vmModel = new _BaseViewModel();
                         vmModel.Token = _GetToken();
+                        vmModel.UserUIShow = _UserUIShow();
                         return View(vmModel);
                     }
                     else

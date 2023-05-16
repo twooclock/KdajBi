@@ -18,6 +18,13 @@
     <link href='~/lib/fullcalendar-scheduler-5.10.1/lib/main.min.css' rel='stylesheet' />
 
     <style>
+        .fc-fullscreen-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f065";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 900;
+        }
 
         body {
             margin: 0;
@@ -242,7 +249,7 @@
         }
 
 
-        function loadScript(src) {
+        async function loadScript(src) {
             return new Promise(function (resolve, reject) {
                 const s = document.createElement('script');
                 let r = false;
@@ -302,11 +309,19 @@
             return (dayjs(startElement).toDate()  < dayjs(endElement).toDate());
             }, "Konec mora biti večji od začetka.");
 
+        async function loadLocale(lang) {
+            return new Promise(function (resolve, reject) {
+                console.info("loadLocale:", lang);
 
+                if (lang != "en") {
+                    loadScript("/lib/fullcalendar-scheduler-5.10.1/lib/locales/" + navigator.language.slice(0, 2) + ".js").then(resolve());
+                } else { resolve(); }
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
 
-            loadScript("/lib/fullcalendar-scheduler-5.10.1/lib/locales/" + navigator.language.slice(0, 2) + ".js")
+            loadLocale(navigator.language.slice(0, 2))
                 .then(function () {
                     wcalendar = new FullCalendar.Calendar(document.getElementById('wcalendar'), {
                         locale: navigator.language.slice(0, 2), eventResizableFromStart: true,
@@ -348,7 +363,6 @@
                         //dayMinWidth: 200,
                         customButtons: {
                             fullscreen: {
-                                text: '[]',
                                 click: function () {
                                     if (isFullScreen) { exitFullScreen(); } else { goFullScreen('fs'); }
                                 }
@@ -469,7 +483,13 @@
                                 }
                             }
                         },
-                        events:@Html.Raw(Model.calBGEvents),
+                        //events:@Html.Raw(Model.calBGEvents),
+                        eventSources: [
+                        {
+                            id:'bgevents',
+                            events: function(fetchInfo, successCallback, failureCallback) { successCallback(calBGEvents) }
+                        }
+                        ],
                         eventTimeFormat: {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -700,7 +720,10 @@
 
         //#endregion
 
-        //#region daily Events (dcalendar)
+    //#region daily Events (dcalendar)
+        var calBGEvents=JSON.parse('@Html.Raw(Model.calBGEvents.Replace(@"\",@"\\"))');
+            
+
         function isInArray(array, value) {
             return (array.find(item => {return item == value}) || []).length > 0;
         }
@@ -743,30 +766,27 @@
         function RenderBackgroundEvents(p_calendar) {
             console.info("RenderBackgroundEvents");
 
-            weekdays.forEach(function (arrayItem,idx) {
-                if (arrayItem.changed == true) {
-                    var dantedna = p_calendar.getEventById(idx.toString());
-                    while (dantedna != null) {
-                        dantedna.remove();
-                        dantedna = p_calendar.getEventById(idx.toString());
-                    }
+            calBGEvents=JSON.parse('[]');
+                    
+                weekdays.forEach(function (arrayItem, idx) {
+                    var reswd = weekdays[idx];
 
                     //re-set background events (rrule events for a given weekday with exceptions set)
-                    for (var k = 0; k < weekdays[idx].calEvents.length; k++) {
-                        var caleventbase = weekdays[idx].calEvents[k];
+                    for (var k = 0; k < reswd.calEvents.length; k++) {
+                        var caleventbase = reswd.calEvents[k];
                         var oldrrule = caleventbase.rrule;
                         var eventstart = getEventStart(oldrrule);
-                        for (var j = 0; j < weekdays[idx].exDates.length; j++) {
-                            caleventbase.rrule = caleventbase.rrule + "\nEXDATE:" + dayjs(weekdays[idx].exDates[j]).format('YYYYMMDD') + eventstart;
+                        for (var j = 0; j < reswd.exDates.length; j++) {
+                            caleventbase.rrule = caleventbase.rrule + "\nEXDATE:" + dayjs(reswd.exDates[j]).format('YYYYMMDD') + eventstart;
                         }
-                        console.info("add:", caleventbase.rrule.replace(/(\r\n|\n|\r)/gm, " "));
-                        p_calendar.addEvent(weekdays[idx].calEvents[k]);
+                        //console.info("add:", caleventbase.rrule.replace(/(\r\n|\n|\r)/gm, " "));
+                        calBGEvents.push(JSON.parse(JSON.stringify(reswd.calEvents[k])));
                         caleventbase.rrule = oldrrule;
                     }
+                });
+                    
 
-                    arrayItem.changed = false;
-                }
-            });
+            p_calendar.getEventSourceById('bgevents').refetch();
 
         }
 
@@ -919,8 +939,7 @@
                 });
             });
         }
-        //#endregion
-
+        
         async function FetchRenderExceptions(p_calendar, p_date) {
             return new Promise(function (resolve, reject) {
                 console.info("FetchRenderExceptions:", p_date);
@@ -962,5 +981,8 @@
             });
 
         }
+    //#endregion
+
+
     </script>
 }
