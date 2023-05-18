@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 
 namespace KdajBi.Core
 {
@@ -59,8 +60,69 @@ namespace KdajBi.Core
             { retval = mySetting.Value; }
             return retval;
         }
+
+        public static void saveSetting(ApplicationDbContext p_context, int userid, long companyid, long? locationid, string settingName, string settingValue)
+        {
+            Setting settingIndb;
+            {
+                if (locationid.HasValue == true)
+                { settingIndb = p_context.Settings.SingleOrDefault(c => c.CompanyId == companyid && c.LocationId == locationid && c.Key == settingName); }
+                else
+                { settingIndb = p_context.Settings.SingleOrDefault(c => c.CompanyId == companyid && c.LocationId == null && c.Key == settingName); }
+                if (settingIndb == null)
+                {
+                    Setting newSetting = new Setting();
+                    newSetting.UserId = userid;
+                    newSetting.CreatedUserID = userid;
+                    newSetting.CompanyId = companyid;
+                    newSetting.LocationId = locationid;
+                    newSetting.Key = settingName;
+                    newSetting.Value = settingValue;
+                    p_context.Settings.Add(newSetting);
+                }
+                else
+                {
+                    settingIndb.UserId = userid;
+                    settingIndb.UpdatedUserID = userid;
+                    settingIndb.CompanyId = companyid;
+                    settingIndb.LocationId = locationid;
+                    settingIndb.UpdatedDate = DateTime.Now;
+                    settingIndb.Value = settingValue;
+                    p_context.Entry(settingIndb).State = EntityState.Modified;
+                }
+            }
+            try
+            {
+                p_context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 
+    public static class Utils { 
+        public static string CreateMD5(string input)
+        {
+            // Use input string to calculate MD5 hash
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                return Convert.ToHexString(hashBytes); // .NET 5 +
+
+                // Convert the byte array to hexadecimal string prior to .NET 5
+                // StringBuilder sb = new System.Text.StringBuilder();
+                // for (int i = 0; i < hashBytes.Length; i++)
+                // {
+                //     sb.Append(hashBytes[i].ToString("X2"));
+                // }
+                // return sb.ToString();
+            }
+        }
+    }
 
     public class TimeSlot
     {

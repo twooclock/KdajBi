@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using KdajBi.Core;
 using KdajBi.Core.dtoModels;
+using KdajBi.Core.dtoModels.Requests;
 using KdajBi.Core.Models;
 using KdajBi.GoogleHelper;
 using Microsoft.AspNetCore.Authentication;
@@ -104,6 +105,27 @@ namespace KdajBi.API.Controllers
         }
 
 
+        [HttpPost("/api/Settings/ChangePassword/")]
+        public JsonResult ChangePassword(List<string> changePass)
+        {
+            string currPass=SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "AdminPass", "");
+            if (Utils.CreateMD5( changePass[0]) != (currPass == "" ? KdajBi.Core.Utils.CreateMD5("") : currPass)) 
+            { 
+                return Json("Napačno trenutno geslo!");
+            }
+            else
+            {
+                try
+                {
+                    SettingsHelper.saveSetting(_context, _CurrentUserID(), _CurrentUserCompanyID(), null, "AdminPass", Utils.CreateMD5(changePass[1]));
+                }
+                catch (Exception)
+                {
+                    return Json("Napaka!");
+                }
+            }
+            return Json("OK");
+        }
 
     }
 }

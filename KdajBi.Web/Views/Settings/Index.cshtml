@@ -38,6 +38,7 @@
                                 <ul class="nav nav-tabs" role="tablist">
                                     <li class="nav-item"><a class="nav-link active" id="user-tab" data-toggle="pill" href="#user" role="tab" aria-controls="user" aria-selected="true">Pravice uporabnikov</a></li>
                                     <li class="nav-item"><a class="nav-link" id="appointments-tab" data-toggle="pill" href="#appointments" role="tab" aria-controls="appointments" aria-selected="false">Naročanje</a></li>
+                                    <li class="nav-item"><a class="nav-link" id="password-tab" data-toggle="pill" href="#password" role="tab" aria-controls="appointments" aria-selected="false">Geslo nadzornika</a></li>
                                 </ul>
                                 <div class="card-body">
                                     <div class="tab-content" id="custom-tabs-four-tabContent">
@@ -82,7 +83,6 @@
                                             </div>
                                         </div>
 
-
                                         <div id="appointments" class="tab-pane fade" role="tabpanel" aria-labelledby="appointments-tab">
                                             <form class="form-horizontal">
                                                 <div class="form-group">
@@ -112,7 +112,34 @@
                                             </div>
                                         </div>
                                         
+                                        <div id="password" class="tab-pane fade" role="tabpanel" aria-labelledby="password-tab">
+                                            <form class="form-horizontal">
 
+                                                <div class="form-group">
+                                                    <label for="txtCurrPass">
+                                                        Trenutno geslo:
+                                                    </label>
+                                                    <input type="password" id="txtCurrPass" name="txtCurrPass" class="form-control" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="txtNewPass1">
+                                                        Novo geslo:
+                                                    </label>
+                                                    <input type="password" id="txtNewPass1" name="txtNewPass1" class="form-control" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="txtNewPass2">
+                                                        Ponovno vnesite novo geslo:
+                                                    </label>
+                                                    <input type="password" id="txtNewPass2" name="txtNewPass2" class="form-control" />
+                                                </div>
+                                            </form>
+                                            <div class="form-group">
+                                                <div class="col-sm-offset-2 col-sm-10">
+                                                    <button class="btn btn-danger" onclick="SavePassword()">Spremeni geslo</button>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                     </div>
                                     <!-- /.tab-content -->
@@ -350,6 +377,37 @@
                 });
             });
         }
+
+        function SavePassword() {
+            if ($("#txtNewPass1").val()==$("#txtNewPass2").val())
+            {
+                var oldP=$("#txtCurrPass").val();
+                var newP = $("#txtNewPass1").val();
+                var changePass = new Array();
+                changePass.push(oldP);
+                changePass.push(newP);
+                getAPIToken().then((result) => {
+                    $.ajax({
+                        type: "post",
+                        data: JSON.stringify(changePass),
+                        url: apiURL + "/api/Settings/ChangePassword/",
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result == "OK") { toastr.success("Uspešno spremenil geslo"); return true; }
+                            else { toastr.error("Napaka:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka:" + error.toString());
+                            return false;
+                        }
+                    });
+                });
+            }
+            else { toastr.error("Novi gesli nista enaki!" ); }
+        }
+
 
         function CancelModal() {
             $('#dataform').validate().resetForm();

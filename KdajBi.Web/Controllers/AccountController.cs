@@ -408,6 +408,7 @@ namespace KdajBi.Web.Controllers
 
         public async Task<IActionResult> FlipNadzornik(string secret = "")
         {
+            bool newValue;
             // Get User and a claims-based identity
             var identity = new ClaimsIdentity(User.Identity);
 
@@ -415,16 +416,28 @@ namespace KdajBi.Web.Controllers
             if (existingClaim != null)
             {
                 identity.RemoveClaim(existingClaim);
-                identity.AddClaim(new Claim("Nadzornik", (!bool.Parse(existingClaim.Value)).ToString()));
+                newValue = !bool.Parse(existingClaim.Value);
             }
             else
             {
-                identity.AddClaim(new Claim("Nadzornik", true.ToString()));
+                newValue = true;
+            }
+            if (newValue == false)
+            { 
+                identity.AddClaim(new Claim("Nadzornik", false.ToString()));
+            }
+            else
+            {
+                //check credentials first
+                if (string.IsNullOrEmpty(secret) == true) { secret = ""; }
+                string currPass = SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "AdminPass", "");
+                if (KdajBi.Core.Utils.CreateMD5(secret) == (currPass == "" ? KdajBi.Core.Utils.CreateMD5(""):currPass))
+                { identity.AddClaim(new Claim("Nadzornik", true.ToString())); }
             }
 
             var authProperties = new AuthenticationProperties { IsPersistent = false };
-            await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, new ClaimsPrincipal(identity), authProperties);
-
+                await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, new ClaimsPrincipal(identity), authProperties);
+            
             return Redirect("~/Home/Index");
         }
 
