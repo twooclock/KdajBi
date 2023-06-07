@@ -384,7 +384,7 @@ namespace KdajBi.API.Controllers
                 case 0: //individual recipients (ClientIDs)
                     foreach (string item in p_SmsCampaigin.Recipients)
                     {
-                        Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == long.Parse(item) && a.Mobile != null && a.AllowsSMS == true).SingleOrDefault();
+                        Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == long.Parse(item) && a.Mobile != null && a.Mobile != "" && a.AllowsSMS == true).SingleOrDefault();
                         if (client != null)
                         {
                             newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, client.Id));
@@ -394,14 +394,14 @@ namespace KdajBi.API.Controllers
                 case 1: //recipients by location
                     foreach (string item in p_SmsCampaigin.Recipients)
                     {
-                        foreach (Client client in _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == long.Parse(item) && a.Mobile != null && a.AllowsSMS == true))
+                        foreach (Client client in _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == long.Parse(item) && a.Mobile != null && a.Mobile != "" && a.AllowsSMS == true))
                         {
                             newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, client.Id));
                         }
                     }
                     break;
                 case 2: //recipients by sex
-                    foreach (Client client in _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Sex == p_SmsCampaigin.Recipients.ToArray()[0] && a.Mobile != null && a.AllowsSMS == true))
+                    foreach (Client client in _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Sex == p_SmsCampaigin.Recipients.ToArray()[0] && a.Mobile != null && a.Mobile != "" && a.AllowsSMS == true))
                     {
                         newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, client.Id));
                     }

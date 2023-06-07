@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -36,12 +37,12 @@ namespace KdajBi.Web.Services
     {
         public readonly ApiSettings _apiSettings;
         protected readonly ILogger _logger;
-        private Dictionary<string, JwtToken> myTokens;
+        private ConcurrentDictionary<string, JwtToken> myTokens;
         public ApiTokenProvider(IOptions<ApiSettings> apiSettings, ILogger<ApiTokenProvider> logger)
         {
             _apiSettings = apiSettings.Value;
             _logger = logger;
-            myTokens = new Dictionary<string, JwtToken>();
+            myTokens = new ConcurrentDictionary<string, JwtToken>();
         }
 
 
