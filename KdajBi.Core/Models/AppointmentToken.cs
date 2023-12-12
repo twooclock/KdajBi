@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations.Schema;
-using System;
 
 namespace KdajBi.Core.Models
 {

@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace KdajBi.API.Controllers
 {
-    [Authorize(Roles = "Super, Admin")]
+    
     [ApiController]
     public class SchedulesController : _BaseController
     {
@@ -89,6 +89,7 @@ namespace KdajBi.API.Controllers
             return Json(mySchedule);
         }
 
+        [Authorize(Roles = "Super, Admin")]
         // PUT: api/Schedules/5
         [HttpPut("/api/Schedule/{id}")]
         public async Task<IActionResult> PutSchedule(long id, Schedule Schedule)
@@ -116,6 +117,7 @@ namespace KdajBi.API.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Super, Admin")]
         // POST: api/Schedules
         [HttpPost("/api/Schedule/{id}")]
         public async Task<ActionResult<Schedule>> PostSchedule(long id, Schedule Schedule)
@@ -193,6 +195,7 @@ namespace KdajBi.API.Controllers
 
         }
 
+        [Authorize(Roles = "Super, Admin")]
         // DELETE: api/Schedules/5
         [HttpDelete("/api/Schedule/{id}")]
         public async Task<ActionResult<Schedule>> DeleteSchedule(long id)

@@ -146,6 +146,12 @@
                         <input type="text" id="txtClientNotes" name="txtClientNotes" class="form-control" />
                     </div>
                     <div class="form-group">
+                        <label for="txtAppointmentNotes">
+                            Opombe pri naročanju:
+                        </label>
+                        <input type="text" id="txtAppointmentNotes" name="txtAppointmentNotes" class="form-control" />
+                    </div>
+                    <div class="form-group">
                         <label class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="cbActive" value="true" checked="">
                             <span class="custom-control-label">Active</span>
@@ -354,6 +360,7 @@
                 $("#txtClientAddress").val('');
                 $("#txtClientZip").val('');
                 $("#txtClientNotes").val('');
+                $("#txtAppointmentNotes").val('');
                 $("#cbActive").prop('checked', true);
             }
             else {
@@ -377,6 +384,7 @@
                         $("#txtClientAddress").val(result.address);
                         $("#txtClientZip").val(result.zip);
                         $("#txtClientNotes").val(result.notes);
+                        $("#txtAppointmentNotes").val(result.appointmentNotes);
                         $("#cbActive").prop('checked', result.active);
 
                     },
@@ -447,6 +455,7 @@
                 client.Address =$("#txtClientAddress").val();
                 client.Zip =$("#txtClientZip").val();
                 client.Notes =$("#txtClientNotes").val();
+                client.AppointmentNotes =$("#txtAppointmentNotes").val();
                 client.Active = $("#cbActive").prop('checked');
                 client.Sex = "F";
                 getAPIToken().then((result) => {

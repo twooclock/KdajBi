@@ -172,7 +172,7 @@
             <div class="modal-body ui-front">
                 <form id="formEvent" class="formEvent" name="formEvent">
                     <div class="form-row">
-                        <div class="form-group col-9">
+                        <div class="form-group mb-0 col-9">
                             <label for="txtClientsearch">
                                 Stranka:
                             </label>
@@ -186,13 +186,18 @@
                             </div>
                         </div>
 
-                        <div class="form-group col-3">
+                        <div class="form-group mb-0 col-3">
                             <label for="txtClientMobile">
                                 Mobi:
                             </label>
                             <input type="tel" id="txtClientMobile" name="txtClientMobile" class="form-control" oninput="CheckMobileNumber(this);" />
                         </div>
+                        <div class="form-group mb-0 col-12">
+                            <label id="txtClientNotes" class="invalid-feedback d-block"></label>
+                        </div>
                     </div>
+                   
+
                     <div class="form-group">
                         <label for="txtNotes">
                             Naročilo:
@@ -1190,6 +1195,7 @@
                         hideKeyboard();
                         $("#txtClientsearch").val(ui.item.label);
                         $("#txtClientMobile").val(ui.item.mobile);
+                        $("#txtClientNotes").text(ui.item.notes);
                         SelectedClientID = ui.item.value;
                         $("#txtClientsearch").blur();
                         event.preventDefault();
@@ -1283,6 +1289,7 @@
             //clear form
             $("#txtClientsearch").val('');
             $("#txtClientMobile").val('');
+            $("#txtClientNotes").text('');
             $("#txtNotes").val('');
             $("#txtNotes").tokenfield('setTokens', ' ');
 
@@ -1319,6 +1326,7 @@
             if (typeof info.event?.extendedProps?.client === "undefined") {
                 $("#txtClientsearch").val('');
                 $("#txtClientMobile").val('');
+                $("#txtClientNotes").text('');
             }
             else {
                 var client = JSON.parse(info.event.extendedProps.client);
@@ -1786,6 +1794,7 @@
             PrepareModal('link');
             $("#txtClientsearch").val('');
             $("#txtClientMobile").val('');
+            $("#txtClientNotes").text('');
             $("#txtNotes").val('');
             $("#txtNotes").tokenfield('setTokens', ' ');
             $('#txtMinDuration').val('');

@@ -168,6 +168,7 @@ namespace KdajBi.API.Controllers
                 Clientindb.LocationId = p_Client.LocationId;
                 Clientindb.Mobile = p_Client.Mobile;
                 Clientindb.Notes = p_Client.Notes;
+                Clientindb.AppointmentNotes = p_Client.AppointmentNotes;
                 Clientindb.TaxId = p_Client.TaxId;
                 Clientindb.ZipCode = p_Client.ZipCode;
 

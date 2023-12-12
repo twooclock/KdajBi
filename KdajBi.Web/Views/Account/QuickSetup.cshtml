@@ -1,0 +1,181 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_AnonymousLayout.cshtml";
+    ViewData["Title"] = "Hitra nastavitev";
+}
+
+
+<p class="login-box-msg">Hitra nastavitev</p>
+
+<form id="dataform" name="dataform" action="~/Account/QuickSetup" method="post">
+
+    <div class="form-group">
+        <label for="p_name" class="control-label">Ime salona</label>
+        <div>
+            <input class="form-control" id="p_name" name="p_name" placeholder="Ime" value="@Model" maxlength="150">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="p_tel" class="control-label">Telefon za naročanje</label>
+        <div >
+            <input class="form-control" id="p_tel" name="p_tel" placeholder="Telefon" value="" maxlength="15">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="p_address" class="control-label">Naslov (opisno - ulica in kraj)</label>
+        <div>
+            <input class="form-control" id="p_address" name="p_address" placeholder="Naslov" value="" maxlength="150">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="p_timetable" class="control-label">Urnik (opisno npr. Pon-Pet 8-20h Sob 8-12h)</label>
+        <div>
+            <input class="form-control" id="p_timetable" name="p_timetable" placeholder="Urnik opisno" value="" maxlength="150">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="p_wpnames" class="control-label">Imena zaposlenih ločena z vejico</label> (vsak bo imel svoj stolpec za naročanje):
+        <div>
+            <input id="p_wpnames" name="p_wpnames" type="text" class="form-control" placeholder="imena ločena z vejico" value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="checkbox icheck">
+            <label class="mojgroup has-feedback form-check-label">
+                <input id="p_usesms" name="p_usesms" type="checkbox"> Uporabljal bom SMS obveščanje strank
+            </label>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="checkbox icheck">
+            <label class="mojgroup has-feedback form-check-label">
+                <input id="p_ignoretimetables" name="p_ignoretimetables" type="checkbox"> Naročam po dogovoru (urnik me ne zanima)
+            </label>
+        </div>
+    </div>
+    
+    
+    <div class="row">
+        <button id="cmdSubmit" type="submit" class="btn btn-primary btn-block btn-flat">Nastavi</button>
+    </div>
+</form>
+<!-- /page content -->
+@section modals{    }
+
+@section scripts{
+    <partial name="_ValidationScriptsPartial" />
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $("#cmdSubmit").click(function() {
+            // disable button
+            $(this).prop("disabled", true);
+            // add spinner to button
+            $(this).html(
+            `<i class="fa fa-spinner fa-spin"></i> Prosim, počakajte...`
+            );
+            $("#dataform").submit();
+        });
+
+            $('#dataform').validate({
+                rules: {
+                    
+                    p_firstname: {
+                        minlength: 3,
+                        maxlength: 20,
+                        required: true
+                    },
+                    p_lastname: {
+                        minlength: 3,
+                        maxlength: 20,
+                        required: true
+                    },
+                    p_davcna: {
+                        minlength: 8,
+                        maxlength: 8,
+                        digits: true,
+                        required: true,
+                        isSITaxID: true
+                    },
+                    p_naziv: {
+                        minlength: 3,
+                        required: true
+                    },
+                    p_nazivsalona: {
+                        minlength: 3,
+                        maxlength: 20,
+                        required: true
+                    },
+                },
+                messages: {
+                    p_firstname: "Neveljavno ime",
+                    p_lastname: "Neveljaven priimek",
+                    p_davcna: "Vnesite veljavno davčno številko",
+                    p_naziv: "Kliknite \"Poišči\", da naložite podatke o podjetju",
+                    p_nazivsalona: "Neveljavno ime"
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-control').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-control').removeClass('is-invalid');
+                },
+                errorElement: 'span',
+                errorClass: 'invalid-feedback',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.appendTo(element.parent('.input-group'));
+                    } else {
+                        if (element.parent('.mojgroup').length) {
+                            error.appendTo(element.parent('.mojgroup'));
+                        } else { error.insertAfter(element); }
+                    }
+                },
+                submitHandler: function (form) {
+                    form.submit();
+                }
+            });
+
+            
+            
+
+        });
+
+
+
+
+
+
+
+        function SaveRecord(p_ID) {
+            if ($('#dataform').valid()) {
+                var company = {};
+                company.id = p_ID;
+                company.Name = $('#txtName').val();
+                company.Active = $("#cbActive").prop('checked');
+                getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(company),
+                    url: apiURL + "/api/company/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Shranjeno"); GetTable(); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+                });
+            } else { return false; }
+        }
+
+
+    </script>
+}

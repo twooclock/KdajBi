@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -110,6 +111,31 @@ namespace KdajBi.GoogleHelper
         public void Dispose()
         {
             calendarService.Dispose();
+        }
+
+        public string CreateCalendar(string p_Summary)
+        {
+            try
+            {
+                if (googleAuthToken != null)
+                {
+                    Google.Apis.Calendar.v3.Data.Calendar retval = null;
+                    Google.Apis.Calendar.v3.Data.Calendar newCalendar = new Google.Apis.Calendar.v3.Data.Calendar
+                    {
+                        Summary = p_Summary
+                    };
+                    var request = calendarService.Calendars.Insert(newCalendar);
+                    request.OauthToken = googleAuthToken.access_token;
+                    retval = request.Execute();
+                    return retval.Id;
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "Couldn't create calendar " + p_Summary);
+            }
+            return null;
         }
 
         public CalendarList getCalendars()

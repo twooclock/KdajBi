@@ -12,8 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -394,7 +397,8 @@ namespace KdajBi.Web.Controllers
                         _logger.LogError(ex, "Register - error2");
                         throw;
                     }
-                    return Redirect("~/Home/Index");
+                    //tukaj dodam še quickSetup step 
+                    return QuickSetup(p_nazivsalona);
                 }
             }
             else
@@ -405,6 +409,131 @@ namespace KdajBi.Web.Controllers
             //something went wrong
             return AccessDenied();
         }
+
+        public IActionResult QuickSetup(string p_nazivsalona)
+        {
+
+            return View("QuickSetup",p_nazivsalona);
+        }
+
+        [HttpPost("/Account/QuickSetup")]
+        public async Task<IActionResult> QuickSetup(string p_name, string p_tel, string p_address, string p_timetable, string p_wpnames, string p_usesms, string p_ignoretimetables)
+        {
+            int cuser = _CurrentUserID();
+            long cLoc = DefaultLocationId();
+            var Locationindb = _context.Locations.Single(c => c.Id == DefaultLocationId());
+
+            Locationindb.UpdatedUserID = cuser;
+            Locationindb.UpdatedDate = DateTime.Now;
+            Locationindb.Name = p_name;
+            Locationindb.Tel = p_tel;
+            Locationindb.Address = p_address;
+            Locationindb.Timetable = p_timetable;
+            _context.Entry(Locationindb).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                _logger.LogWarning("Couldn't update location " + p_name);
+            }
+
+            var calList = new List<string>();
+            var gt = _CurrentUserGooToken();
+            if (gt != null)
+            {
+                var myWP = _context.Workplaces.Where(loc => loc.LocationId == cLoc).FirstOrDefault();
+                using (GoogleService service = new GoogleService(User.Identity.Name, gt))
+                {
+                    //create calendars
+                    var myCals = p_wpnames.Split(',');
+                    string calId;
+                    int sortPos = 0;
+                    foreach (var item in myCals)
+                    {
+                        if (string.IsNullOrEmpty((item.Trim())) == false)
+                        {
+                            calId = service.CreateCalendar("KDAJBI_" + item);
+                            if (calId != null)
+                            {
+                                calList.Add(calId);
+                                if (item != myWP.Name)
+                                {
+                                    sortPos = sortPos + 10;
+                                    //create workplace
+                                    Workplace wp = new Workplace
+                                    {
+                                        LocationId = cLoc,
+                                        UserId = cuser,
+                                        Name = item,
+                                        GoogleCalendarID = calId,
+                                        SortPosition = sortPos,
+                                        CreatedDate = DateTime.Now
+                                    };
+                                    _context.Workplaces.Add(wp);
+                                }
+                                else
+                                {
+                                    myWP.GoogleCalendarID = calId;
+                                    _context.Entry(myWP).State = EntityState.Modified;
+                                }
+                            }
+                        }
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
+            Setting newSetting;
+            long ccomp = _CurrentUserCompanyID();
+
+            if (p_usesms=="on")
+            { 
+                //sms settings
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = cLoc, Key = "SMS_SenderName", Value = "" };
+                _context.Settings.Add(newSetting);
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = cLoc, Key = "SMS_RD_Time", Value = "" };
+                _context.Settings.Add(newSetting);
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = cLoc, Key = "SMS_RD_Msg", Value = "" };
+                _context.Settings.Add(newSetting);
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = cLoc, Key = "SMS_GOO_Cals", Value = JsonConvert.SerializeObject(calList) };
+                _context.Settings.Add(newSetting);
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = cLoc, Key = "SMS_GOO_Time", Value = "16:00" };
+                _context.Settings.Add(newSetting);
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = cLoc, Key = "SMS_GOO_Day", Value = "NEXT" };
+                _context.Settings.Add(newSetting);
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = cLoc, Key = "SMS_GOO_Msg", Value = "Pozdravljeni! Naroceni ste <DANESJUTRI> <DATUM> ob <URA> v salonu "+p_name+".\r\nInfo: "+ p_tel +"." };
+                _context.Settings.Add(newSetting);
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = cLoc, Key = "SMS_GOO_AutoApprove", Value = "true" };
+                _context.Settings.Add(newSetting);
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = cLoc, Key = "SMS_AppointmentSMS", Value = "false" };
+                _context.Settings.Add(newSetting);
+            }
+            if (p_ignoretimetables == null)
+            {
+                newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = null, Key = "cbAppointments_ShowTimetables", Value = "true" };
+                _context.Settings.Add(newSetting);
+            }
+            //default row height
+            newSetting = new Setting { UserId = cuser, CreatedUserID = cuser, CompanyId = ccomp, LocationId = null, Key = "AppointmentsRowHeight", Value = "3em;" };
+            _context.Settings.Add(newSetting); 
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "QuickSetup - error saving settings");
+                throw;
+            }
+
+            return Redirect("~/Appointments/Index");
+        }
+
+
+
+
 
         public async Task<IActionResult> FlipNadzornik(string secret = "")
         {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace KdajBi.Core.Models
+﻿namespace KdajBi.Core.Models
 {
     //public class BookingConfirmation:BaseModel
     //{
@@ -12,7 +6,7 @@ namespace KdajBi.Core.Models
 
     //    [ForeignKey("AppointmentToken"), Required]
     //    public long AppointmentTokenId { get; set; }
-        
+
     //    public virtual AppointmentToken AppointmentToken { get; set; }
 
     //    public DateTime Start { get; set; }

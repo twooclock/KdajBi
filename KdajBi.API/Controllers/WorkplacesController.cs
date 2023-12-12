@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace KdajBi.API.Controllers
 {
-    [Authorize(Roles = "Super, Admin")]
+    
     [ApiController]
     public class WorkplacesController : _BaseController
     {
@@ -31,7 +31,7 @@ namespace KdajBi.API.Controllers
             
         }
 
-
+        [Authorize(Roles = "Super, Admin")]
         [HttpPost("/api/workplacestable/{locationid}")]
         public JsonResult WorkplacesTable(long locationid, [FromBody] DataTableAjaxPostModel param)
         {
@@ -89,6 +89,7 @@ namespace KdajBi.API.Controllers
             return Json(myWorkplace);
         }
 
+        [Authorize(Roles = "Super, Admin")]
         // PUT: api/workplaces/5
         [HttpPut("/api/workplace/{id}")]
         public async Task<IActionResult> PutWorkplace(long id, Workplace workplace)
@@ -119,6 +120,7 @@ namespace KdajBi.API.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Super, Admin")]
         // POST: api/workplaces
         [HttpPost("/api/workplace/{locationid}")]
         public async Task<ActionResult<Workplace>> PostWorkplace(long locationid, Workplace workplace)
@@ -176,6 +178,7 @@ namespace KdajBi.API.Controllers
 
         }
 
+        [Authorize(Roles = "Super, Admin")]
         // DELETE: api/workplaces/5
         [HttpDelete("/api/workplace/{id}")]
         public async Task<ActionResult<Workplace>> DeleteWorkplace(long id)
@@ -201,6 +204,7 @@ namespace KdajBi.API.Controllers
             return Json(myExServices);
         }
 
+        [Authorize(Roles = "Super, Admin")]
         [HttpPost("/api/workplaceexcludedservices/{locationid}/{wpid}")]
         public async Task<ActionResult<Workplace>> PostWorkplaceServices(long locationid, long wpid, string[] p_Ids)
         {

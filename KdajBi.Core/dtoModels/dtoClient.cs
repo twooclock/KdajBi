@@ -34,6 +34,7 @@ namespace KdajBi.Core.dtoModels
         public bool IsCompany { get; set; }
 
         public string Notes { get; set; }
+        public string AppointmentNotes { get; set; }
         public string Sex { get; set; }
 
         public ICollection<ClientTag> ClientTags { get; set; }

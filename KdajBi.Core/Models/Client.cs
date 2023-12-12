@@ -1,5 +1,4 @@
-﻿
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -48,7 +47,8 @@ namespace KdajBi.Core.Models
         public bool IsCompany { get; set; }
 
         public string Notes { get; set; }
-        
+        public string AppointmentNotes { get; set; }
+
         [MaxLength(1)]
         public string Sex { get; set; }
 

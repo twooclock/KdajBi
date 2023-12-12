@@ -175,6 +175,12 @@
                                             <textarea rows="2" id="txtClientNotes" name="txtClientNotes" class="form-control"></textarea>
                                         </div>
                                         <div class="form-group mb-1">
+                                            <label for="txtAppointmentNotes">
+                                                Opombe pri naročanju:
+                                            </label>
+                                            <textarea rows="2" id="txtAppointmentNotes" name="txtAppointmentNotes" class="form-control"></textarea>
+                                        </div>
+                                        <div class="form-group mb-1">
                                             <label for="tags">Oznake:</label>
                                             <select id="txtTags" class="form-control" multiple="multiple">
                                             </select>
@@ -466,10 +472,13 @@
                 dom: '<"row"lr><"row"<"col-12"t>><"row"<"col-sm-6"i><"col-sm-6"p>>',
                 data: dsAppointments,
                 columns: [
-                    { title: 'Naročen',orderable: false },
+                    { title: 'Naročen',orderable: true },
                     {
-                        title: 'Datum', orderable: false,
+                        title: 'Datum', orderable: true,
                         render: function (data, type, row, meta) {
+                               if (type == "sort"){
+                                      return new Date(data).getTime();
+                                }
                           return dayjs(row[1]).format("LLL");
                         }},
                     { title: 'Opis', orderable: false },
@@ -667,6 +676,7 @@
                 $("#txtClientAddress").val('');
                 $("#txtClientZip").val('');
                 $("#txtClientNotes").val('');
+                $("#txtAppointmentNotes").val('');
 
             }
             else {
@@ -693,7 +703,8 @@
                             $("#txtClientAddress").val(result.address);
                             $("#txtClientZip").val(result.zip);
                             $("#txtClientNotes").val(result.notes);
-                            $("#txtTags").val(result.tags.map(a => a.id)).trigger('change');
+                               $("#txtAppointmentNotes").val(result.appointmentNotes);
+                             $("#txtTags").val(result.tags.map(a => a.id)).trigger('change');
                             $("#general-tab").tab('show');
                         },
                         error: function (xhr, status, error) {
@@ -776,7 +787,8 @@
                 client.Address = $("#txtClientAddress").val();
                 client.Zip =$("#txtClientZip").val();
                 client.Notes = $("#txtClientNotes").val();
-                client.Sex = "F";
+                 client.AppointmentNotes = $("#txtAppointmentNotes").val();
+                 client.Sex = "F";
 
                 var myTags = [];
                 $('#txtTags').select2('data').forEach(function (item) {

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace KdajBi.API.Controllers
 {
-    [Authorize(Roles = "Super,Admin")]
+    
     [ApiController]
     public class LocationsController : _BaseController
     {
@@ -24,7 +24,7 @@ namespace KdajBi.API.Controllers
             
         }
 
-
+        [Authorize(Roles = "Super,Admin")]
         [HttpPost("/api/Locationstable")]
         public JsonResult LocationsTable([FromBody] DataTableAjaxPostModel param)
         {
@@ -81,6 +81,7 @@ namespace KdajBi.API.Controllers
             return Location;
         }
 
+        [Authorize(Roles = "Super,Admin")]
         [HttpPut("/api/Location/{id}")]
         public async Task<IActionResult> PutLocation(long id, Location Location)
         {
@@ -110,6 +111,7 @@ namespace KdajBi.API.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Super,Admin")]
         [HttpPost("/api/Location")]
         public async Task<ActionResult<Location>> PostLocation(Location Location)
         {
@@ -177,6 +179,7 @@ namespace KdajBi.API.Controllers
             return Json("OK");
         }
 
+        [Authorize(Roles = "Super,Admin")]
         [HttpDelete("/api/Location/{id}")]
         public async Task<ActionResult<Location>> DeleteLocation(long id)
         {
