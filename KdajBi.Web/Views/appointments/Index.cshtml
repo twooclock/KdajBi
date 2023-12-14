@@ -16,6 +16,7 @@
     <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
     <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
     <link href='~/lib/fullcalendar-scheduler-5.10.1/lib/main.min.css' rel='stylesheet' />
+    <link href="~/plugins/shepherdjs/shepherd.css" rel="stylesheet" />"
 
     <style>
 @{ string val = "";
@@ -325,6 +326,7 @@
     
 
     <script src="~/plugins/AlloyFinger/alloy_finger.js"></script>
+    <script src="~/plugins/shepherdjs/shepherd.min.js"></script>
 
     <script type="text/javascript">
         @await Html.PartialAsync("_ApiAccess")
@@ -849,13 +851,12 @@
                                 mnuResources: {
                                     text: "R",
                                     click: function () {
-                                        console.log('remove resource...');
-                                        if (resourceA == null) {
-                                            resourceA = calendar.getResourceById('2');
-                                            resourceA.remove();
-                                        } else { calendar.addResource(resourceA); resourceA = null; calendar.render(); }
-
-                                        calendar.refetchEvents();
+                                        console.log('change selectLongPressDelay from...');
+                                        let person = prompt("Please enter number", '100');
+                                          if (person != null) {
+                                            calendar.setOption('selectLongPressDelay',Number(person));
+                                          }
+                                        console.log('changed selectLongPressDelay to...');
                                     }
                                 },
                                 datepicker: {
@@ -1966,6 +1967,116 @@
         }
 
     </script>
+
+    //#region PageTour
+    <script type="text/javascript">
+			
+			gPageTour = new Shepherd.Tour({
+				defaultStepOptions: {
+					cancelIcon: {enabled: true},
+					classes: 'class-1 class-2',
+					  scrollTo: { behavior: 'smooth', block: 'center' },
+				showOn()  {
+					if (this.attachTo === undefined)
+						  {return true;}
+							else
+							{
+						  const element = document.querySelector(this.attachTo.element);
+						  if (Boolean(element) == true)
+						  {
+							  let sidemenu=$($('.main-sidebar')[0]);
+							  if (Boolean(sidemenu) == true)
+						  {
+							  if($(element).closest(sidemenu).length > 0)
+							  {
+								return (sidemenu.offset().left>=0)
+							  }
+							
+							return ($(element).is(":visible"));
+						  }
+						  else {return ($(element).is(":visible"));}
+						  }
+						  else
+						  {return false;}
+						  }
+						}
+					},
+				useModalOverlay: true
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Naročila vpisujete v tabelo in jih poljubno urejate. Za vpis le kliknete/tapnete na poljubno polje tabele, izberete stranko in storitev(e).<br/>Vpisana naročila lahko poljubno premikate in urejate.`,
+				buttons: [{action() {return this.next();},text: 'Naprej'}]
+			});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Koledarček za lažji skok na poljuben datum.`,
+                attachTo: {element: '.fc-datepicker-button',	on: 'bottom'},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Premik dan nazaj.<br/>Na zaslonih občutljivih na dotik lahko tudi podrsate desno.`,
+				attachTo: {	element: '.fc-prev-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Premik dan naprej.<br/>Na zaslonih občutljivih na dotik lahko tudi podrsate levo.`,
+				attachTo: {	element: '.fc-next-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Skok na današnji datum.`,
+				attachTo: {	element: '.fc-today-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Prikaz dneva.`,
+				attachTo: {	element: '.fc-resourceTimeGridDay-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Prikaz 3 dni.`,
+				attachTo: {	element: '.fc-resourceTimeGridTwoDay-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Tedenski prikaz.`,
+				attachTo: {	element: '.fc-timeGridWeek-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Mesečni prikaz.`,
+				attachTo: {	element: '.fc-dayGridMonth-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Preklop med 15/30 minutnimi intervali.`,
+				attachTo: {	element: '.fc-slotinterval-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Pošiljanje povezave za samodejno naročanje.<br/>Izberete stranko in storitev, ter ji pošljete povezavo preko katere se lahko sama naroči. Uporabno, ko gre za znano stranko in znano storitev. Stranka dobi povezavo prek sms.`,
+				attachTo: {	element: '.fc-linkcreator-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Celozaslonski prikaz.`,
+				attachTo: {	element: '.fc-fullscreen-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Zapri'}]
+			});
+            
+        </script>
+    //#endregion
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoadOkay()" onerror="gapiLoadFail(event)"></script>
 
 }

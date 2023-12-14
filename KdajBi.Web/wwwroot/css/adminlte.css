@@ -13679,21 +13679,23 @@ body.text-sm .control-sidebar {
 }
 
 .navbar-nav > .user-menu .user-image {
-  border-radius: 50%;
-  float: left;
-  height: 2.1rem;
-  margin-right: 10px;
-  margin-top: -2px;
-  width: 2.1rem;
+    border-radius: 50%;
+    float: left;
+    height: 2.1rem;
+    margin-right: 10px;
+    margin-top: -2px;
+    width: 2.1rem;
+    
 }
 
 @media (min-width: 576px) {
-  .navbar-nav > .user-menu .user-image {
-    float: none;
-    line-height: 10px;
-    margin-right: .4rem;
-    margin-top: -8px;
-  }
+    .navbar-nav > .user-menu .user-image {
+        float: none;
+        line-height: 10px;
+        margin-right: .4rem;
+        margin-top: -8px;
+        
+    }
 }
 
 .nav-pills .nav-link {

@@ -3,12 +3,16 @@ using KdajBi.Core.Models;
 using KdajBi.Models;
 using KdajBi.Web.Services;
 using KdajBi.Web.ViewModels;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
 {
@@ -49,8 +53,29 @@ namespace KdajBi.Web.Controllers
 
 
         }
+        public async Task<IActionResult> NewUserTour()
+        {
 
-        
+            //// Get User and a claims-based identity
+            //var identity = new ClaimsIdentity(User.Identity);
+
+            //var existingClaim = identity.FindFirst("Nadzornik");
+            //if (existingClaim == null)
+            //{
+            //    identity.AddClaim(new Claim("Nadzornik", true.ToString()));
+            //}
+            
+
+            //var authProperties = new AuthenticationProperties { IsPersistent = false };
+            //await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, new ClaimsPrincipal(identity), authProperties);
+
+            _BaseViewModel vmModel = new _BaseViewModel();
+            vmModel.Token = _GetToken();
+            vmModel.UserUIShow = _UserUIShow();
+            return View(vmModel);
+
+        }
+
         public IActionResult Privacy()
         {
             return View();

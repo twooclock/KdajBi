@@ -3,6 +3,7 @@ using KdajBi.Core.Models;
 using KdajBi.GoogleHelper;
 using KdajBi.Models;
 using KdajBi.Web.Services;
+using KdajBi.Web.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -531,7 +532,7 @@ namespace KdajBi.Web.Controllers
             return Redirect("~/Appointments/Index");
         }
 
-
+       
 
 
 

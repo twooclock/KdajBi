@@ -1,0 +1,310 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using KdajBi.Core.Models;
+@using KdajBi.Web;
+@using KdajBi.Web.ViewModels;
+@model _BaseViewModel
+
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+@{
+	bool isAdmin = User.IsInRole("Admin");
+	bool isSuper = User.IsInRole("Super");
+	bool isUser = (isAdmin == false && isSuper == false);
+	bool isNadzornik = User.HasClaim("Nadzornik", bool.TrueString);
+	int myCompanyId = int.Parse(User.FindFirst("CompanyId").Value);
+
+}
+@{
+	ViewData["Title"] = "Kratek vodič po aplikaciji";
+}
+
+
+<p class="login-box-msg">Kratek vodič po aplikaciji</p>
+
+
+@section styles {
+	<!-- datatables.net -->
+	<link href="~/plugins/shepherdjs/shepherd.css" rel="stylesheet" />"
+
+}
+
+
+@section scripts {
+	<script src="~/plugins/shepherdjs/shepherd.min.js"></script>
+
+	<script type="text/javascript">
+		
+		$(document).ready(function () {
+			
+			gPageTour = new Shepherd.Tour({
+				defaultStepOptions: {
+					cancelIcon: {enabled: true},
+					classes: 'class-1 class-2',
+					  scrollTo: { behavior: 'smooth', block: 'center' },
+				showOn()  {
+					if (this.attachTo === undefined)
+						  {return true;}
+							else
+							{
+						  const element = document.querySelector(this.attachTo.element);
+						  if (Boolean(element) == true)
+						  {
+							  let sidemenu=$($('.main-sidebar')[0]);
+							  if (Boolean(sidemenu) == true)
+						  {
+							  if($(element).closest(sidemenu).length > 0)
+							  {
+								return (sidemenu.offset().left>=0)
+							  }
+							
+							return ($(element).is(":visible"));
+						  }
+						  else {return ($(element).is(":visible"));}
+						  }
+						  else
+						  {return false;}
+						  }
+						}
+					},
+				useModalOverlay: true
+			});
+
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Prosimo, poglejte si tale kratek vodič, pokazal vam bo kje je kaj, da se boste lažje znašli v aplikaciji...\
+		  <br/><br/> Za nadaljevanje pritisnite gumb Naprej.`,
+				buttons: [
+					{
+						action() {
+							return this.next();
+						},
+						text: 'Naprej'
+					}
+				]
+			});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Pod vašo \"profilko\", se skriva menu, ki omogoča odklepanje dodatnih funkcij in odjavo iz aplikacije.`,
+				attachTo: {
+					element: '.user-menu',
+					on: 'bottom'
+				},
+				buttons: [
+					{
+						action() {
+							return this.back();
+						},
+						text: 'Nazaj'
+					},
+					{
+						action() {
+							return this.next();
+						},
+						text: 'Naprej'
+					}
+				]
+			});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+		text: `Tukaj prikažete/skrijete glavni meni z funkcijami aplikacije.`, 
+				attachTo: {
+					element: '#pushmenu',
+				on: 'bottom'
+			},
+				buttons: [
+				{
+					action() {
+						return this.back();
+					},
+					text: 'Nazaj'
+				},
+				{
+					action() {
+						return this.next();
+					},
+					text: 'Naprej'
+				}
+			]
+					});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				@if (isNadzornik == true)
+				{
+					<text>text: `Tu so dosegljive vse funkcije. <br/> Sedaj ste prijavljeni kot Nadzornik zato vidite vse.Ko aplikacijo zaklenete so dosegljive le funkcije potrebne za opravljanje vašega dela.`,</text>
+		
+				}
+				else
+				{
+					<text>text: `Tu so dosegljive vse funkcije. <br/> Sedaj ste prijavljeni kot navaden uporabnik zato vidite le funkcije potrebne za opravljanje vašega dela.
+						<br/>Ko aplikacijo odklenete so dosegljive vse funkcije.`,</text>
+
+				}
+		attachTo: {
+					element: '.sidebar',
+					on: 'right'
+				},
+				buttons: [
+					{
+						action() {
+							return this.back();
+						},
+						text: 'Nazaj'
+					},
+					{
+						action() {
+							return this.next();
+						},
+						text: 'Naprej'
+					}
+				]
+			});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Vse v zvezi z vašim podjetjem - osnovni podatki, podatki o salonih, zaposlenih, nastavitve ki veljajo za vse.`,
+				attachTo: {
+					element: '#smCompany',
+					on: 'right'
+				},
+				buttons: [
+					{
+						action() {
+							return this.back();
+						},
+						text: 'Nazaj'
+					},
+					{
+						action() {
+							return this.next();
+						},
+						text: 'Naprej'
+					}
+				]
+		});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Vse v zvezi z vašim salonom - podatki o salonu, urnik salona, delovna mesta in njihovi urniki, storitve (ki se uporabljajo pri naročanju), nastavitve sms obveščanja o terminih strank.`,
+				attachTo: {
+					element: '.smLocation',
+					on: 'right'
+				},
+				buttons: [
+					{
+						action() {
+							return this.back();
+						},
+						text: 'Nazaj'
+					},
+					{
+						action() {
+							return this.next();
+						},
+						text: 'Naprej'
+					}
+				]
+			});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Koledar z naročili strank.`,
+				attachTo: {
+					element: '#smAppointments',
+					on: 'right'
+				},
+				buttons: [
+					{
+						action() {
+							return this.back();
+						},
+						text: 'Nazaj'
+					},
+					{
+						action() {
+							return this.next();
+						},
+						text: 'Naprej'
+					}
+				]
+			});
+			 gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Kartoteke strank. Tu so zbrane vse informacije o vaših strankah.`,
+				attachTo: {
+					element: '.smClients',
+					on: 'right'
+				},
+				buttons: [
+					{
+						action() {
+							return this.back();
+						},
+						text: 'Nazaj'
+					},
+					{
+						action() {
+							return this.next();
+						},
+						text: 'Naprej'
+					}
+				]
+			});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+		@if (isNadzornik == true)
+		{
+			<text>text: `Vse za obveščanje strank prek sms: pošljete lahko poljubna sms sporočila, pregledujete poslana sms sporočila in naročite dodatne sms-e.`,</text>
+		}
+		else
+		{
+			<text>text: `Tu lahko pogledate katera sms sporočila so bila poslana vašim strankam.`,</text>
+		}
+				
+				attachTo: {
+					element: '#smClientNotification',
+					on: 'right'
+				},
+				buttons: [
+					{
+						action() {
+							return this.back();
+						},
+						text: 'Nazaj'
+					},
+					{
+						action() {
+							return this.next();
+						},
+						text: 'Naprej'
+					}
+				]
+			});
+			gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Hvala! To je vse! Če želite nam lahko prek te ikone pošljete poljubno sporočilo!`,
+				attachTo: {
+					element: '.liContact',
+					on: 'bottom'
+				},
+				buttons: [
+					{
+						action() {
+							return this.back();
+						},
+						text: 'Nazaj'
+					},
+					{
+						action() {
+							return this.next();
+						},
+						text: 'Razumem'
+					}
+				]
+			});
+			gPageTour.start();
+		});
+
+
+
+
+
+	</script>
+}

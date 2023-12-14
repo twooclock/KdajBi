@@ -43,6 +43,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="stylesheet" href="~/css/site.css" />
     <link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
     <link href="~/plugins/toastr/toastr.min.css" rel="stylesheet" />
+    <style>
+        .shepherd-title{ font-weight:700;}
+    </style>
 </head>
 <body class="skin-blue sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed text-sm">
     <div class="wrapper">
@@ -51,7 +54,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <nav class="main-header navbar navbar-expand navbar-white navbar-light">
 
                 <ul class="navbar-nav">
-                    <li class="nav-item">
+                    <li id="pushmenu" class="nav-item">
                         <a class="nav-link" data-widget="pushmenu" href="#" role="button" data-enable-remember="true"><i class="fas fa-bars"></i></a>
                     </li>
 
@@ -73,30 +76,30 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 @await Component.InvokeAsync("LocationsCombo", new { CompanyId = int.Parse(User.FindFirst("CompanyId").Value) })
 
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" style="padding-top: 0px;" href="#" role="button" data-toggle="modal" data-target="#myContactModal">
-                            <i class="far fa-envelope user-image" style="font-size: 2.1rem; color: #fff;"></i>
+                    <li class="liContact" style="display:flex; flex-direction:column;justify-content: center;align-items:center;margin-right:0.5rem;">
+                        <a class="" style="display:flex; flex-direction:column;justify-content: center;align-items:center" href="!#" role="button" data-toggle="modal" data-target="#myContactModal">
+                            <i class="far fa-envelope user-image" style="font-size: 1.7rem; color: #fff;"></i>
                         </a>
                     </li>
-                    <li class="nav-item dropdown user user-menu">
-                        <a href="#" class="nav-link" data-toggle="dropdown" aria-expanded="false">
-                            <img src="@User.FindFirst("picture").Value" class="user-image" alt="">
+                    <li class="" style="display:flex; flex-direction:column;justify-content: center;align-items:center;margin-right:0.5rem;">
+                        <a class="" style="cursor:pointer;display:flex; flex-direction:column;justify-content: center;align-items:center" onclick="ShowPageTour()" role="button">
+                            <i class="far fa-question-circle user-image" style="font-size: 2.1rem; color: #fff;"></i>
+                        </a>
+                    </li>
+                    <li class=" dropdown user user-menu" style="display:flex; flex-direction:column;justify-content: center;align-items:center">
+                        <a href="#" class="" data-toggle="dropdown" aria-expanded="false" style="display:flex; flex-direction:column;justify-content: center;align-items:center;margin-right: -0.6rem;">
+                            <img src="@User.FindFirst("picture").Value" class="user-image" alt="" style="margin-top:0;">
                             <span class="hidden-xs"></span>
                             @if (isNadzornik==true)
                             {
-                                <span class="right badge badge-danger" style="position: absolute;right: 15px;top: 22px;">Nadzornik</span>
+                                <span class="right badge badge-danger" style="position: absolute;top: 22px;">Nadzornik</span>
                             }
                         </a>
                         <ul class="dropdown-menu">
                             <!-- User image -->
                             <a class="dropdown-item" href="#">@UserManager.GetUserName(User)</a>
                             <!-- Menu Body -->
-                            @if (isAdmin==true && isNadzornik==true)
-                            {
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="~/companies/mycompany">Podjetje</a>
-                                <a class="dropdown-item" id="linkSettings" href="~/settings">Nastavitve</a>
-                            }
+                            
                             <!-- /.row -->
                             <!-- Menu Footer-->
                             @if (isAdmin == true)
@@ -120,8 +123,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         </ul>
                     </li>
                     <li class="nav-item">
-                        <a id="toggleRightSidebar" class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
-                            <i class="fas fa-th-large"></i>
+                        <a id="toggleRightSidebar" class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button" style="width: 1rem;">
+                            <i class="fas fa-chevron-left user-image" ></i>
                             <span id="RightSidebarItems" class="badge badge-danger navbar-badge" style="top: 3px;"></span>
                         </a>
                     </li>
@@ -184,13 +187,24 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </ul>
                             </li>
                         }
+                        @if ( isSuper == true || isNadzornik == true)
+                        {
+                            <li id="smCompany" class="nav-item ">
+                                <a href="@Url.Content("~/companies/mycompany")" class="nav-link ">
+                                    <i class="nav-icon fa fa-university"></i>
+                                    <p>
+                                        Podjetje
+                                    </p>
+                                </a>
+                            </li>
+                        }
                         @if (isSuper == true || isNadzornik == true)
                         {
                             @await Component.InvokeAsync("LocationsMenu", new { CompanyId = myCompanyId });
                         }
                         @if (Model.UserUIShow.Contains("Appointments") || isSuper == true || isNadzornik == true)
                         { 
-                            <li class="nav-item ">
+                            <li id="smAppointments" class="nav-item ">
                                 <a href="@Url.Content("~/appointments/Index")" class="nav-link ">
                                     <i class="nav-icon fa fa-calendar-alt"></i>
                                     <p>
@@ -199,10 +213,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </a>
                             </li>
                         }
-
+                        <div class="smClients nav-sidebar">
                         @if (Model.UserUIShow.Contains("ClientsList") || isSuper == true || isNadzornik == true)
                         {
-                            <li class="nav-item  ">
+                            <li class="nav-item ">
                                 <a href="@Url.Content("~/clients/")" class="nav-link ">
                                     <i class="nav-icon fas fa-address-card"></i>
                                     <p>
@@ -213,7 +227,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         }
                         @if (Model.UserUIShow.Contains("Clients") || isSuper == true || isNadzornik == true)
                         {
-                            <li class="nav-item  ">
+                            <li class="nav-item ">
                                 <a href="@Url.Content("~/clients/Index3/")" class="nav-link ">
                                     <i class="nav-icon fas fa-address-card"></i>
                                     <p>
@@ -222,10 +236,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </a>
                             </li>
                         }
-
+                        </div>
                         @if (Model.UserUIShow.Contains("SMSNotification") || Model.UserUIShow.Contains("SMSCampaigns") || isSuper == true || isNadzornik == true)
                         {
-                            <li class="nav-item has-treeview menu-open">
+                            <li id="smClientNotification" class="nav-item has-treeview menu-open">
                                 <a href="#" class="nav-link ">
                                     <i class="nav-icon fas fa-bullhorn"></i>
                                     <p>
@@ -293,7 +307,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">Sporočilo</h4>
+                    <h4 class="modal-title" id="myModalLabel">Pošljite nam sporočilo</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
@@ -322,6 +336,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <script>
         
+
         $(document).ready(function () {
             $('#booking-confirmation .btn-danger').click(function () {
                 var card = $(this).closest('.card');
@@ -492,7 +507,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
             document.getElementById("cmdSend").disabled = false;
             $("#myContactModal").modal('hide');
         }
-
+        var gPageTour;
+        function ShowPageTour() {
+            if (typeof gPageTour === 'undefined') 
+            { window.location.href = "@Url.Content("~/home/newusertour")"; }
+            else { gPageTour.start(); }
+        }
     </script>
     @RenderSection("Scripts", required: false)
 </body>
