@@ -1,11 +1,161 @@
-﻿
+﻿@using Microsoft.AspNetCore.Identity
+@using KdajBi.Core.Models;
+@using KdajBi.Web;
+@using KdajBi.Web.ViewModels;
+@model _BaseViewModel
+
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
 @{
-    ViewData["Title"] = "Index";
+	bool isAdmin = User.IsInRole("Admin");
+	bool isSuper = User.IsInRole("Super");
+	bool isUser = (isAdmin == false && isSuper == false);
+	bool isNadzornik = User.HasClaim("Nadzornik", bool.TrueString);
+	int myCompanyId = int.Parse(User.FindFirst("CompanyId").Value);
+
+}
+@{
+    ViewData["Title"] = "Glavna stran";
 }
 
-<h1>Main</h1>
+@section styles{
 
-@section scripts{
+    <style>
+        .vrsta {
+            display: flex;
+            flex-direction: row;
+			flex-wrap:wrap;
+            float: left;
+            clear: both;
+            margin-bottom: 3rem;
+        }
+        .square-container {
+            width: 10rem;
+            height: 10rem;
+            margin: 0 auto;
+            background-color: transparent;
+            /* important part */
+            display: grid;
+            place-items: center;
+            grid-template-areas: "inner-div";
+            padding-top: 1rem;
+			aspect-ratio: 1/1;
+        }
+
+        .square {
+            
+            width: 7rem;
+            height: 7rem;
+            background-color: transparent;
+            border: 2px solid #3498db; /* Set your desired border color */
+            grid-area: inner-div;
+            border-radius: 10px; /* Adjust the border-radius to control the corner roundness */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon {
+            font-size: 2em; /* Adjust the font size of the icon */
+            color: #3498db; /* Set your desired icon color */
+        }
+
+        .label {
+            margin-top: 12rem; /* Adjust the margin to control the space between the square and the label */
+            color: #3498db; /* Set your desired label color */
+            margin: auto;
+            font-size: 2em;
+            text-align: center;
+        }
+    </style>
+}
+<div class="vrsta">
+	@if (Model.UserUIShow.Contains("Appointments") || isSuper == true || isNadzornik == true)
+    {
+		<a href="@Url.Content("~/appointments/Index")">
+			<div class="square-container">
+				<div class="square">
+					<i class="icon fa fa-calendar-alt"></i>
+				</div>
+				<div class="label">Naročila</div>
+			</div>
+		</a>
+	}
+	@if (Model.UserUIShow.Contains("Clients") || isSuper == true || isNadzornik == true)
+                        {
+		<a href="@Url.Content("~/clients/")">
+		<div class="square-container">
+			<div class="square">
+				<i class="icon fas fa-address-card"></i>
+			</div>
+			<div class="label">Stranke </div>
+		</div>
+	</a>
+						}
+	@if (Model.UserUIShow.Contains("ClientsList") || isSuper == true || isNadzornik == true)
+                        {
+		<a href="@Url.Content("~/clients/list")">
+		<div class="square-container">
+			<div class="square">
+				<i class="icon fas fa-address-card"></i>
+			</div>
+			<div class="label">Stranke (seznam)</div>
+		</div>
+	</a>
+						}
+</div>
+@if (Model.UserUIShow.Contains("SMSNotification") || Model.UserUIShow.Contains("SMSCampaigns") || isSuper == true || isNadzornik == true)
+{
+	<div class="vrsta">
+		@if (Model.UserUIShow.Contains("SMSNotification") || isSuper == true || isNadzornik == true)
+		{
+			<a href="@Url.Content("~/sms/Notification/")">
+				<div class="square-container">
+					<div class="square">
+						<i class="icon fas fa-sms"></i>
+					</div>
+					<div class="label">Obvesti prek SMS</div>
+				</div>
+			</a>
+		}
+		@if (Model.UserUIShow.Contains("SMSCampaigns") || isSuper == true || isNadzornik == true)
+		{
+			<a href="@Url.Content("~/sms/Campaigns")">
+				<div class="square-container">
+					<div class="square">
+						<i class="icon fas fa-list"></i>
+					</div>
+					<div class="label">Pregled poslanih SMS</div>
+				</div>
+			</a>
+		}
+		@if (isSuper == true || isNadzornik == true)
+		{
+			<a href="@Url.Content("~/sms/OrderSms")">
+				<div class="square-container">
+					<div class="square">
+						<i class="icon fas fa-shopping-cart"></i>
+					</div>
+					<div class="label">Naročilo SMS</div>
+				</div>
+			</a>
+		}
+	</div>
+}
+<div class="vrsta">
+	<a href="@Url.Content("~/Home/Help")">
+		<div class="square-container">
+			<div class="square">
+				<i class="icon far fa-question-circle"></i>
+			</div>
+			<div class="label">Pomoč</div>
+		</div>
+	</a>
+
+</div>
+
+@section scripts {
 <script type="text/javascript">
 @await Html.PartialAsync("_ApiAccess")
 </script>

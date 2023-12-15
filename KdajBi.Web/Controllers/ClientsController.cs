@@ -27,8 +27,8 @@ namespace KdajBi.Web.Controllers
 
 
 
-        [Route("/Clients")]
-        public IActionResult Index()
+        [Route("/Clients/List")]
+        public IActionResult List()
         {
             if (LocationIsMine(DefaultLocationId()))
             {
@@ -42,8 +42,8 @@ namespace KdajBi.Web.Controllers
         }
 
 
-        [Route("/Clients/Index3")]
-        public IActionResult Index3()
+        [Route("/Clients")]
+        public IActionResult Index()
         {
             if (LocationIsMine(DefaultLocationId()))
             {

@@ -78,10 +78,21 @@ namespace KdajBi.Web.Controllers
 
         public IActionResult Privacy()
         {
-            return View();
+			_BaseViewModel vmModel = new _BaseViewModel();
+			vmModel.Token = _GetToken();
+			vmModel.UserUIShow = _UserUIShow();
+			return View(vmModel);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+		public IActionResult Help()
+		{
+			_BaseViewModel vmModel = new _BaseViewModel();
+			vmModel.Token = _GetToken();
+			vmModel.UserUIShow = _UserUIShow();
+			return View(vmModel);
+		}
+
+		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

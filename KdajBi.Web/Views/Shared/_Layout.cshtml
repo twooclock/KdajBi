@@ -217,7 +217,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         @if (Model.UserUIShow.Contains("ClientsList") || isSuper == true || isNadzornik == true)
                         {
                             <li class="nav-item ">
-                                <a href="@Url.Content("~/clients/")" class="nav-link ">
+                                <a href="@Url.Content("~/clients/list")" class="nav-link ">
                                     <i class="nav-icon fas fa-address-card"></i>
                                     <p>
                                         Stranke (seznam)
@@ -228,7 +228,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         @if (Model.UserUIShow.Contains("Clients") || isSuper == true || isNadzornik == true)
                         {
                             <li class="nav-item ">
-                                <a href="@Url.Content("~/clients/Index3/")" class="nav-link ">
+                                <a href="@Url.Content("~/clients/")" class="nav-link ">
                                     <i class="nav-icon fas fa-address-card"></i>
                                     <p>
                                         Stranke
