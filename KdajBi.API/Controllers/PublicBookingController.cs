@@ -343,7 +343,7 @@ namespace KdajBi.API.Controllers
             //get public booking services
            
             var myPB = _context.PublicBookings.Find(pbid);
-            var services = _context.Services.Where(s => s.UsedInClientBooking == true && s.LocationId == myPB.LocationId).ToList();
+            var services = _context.Services.Include(g=>g.ServiceGroup).Where(s => s.UsedInClientBooking == true && s.LocationId == myPB.LocationId).OrderBy(s=>s.ServiceGroup.SortPosition).ToList();
 
             //remove all services not done by specified workplace (if supplied)
             if (wpid > 0)

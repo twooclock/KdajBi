@@ -8,7 +8,7 @@ using System.ComponentModel;
 namespace KdajBi.Core.Models
 {
     //service offered
-    public class Service : BaseModel
+    public class ServiceGroup : BaseModel
     {
         public long Id { get; set; }
 
@@ -20,16 +20,8 @@ namespace KdajBi.Core.Models
 
         [MinLength(3), MaxLength(150), Required]
         public string Name { get; set; }
-
-        //approximate service duration in minutes
-        public int Minutes { get; set; }
-        [MinLength(6), MaxLength(6)]
-        public string Color { get; set; }
+        
         public int SortPosition { get; set; }
-        public bool UsedInClientBooking { get; set; }
-		[ForeignKey("ServiceGroup")]
-		public long? ServiceGroupId { get; set; }
-		public virtual ServiceGroup ServiceGroup { get; set; }
 
-	}
+    }
 }

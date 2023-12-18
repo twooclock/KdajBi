@@ -107,7 +107,7 @@
 
                         </div>
                         <div id="step-2" class="content" role="tabpanel" aria-labelledby="step-2-trigger">
-                            <div id="services" class="row">
+                            <div id="services" class="">
 
                             </div>
                             <div id="services-loader" class="card card-outline card-primary p-1" style="display: none">
@@ -257,21 +257,39 @@
         }
 
         function createService(id, text) {
-            var newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1").attr({ id: 's_' + id })
-                .attr({ style: "min-width: 18rem; border-width: 3px;" });
-            var lbl = $('<div/>').addClass("card-body");
-            var input = $('<h5/>').text(text).addClass("card-title");
-
-            lbl.append(input);
-            newDiv.append(lbl);
-            newDiv.click(function () { selectService(this); });
-            $('#services').append(newDiv);
+            
         }
 
         function createServices(p_items) {
+            var groupName=null;
+            var newGroupDiv=null;
             p_items.forEach((element) => {
-                createService(element.id,element.name);
+                if (element.serviceGroup !== null)
+                {
+                    if (element.serviceGroup.name != groupName)
+                    {
+                        $('#services').append(newGroupDiv);
+                        newGroupDiv = $('<div/>').addClass("row");
+                        groupName=element.serviceGroup.name;
+                        let newP = $('<p>'+groupName+'</p>').attr({ style: "margin-bottom: 0;font-weight: bolder;" });
+                        $('#services').append(newP);
+                    }
+                }
+                else
+                {
+                    if ( newGroupDiv==null) { newGroupDiv = $('<div/>').addClass("row");}
+                }
+                let newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1").attr({ id: 's_' + element.id }).attr({ style: "min-width: 18rem; border-width: 3px;" });
+                let lbl = $('<div/>').addClass("card-body");
+                let input = $('<h5/>').text(element.name).addClass("card-title");
+
+                lbl.append(input);
+                newDiv.append(lbl);
+                newDiv.click(function () { selectService(this); });
+                newGroupDiv.append(newDiv);
+                
             });
+            if ( newGroupDiv!=null) { $('#services').append(newGroupDiv);}
         }
 
         function selectWP(item)
@@ -298,7 +316,6 @@
                 success: function (result) {
                     $("#services-loader").hide();
                     createServices(result);
-                    
                 },
                 error: function (error) {
                     // TODO
