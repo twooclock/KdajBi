@@ -2,20 +2,28 @@
 <html lang="si">
 
 <head>
-    <!-- TEST Global site tag (gtag.js) - Google Analytics -->
-
-
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-MX38HMCC');</script>
+    <!-- End Google Tag Manager -->
     <!--====== Required meta tags ======-->
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="description" content="Stranke, SMS obveščanje, urniki, naročanje,...">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Spletni koledar, naročanje in SMS obveščanje strank na enem mestu. Aplikacija za vaš frizerski/kozmetični salon ali druge dejavnosti.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 
     <!--====== open graph  ======-->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="KdajBi.si">
-    <meta property="og:title" content="KdajBi.si">
-    <meta property="og:description" content="Stranke, SMS obveščanje, naročanje">
+    <meta property="og:title" content="KdajBi.si - spletno naročanje strank">
+    <meta property="og:description" content="Spletni koledar, naročanje in SMS obveščanje strank na enem mestu. Aplikacija za vaš frizerski/kozmetični salon ali druge dejavnosti.">
     <meta property="og:url" content="https://KdajBi.si/LandingPage/index.html">
     <meta property="og:locale" content="si">
     <meta property="og:image" content="https://KdajBi.si/LandingPage/assets/images/logo512x512.webp">
@@ -24,13 +32,13 @@
 
 
     <!--====== Title ======-->
-    <title>KdajBi.si</title>
+    <title>KdajBi.si - spletno naročanje strank</title>
 
     <!--====== Favicon Icon ======-->
     <link rel="apple-touch-icon" sizes="180x180" href="/LandingPage/AppImages/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/LandingPage/AppImages/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/LandingPage/AppImages/favicon-16x16.png">
-    
+
 
     <!--====== Bootstrap css ======-->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -54,7 +62,12 @@
 </head>
 
 <body>
-
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MX38HMCC"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <!--====== HEADER ONE PART START ======-->
 
     <header class="header-area">
@@ -64,16 +77,14 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <nav class="navbar navbar-expand-lg">
-                            <a class="navbar-brand" href="#">
-                                <img src="assets/images/logo.png" alt="Logo">
-                            </a>
-
                             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarOne" aria-controls="navbarOne" aria-expanded="false" aria-label="Toggle navigation">
                                 <span class="toggler-icon"></span>
                                 <span class="toggler-icon"></span>
                                 <span class="toggler-icon"></span>
                             </button>
-
+                            <a class="navbar-brand" href="#">
+                                <img class="img-logo" src="assets/images/logo.png" alt="Logo">
+                            </a>
                             <div class="collapse navbar-collapse sub-menu-bar" id="navbarOne">
                                 <ul class="navbar-nav m-auto">
                                     <li class="nav-item dropdown" style="display:none">
@@ -95,16 +106,22 @@
                                         <a class="page-scroll" href="#pricing">Cenik</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="page-scroll" href="#testimonial">O nas</a>
+                                        <a class="page-scroll" href="#testimonial">Reference</a>
                                     </li>
-                                    
+
                                 </ul>
                             </div>
 
                             <div class="navbar-btn">
                                 <ul>
-                                    <li><a class="solid" href="/Account/GoogleLogin" style="text-transform: none; font-weight: 600;">
-                                        <img alt="Google sign-in" src="assets/images/google-logo16.png" class="mr-2 valign-middle">Prijava z Google računom</a></li>
+                                    <li>
+                                        <a class="solid link-long" href="/Account/GoogleLogin" style="text-transform: none; font-weight: 600;">
+                                            <img alt="Google sign-in" src="assets/images/google-logo16.png" class="mr-2 valign-middle">Prijava z Google računom
+                                        </a>
+                                        <a class="solid link-short" href="/Account/GoogleLogin" style="text-transform: none; font-weight: 600;">
+                                            <img alt="Google sign-in" src="assets/images/google-logo16.png" class="mr-2 valign-middle">Prijava
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </nav> <!-- navbar -->
@@ -116,23 +133,29 @@
         <div id="home" class="header-content-area d-flex align-items-center">
             <div class="container">
                 <div class="row">
-                    <div class="col-lg-12">
+                    <div class="col-lg-6">
                         <div class="header-wrapper">
                             <div class="header-content">
-                                <h3 class="header-title">Stranke, SMS, naročanje, ...</h3>
-                                <p class="text">Na telefonu ali računalniku...</p>
+                                <h3 class="header-title">Prihrani čas s hitrim in enostavnim orodjem za naročanje in obveščanje strank!</h3>
+                                <p class="text">Spletni koledar, spletno naročanje in obveščanje strank na enem mestu.</p>
                                 <div id="btnHow" class="header-btn rounded-buttons">
-                                    <a class="main-btn rounded-one" href="#">Kaj je to?</a>
+                                    <a class="main-btn rounded-one" href="/Account/GoogleLogin">PREIZKUSITE ZDAJ</a>
                                 </div>
 
                             </div> <!-- header content -->
 
-                            <div class="header-image d-none d-lg-block">
-                                <div class="image">
-                                    <img src="assets/images/header.png" alt="Header">
-                                </div>
-                            </div>
 
+
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="header-image d-none d-lg-block">
+                            <div class="image">
+                                <video style="width:85%;height:100%" controls loop>
+                                    <source src="assets/videos/vrtiljak/KdajbiVrtiljakV800-White.mp4" type="video/webm">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
                         </div>
                     </div>
                 </div> <!-- row -->
@@ -149,60 +172,144 @@
     <section id="about" class="about-area pt-70 pb-100">
         <div class="container">
             <div class="row">
-                <div class="col-lg-6">
-                    <div class="about-feature mt-30">
-                        <div class="about-feature-image">
-                            <img src="assets/images/about.gif" alt="feature" loading="lazy">
-                        </div>
-                        <div class="about-feature-content">
-                            <h2 class="feature-title">Ključ do uspeha</h2>
-                            <p class="text">Storitev, ki vam poenostavi vaše delo. <br /><a class="light" href="/Account/GoogleLogin">Preizkusite zdaj!</a> </p>
-                        </div>
-                    </div> <!-- about feature three -->
+                <div class="about-feature-items d-sm-flex mt-30 col-lg-6">
+                    <div class="feature-items-icon">
+                        <img src="assets/images/feature/smartphone-tablet-icon-256.png" alt="Icon">
+                    </div>
+                    <div id="itch" class="feature-items-content media-body">
+                        <h5 class="items-title">Enostavna uporaba</h5>
+                        <p id="txtItch" class="text">Bi si radi uredili in pohitrili naročanje strank? Bi strankam radi pošiljali sms opomnike, obvestila ipd.? Vse funkcije aplikacije so le klik stran. Na telefonu ali računalniku, kjerkoli in kadarkoli!</p>
+                    </div>
+                </div> <!-- about feature items -->
+                <div class="about-feature-items d-sm-flex mt-30 col-lg-6">
+                    <div class="feature-items-icon">
+                        <img src="assets/images/feature/overtime-icon-256.png" alt="Icon">
+                    </div>
+                    <div class="feature-items-content media-body">
+                        <h5 class="items-title">Spletni koledar</h5>
+                        <p class="text"><span id="txtScratch" style="display: contents;">Nič več zapisovanja strank v beležko in konstantnega zvonenja telefona! Kdajbi.si omogoča izvajalcem storitev vpisovanje naročil v spletni koledar. Če želite KdajBi.si omogoča vašim strankam, da se samostojno naročijo na termin, ki ga vi le še potrdite. </span>  </p>
+                    </div>
+                </div> <!-- about feature items -->
+
+                <div class="about-feature-items d-sm-flex mt-30 col-lg-6">
+                    <div class="feature-items-icon">
+                        <img src="assets/images/feature/phone-sms-icon-256.png" alt="Icon">
+                    </div>
+                    <div class="feature-items-content media-body">
+                        <h5 class="items-title">SMS obveščanje strank</h5>
+                        <p class="text">Z avtomatskim sporočilom obvestite stranke o terminu in se s tem izognete, da bi nanj pozabile.</p>
+                    </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="about-feature-items d-sm-flex mt-30">
-                        <div class="feature-items-icon">
-                            <img src="assets/images/feature-icon-1.png" alt="Icon">
-                        </div>
-                        <div id="itch" class="feature-items-content media-body">
-                            <h5 class="items-title">Problem</h5>
-                            <p id="txtItch" class="text">Odvisno od dejavnosti, vedno potrebuješ kartoteko strank, opomnike, obvestila, morda naročanje ipd.</p>
-                        </div>
-                    </div> <!-- about feature items -->
-                    <div class="about-feature-items d-sm-flex mt-30">
-                        <div class="feature-items-icon">
-                            <img src="assets/images/feature-icon-2.png" alt="Icon">
-                        </div>
-                        <div class="feature-items-content media-body">
-                            <h5 class="items-title">Rešitev</h5>
-                            <p class="text"><span id="txtScratch" style="display: contents;">Imej vse na enem mestu dosegljivo na telefonu ali (bolj udobno) na domači tablici/računalniku!</span> Začeli smo s kartoteko strank in SMS obveščanjem, sledi naročanje, ostalo pa po vaših predlogih! </p>
-                        </div>
-                    </div> <!-- about feature items -->
-                    <div class="about-feature-items d-sm-flex mt-30">
-                        <div class="feature-items-icon">
-                            <img src="assets/images/feature-icon-3.png" alt="Icon">
-                        </div>
-                        <div class="feature-items-content media-body">
-                            <h5 class="items-title">Podpora</h5>
-                            <p class="text">Če česa ne obvladaš, razumeš... vedno lahko računaš na nas. Brez čakanja in dodatnih stroškov. </p>
-                        </div>
-                    </div> <!-- about feature items -->
-                    <div class="about-feature-items d-sm-flex mt-30">
-                        <div class="feature-items-icon">
-                            <img src="assets/images/feature-icon-4.png" alt="Icon">
-                        </div>
-                        <div class="feature-items-content media-body">
-                            <h5 class="items-title">Ugodno</h5>
-                            <p class="text">Vsak rad zasluži, a pristopi "do 100 strank brezplačno", "največ 2 zaposlena", ali "do 30 artiklov" niso naša zgodba! Pri nas ste vsi enako pomembni in ker stremimo k transparentnosti brez omejitev, ponujamo enotno ceno za vse!</p>
-                        </div>
-                    </div> <!-- about feature items -->
+                <div class="about-feature-items d-sm-flex mt-30 col-lg-6">
+                    <div class="feature-items-icon">
+                        <img src="assets/images/feature/GCal.png" alt="Icon">
+                    </div>
+                    <div class="feature-items-content media-body">
+                        <h5 class="items-title">Brez vezave!</h5>
+                        <p class="text">Naročila so shranjena v vašem Google koledarju tako, da so vedno dosegljiva tudi brez naše aplikacije!</p>
+                    </div>
+                </div> <!-- about feature items -->
+
+                <div class="about-feature-items d-sm-flex mt-30 col-lg-6">
+                    <div class="feature-items-icon">
+                        <img src="assets/images/feature/online-support-icon-256.png" alt="Icon">
+                    </div>
+                    <div class="feature-items-content media-body">
+                        <h5 class="items-title">Podpora</h5>
+                        <p class="text">Vedno lahko računate na nas! Brez čakanja in dodatnih stroškov. </p>
+                    </div>
                 </div>
+
             </div> <!-- row -->
         </div> <!-- container -->
     </section>
 
     <!--====== ABOUT THREE PART ENDS ======-->
+    <!--====== VIDEOS START ======-->
+
+    <section id="videos" class="pricing-area pt-95 pb-100" style="background-color: #fff;">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="section-title text-center pb-20">
+                        <h4 class="title">Video prikaz uporabe</h4>
+                        <p class="text">Poglejte si video kako enostavna je uporaba!</p>
+                    </div> <!-- section title -->
+                </div>
+            </div> <!-- row -->
+
+            <div class="row justify-content-center">
+
+                <div class="col-lg-4 col-md-7 col-sm-9">
+                    <div class="pricing mt-40">
+                        <div class="pricing-baloon">
+
+                        </div>
+                        <div class="pricing-header">
+
+                        </div>
+                        <div>
+                            <video style="width:100%;height:100%" controls>
+                                <source src="assets/images/about.webm" type="video/webm">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                        <div class="">
+                            Vpis naročila v koledar
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-7 col-sm-9">
+                    <div class="pricing mt-40">
+                        <div class="pricing-baloon">
+
+                        </div>
+                        <div class="pricing-header">
+
+
+
+                        </div>
+                        <div>
+                            <video style="width:100%;height:100%" controls>
+                                <source src="assets/images/about.webm" type="video/webm">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                        <div class="">
+                            Personaliziran link za naročanje
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-7 col-sm-9">
+                    <div class="pricing mt-40">
+                        <div class="pricing-baloon">
+
+                        </div>
+                        <div class="pricing-header">
+
+
+
+                        </div>
+                        <div>
+                            <video style="width:100%;height:100%" controls>
+                                <source src="assets/images/about.webm" type="video/webm">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+
+                        <div class="">
+                            Samostojno naročanje strank
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- row -->
+        </div> <!-- container -->
+    </section>
+
+    <!--====== VIDEOS ENDS ======-->
     <!--====== PRICING START ======-->
 
     <section id="pricing" class="pricing-area pt-95 pb-100">
@@ -211,7 +318,7 @@
                 <div class="col-lg-6">
                     <div class="section-title text-center pb-20">
                         <h4 class="title">Cenik</h4>
-                        <p class="text">Trenutno je vse razen sms obvestila (0,05€ za sms) popolnoma brezplačno! Izkoristite brezplačen preizkus!</p>
+                        <p class="text">Vse za 15€/mesečno (praviloma izdamo dva računa letno za pol leta). Izkoristite brezplačen preizkus!</p>
                     </div> <!-- section title -->
                 </div>
             </div> <!-- row -->
@@ -224,9 +331,9 @@
                             <img src="assets/images/baloon.svg" alt="baloon">
                         </div>
                         <div class="pricing-header">
-                            <h5 class="sub-title">Brezplačno</h5>
-                            <s style="color:red" class="price"><span class="price">&nbsp;€ 00&nbsp;</span></s>
-                            <p class="year"><s>mesečno</s></p><p class="year" style="color:red">zaenkrat brezplačno</p>
+                            <h5 class="sub-title">Enotna cena</h5>
+                            <span class="price">&nbsp;15 €&nbsp;</span>
+                            <p class="year">mesečno</p><p class="year" style="visibility:hidden">zaenkrat brezplačno</p>
                         </div>
                         <div class="pricing-list">
                             <ul>
@@ -278,11 +385,13 @@
                             <img src="assets/images/baloon.svg" alt="baloon">
                         </div>
                         <div class="pricing-header">
-                            <h5 class="sub-title">Brezplačno</h5>
-                            <s style="color:red" class="price"><span class="price">&nbsp;€ 000&nbsp;</span></s>
-                            <p class="year"><s>letno</s></p><p class="year" style="color:red">zaenkrat brezplačno</p>
+                            <h5 class="sub-title"><a href="https://colorhit.si" target="_blank">Za uporabnike Colorhit.si</a></h5>
+                            <div style="padding-top: 10px;" class="">
+                                Colorhit je enostaven in popolen  sistem za vodenje salona, ki že v osnovi vključuje KdajBi
+                            </div>
+                            <p style="visibility:hidden" class="year"><s>mesečno</s></p><p class="year" style="color:red">vedno brezplačno</p>
                         </div>
-                        <div class="pricing-list">
+                        <div class="pricing-list" style="margin-top: 70px;">
                             <ul>
                                 <li><i class="lni-check-mark-circle"></i> Neomejeno število strank</li>
                                 <li><i class="lni-check-mark-circle"></i> Neomejeno uporabnikov</li>
@@ -337,7 +446,7 @@
             <div class="row justify-content-center">
                 <div class="col-lg-6">
                     <div class="section-title text-center pb-20">
-                        <h4 class="title">Kaj pravijo drugi</h4>
+                        <h4 class="title">Zaupajo nam</h4>
                         <p class="text">Kaj pravijo naši obstoječi uporabniki. Radi bi videli tudi vaše mnenje!</p>
                     </div> <!-- section title -->
                 </div>
@@ -348,15 +457,15 @@
                     <div class="single-testimonial mt-30">
                         <div class="testimonial-author d-sm-flex align-items-center">
                             <div class="author-image">
-                                <img src="assets/images/author-1.jpg" alt="Author">
+                                <img src="assets/images/userprofiles/majawest.jpg" alt="Author">
                             </div>
                             <div class="author-name media-body">
-                                <h6 class="name">Alenka</h6>
-                                <span class="sub-title">Lastnica salona</span>
+                                <h6 class="name">Maja</h6>
+                                <span class="sub-title">Manola beauty studio, Novo Mesto</span>
                             </div>
                         </div>
                         <div class="testimonial-text">
-                            <p class="text">S KdajBi.si sem si občutno skrajšala čas in se bolj posvetila svojemu delu. Enostavna uporaba, odlična podpora. Preizkusite, pomagal bo tudi vam!<br />&nbsp;<br />&nbsp;</p>
+                            <p class="text">S samo aplikacijo sem zelo zadovoljna, saj imam dostop do spletnega urnika, ne glede na to, kje se nahajam, ko me stranka pokliče. Vedno lahko podam točne informacije o možnosti naročanja in prostih terminov, preverim svoj delavnik za tekoči teden, imam vpogled zgodovine naročil stalnih strank, ter veliko preostalih informacij, ki bi jih sicer morala beležiti v svojem prostem času. Hvala tudi za super dostopno podporo, ko se kaj zatakne!!!<br />&nbsp;<br />&nbsp;</p>
                         </div>
                     </div> <!-- single testimonial -->
                 </div>
@@ -364,37 +473,124 @@
                     <div class="single-testimonial mt-30">
                         <div class="testimonial-author d-sm-flex align-items-center">
                             <div class="author-image">
-                                <img src="assets/images/author-2.jpg" alt="Author">
+                                <img src="assets/images/userprofiles/InesNoel.jpg" alt="Author">
                             </div>
                             <div class="author-name media-body">
-                                <h6 class="name">Matej </h6>
-                                <span class="sub-title">Brivec</span>
-                            </div>
-                        </div>
-                        <div class="testimonial-text">
-                            <p class="text">Enostavno naročanje in obveščanje strank. Brez KdajBi.si si sploh ne predstavljam kako bi delali.<br />&nbsp;<br />&nbsp;</p>
-                        </div>
-                    </div> <!-- single testimonial -->
-                </div>
-                <div class="col-lg-6">
-                    <div class="single-testimonial mt-30">
-                        <div class="testimonial-author d-sm-flex align-items-center">
-                            <div class="author-image">
-                                <img src="assets/images/author-3.jpg" alt="Author">
-                            </div>
-                            <div class="author-name media-body">
-                                <h6 class="name">Marinka</h6>
-                                <span class="sub-title">Art Director</span>
+                                <h6 class="name">Ines</h6>
+                                <span class="sub-title">Studio Noel, Šmarje pri Jelšah</span>
                             </div>
                         </div>
                         <div class="testimonial-text">
                             <p class="text">
-                                Vedno iščem rešitve za optimizacijo svojega posla zato sem takoj preizkusila KdajBi.si.
-                                Manjakala mi je funkcija obveščanja ob rojstnih dneh in takoj so jo implementirali. Priporočam!
+                                Z KdajBi.si smo zelo zadovoljni, saj nam prihrani ogromno časa z naročanjem strank! Izjemna podpora in hiter odziv s strani Tomaža v primeru kakršnih koli težav in vprašanj.
+                                <br />&nbsp;<br />&nbsp;
                             </p>
                         </div>
                     </div> <!-- single testimonial -->
                 </div>
+                <div class="col-lg-6">
+                    <div class="single-testimonial mt-30">
+                        <div class="testimonial-author d-sm-flex align-items-center">
+                            <div class="author-image">
+                                <img src="assets/images/userprofiles/klas.jpg" alt="Author">
+                            </div>
+                            <div class="author-name media-body">
+                                <h6 class="name">Katja</h6>
+                                <span class="sub-title">Salon K-Las, Šentjur</span>
+                            </div>
+                        </div>
+                        <div class="testimonial-text">
+                            <p class="text">
+                                Kdajbi.si je odlično nadgrajen za naročanje in obveščanje strank. Zelo pregledno in enostavno za uporabo. Zelo priporočam.
+                                <br />&nbsp;<br />&nbsp;
+                            </p>
+                        </div>
+                    </div> <!-- single testimonial -->
+                </div>
+                <div class="col-lg-6">
+                    <div class="single-testimonial mt-30">
+                        <div class="testimonial-author d-sm-flex align-items-center">
+                            <div class="author-image">
+                                <img src="assets/images/userprofiles/urskalotus.jpg" alt="Author">
+                            </div>
+                            <div class="author-name media-body">
+                                <h6 class="name">Urška</h6>
+                                <span class="sub-title">Kozmetični salon Lotus Ivančna gorica</span>
+                            </div>
+                        </div>
+                        <div class="testimonial-text">
+                            <p class="text">
+                                KdajBi mi je poenostavil delo v salonu, nič več stresa zaradi ročnega vsakodnevnega pošiljanja sporočil. Na dan prihranim vsaj pol ure časa, zato se lahko bolj posvetim strankam. Zelo zadovoljna s programom, predvsem pa s hitrim odzivom urednika.
+                                Res super, priporočam tudi drugim.
+                            </p>
+                        </div>
+                    </div> <!-- single testimonial -->
+                </div>
+            </div> <!-- row -->
+
+
+            <div class="row userlogos-active">
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/noel.png" alt="Studio Noel Šmarje pri Jelšah">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/ana.png" alt="Ana Bole Pivka">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/beautyhairmihaela.jpg" alt="BeautyHair Mihaela Domžale">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/freezura.png" alt="Freezura">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/frizurca.png" alt="Studio Frizurca">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/in-hair-art.png" alt="In Hair Art Prevalje">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/klas.jpg" alt="K-Las Šentjur">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/LepaSi.png" alt="Lepa.si Domžale">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/logo-Bellis-bel-1.jpg" alt="Bellis Šenčur">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/lotus.png" alt="Lotus Ivančna gorica">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/manola.jpg" alt="Manola Ljubljana">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/matjazcej.gif" alt="Matjaž Cej Nova Gorica">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/minka.jpg" alt="Pri Minki Šmarje pri Jelšah">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/monca.png" alt="Monca Novo Mesto">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/nt.png" alt="NT Natural Touch Kranj">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/orac.jpg" alt="Studio Orač Šmarje pri Jelšah">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/puereternus.jpg" alt="Puer Eternus Sežana">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/saleja.jpg" alt="Saleja">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/skarica.jpg" alt="Škarica Maribor">
+                </div>
+                <div class="userlogos-div">
+                    <img class="userlogo-img" src="assets/images/userlogo/ursula.jpg" alt="Uršula Celje">
+                </div>
+
             </div> <!-- row -->
         </div> <!-- container -->
     </section>
@@ -408,21 +604,21 @@
                 <div class="col-lg-6">
                     <div class="section-title text-center pb-20">
                         <h4 class="title">Kontaktirajte nas</h4>
-                        <p class="text">Ne zgubljajte časa z ostalim! Posvetite se svoji dejavnosti! Zadovoljstvo zagotovljeno!</p>
+                        <p class="text"></p>
                     </div> <!-- section title -->
                 </div>
             </div> <!-- row -->
             <div class="row">
                 <div class="col-lg-6">
                     <div class="contact mt-30">
-                        <h4 class="contact-title">Imate vprašanje? Vprašajte!</h4>
-                        <p class="text">Poskusili smo biti čim bolj nadzorni, vendar je vedno možnost, da smo kaj spregledali. Če vas kaj zanima, nas vprašajte. Pošljite nam sporočilo prek kontaktnega obrazca ali elektronske pošte in odgovorili vam bomo takoj ko utegnemo. <br> <br> Obljubimo, da vam nikoli ne bomo pošiljali neželene pošte ali delili vašega naslova s komerkoli!</p>
+                        <h4 class="contact-title">Imate vprašanje? Kontaktirajte nas!</h4>
+                        <p class="text"></p>
                         <ul class="contact-info">
-                            <li><i class="lni-money-location"></i> Planet Zemlja</li>
-                            <!-- <li><i class="lni-phone-handset"></i> 009-215-5596</li>-->
-                            <li><i class="lni-envelope"></i> kdajbi.si@gmail.com</li>
-                            <li><i class="lni-protection"></i> <a href="PrivacyPolicy.html" >Politika varstva osebnih podatkov</a></li>
-                            <li><i class="lni-world"></i> <a href="TermsOfService.html" >Splošni pogoji poslovanja</a></li>
+                            <li><i class="lni-facebook"></i><a href="https://www.facebook.com/kdajbi.si"> KdajBi.si</a></li>
+                            <li><i class="lni-phone-handset"></i><a href="tel:041651026"> 041 651 026</a></li>
+                            <li><i class="lni-envelope"></i> <a href="mailto:kdajbi.si@gmail.com">kdajbi.si@gmail.com</a></li>
+                            <li><i class="lni-protection"></i> <a href="PrivacyPolicy.html">Politika varstva osebnih podatkov</a></li>
+                            <li><i class="lni-world"></i> <a href="TermsOfService.html">Splošni pogoji poslovanja</a></li>
                         </ul>
                     </div> <!-- contact -->
                 </div>
@@ -440,7 +636,7 @@
                                 <label>ePošta</label>
                                 <div class="input-items default">
                                     <input name="email" type="text" placeholder="ePošta">
-                                    <i class="lni-envelope"></i>
+                                    <i class="lni lni-envelope"></i>
                                 </div>
                             </div> <!-- form input -->
                             <div class="form-input mt-15">
@@ -471,7 +667,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="copyright text-center">
-                            <p class="text">Copyright © KdajBi.si Januar 2021. Vse pravice pridržane.</p>
+                            <p class="text">Copyright © KdajBi.si Marec 2024. Vse pravice pridržane.</p>
                         </div> <!-- copyright -->
                     </div>
                 </div> <!-- row -->
@@ -515,36 +711,10 @@
     <!--====== Main js ======-->
     <script src="assets/js/main.js"></script>
 
-        <!-- Contact Form JavaScript File -->
+    <!-- Contact Form JavaScript File -->
     <script src="contactform/contactform.js"></script>
 
-    <script type="text/javascript">
-        $(document).ready(function () {
 
-            function focusThings() {
-
-                $("#txtItch").addClass("text-danger").delay(6000).queue(function (next) {
-                    $(this).removeClass("text-danger");
-                    $("#txtScratch").addClass("text-danger").delay(2000).queue(function (next2) {
-                        $(this).removeClass("text-danger");
-                        next2();
-                    });
-                    next();
-                });
-
-
-
-
-            }
-
-            $("#btnHow").click(function () {
-                $('html,body').animate({ scrollTop: $("#itch").offset().top - 100 },
-                    { duration: 2000 }).promise().then(function () { focusThings(); });
-
-            });
-
-        });
-    </script>
 
 </body>
 

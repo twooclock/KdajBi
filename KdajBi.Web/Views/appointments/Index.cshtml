@@ -251,6 +251,9 @@
                 <button type="button" class="btn btn-default" id="cmdMove">
                     Premakni
                 </button>
+                <button type="button" class="btn btn-primary" id="cmdCopyLink">
+                    Kopiraj povezavo
+                </button>
                 <button type="button" class="btn btn-primary" id="cmdSendLink">
                     Pošlji stranki povezavo za naročanje
                 </button>
@@ -456,7 +459,7 @@
                                 {
                                     try {
                                         let notes = JSON.parse(item.extendedProperties.shared.notes);
-                                        if (notes.length > 0) { barva = "#" + notes[0].color; }
+                                        if (notes.length > 0) { if(notes[0].color!=null){ barva = "#" + notes[0].color;} }
                                     } catch (e) {
 
                                     }
@@ -819,6 +822,7 @@
                             expandRows: true,
                             editable: true,
                             selectable: true,
+                            selectLongPressDelay:250,
                             dayMaxEvents: true, // allow "more" link when too many events
                             //dayMinWidth: 200,
                             headerToolbar: {
@@ -1261,6 +1265,9 @@
 
                 $("#cmdSendLink").click(function (evt) {
                     if (SendLink() != false) { $("#myModal").modal("hide"); }
+                });
+                $("#cmdCopyLink").click(function (evt) {
+                    if (CopyLink() != false) { $("#myModal").modal("hide"); }
                 });
             });
 
@@ -1809,6 +1816,7 @@
                 $('#cmdSave').show();
                 $('#cmdMove').show();
                 $('#cmdSendLink').hide();
+                $('#cmdCopyLink').hide();
                 $('#rowMinDuration').hide();
                 $('#rowDT').show();
                 //$("#cboGooCal option[value='0']").remove();
@@ -1816,6 +1824,7 @@
             }
             else {
                 $('#cmdSendLink').show();
+                $('#cmdCopyLink').show();
                 $('#cmdMove').hide();
                 $('#cmdDelete').hide();
                 $('#cmdSave').hide();
@@ -1840,6 +1849,7 @@
                     appointmentToken.ClientId = resultClientID;
                     appointmentToken.AppUserId = 0;
                     appointmentToken.WorkplaceId = $('#cboGooCal').find('option:selected').attr('data-workplaceid');
+                    appointmentToken.SendSMS = true;
                     getAPIToken().then((result) => {
                         $.ajax({
                             type: "post",
@@ -1851,6 +1861,48 @@
                             success: function (retval) {
                                 if (retval.hasOwnProperty('id')) { toastr.success("Povezava za naročanje je bila uspešno poslana stranki..."); }
                                 else { toastr.error("Nekaj je šlo narobe! Povezava za naročanje ni bila poslana stranki!"); return false; }
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Nekaj je šlo narobe:" + error.toString());
+                                return false;
+                            }
+                        });
+
+                    });
+                });
+
+
+            } else { return false; }
+        }
+
+        function CopyLink(p_event) {
+            if ($('#formEvent').valid()) {
+                getClientID().catch((result) => { toastr.info(result); }).then((resultClientID) => {
+                    //send Link
+                    var appointmentToken = {};
+                    appointmentToken.Token = '';
+                    appointmentToken.Service = getSelectedServicesNames().join(' ');
+                    appointmentToken.Minutes = $('#txtMinDuration').val();
+                    appointmentToken.CompanyId = 0;
+                    appointmentToken.LocationId = parseInt($("#cboLocations").val());;
+                    appointmentToken.ClientId = resultClientID;
+                    appointmentToken.AppUserId = 0;
+                    appointmentToken.WorkplaceId = $('#cboGooCal').find('option:selected').attr('data-workplaceid');
+                    appointmentToken.SendSMS = false;
+
+                    getAPIToken().then((result) => {
+                        $.ajax({
+                            type: "post",
+                            data: JSON.stringify(appointmentToken),
+                            url: apiURL + "/api/appointment-tokens/",
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (retval) {
+                                if (retval.hasOwnProperty('id')) { 
+                                    navigator.clipboard.writeText("Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/"+ retval.token);
+                                    toastr.success("Povezava za naročanje je kopirana..."); }
+                                else { toastr.error("Nekaj je šlo narobe!"); return false; }
                             },
                             error: function (xhr, status, error) {
                                 toastr.error("Nekaj je šlo narobe:" + error.toString());

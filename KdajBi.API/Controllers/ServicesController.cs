@@ -32,6 +32,7 @@ namespace KdajBi.API.Controllers
             //var user = await _userManager.GetUserAsync(HttpContext.User);
 
             var v = from a in _context.Services select a;
+            v = v.Include(b => b.ServiceGroup);
             v = v.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId== locationid);
             //SORT
             if (!(string.IsNullOrEmpty(param.columns[param.order[0].column].data) && string.IsNullOrEmpty(param.order[0].dir)))

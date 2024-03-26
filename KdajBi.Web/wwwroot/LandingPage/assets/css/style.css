@@ -2152,8 +2152,24 @@ p {
         position: absolute;
         right: 70px;
         top: 7px;
-    } }
+    }
+  }
+.link-short {
+    display: none;
+}
+.img-logo {
+    max-height:initial; 
+}
   @media (max-width: 767px) {
+    .link-long {
+        display: none;
+    }
+    .img-logo {
+        max-height:2rem;
+    }
+    .link-short {
+        display: block;
+    } 
      }
 .navbar .navbar-btn ul li {
     display: inline-block;
@@ -2214,10 +2230,10 @@ p {
 .header-image {
   position: absolute;
   right: 0;
-  top: 50px;
+  top: 18px;
   z-index: 4; }
   .header-image .image {
-    max-width: 730px; }
+    max-width: 550px; }
     @media only screen and (min-width: 992px) and (max-width: 1199px) {
       .header-image .image {
         max-width: 550px; } }
@@ -2225,7 +2241,7 @@ p {
       width: 100%; }
 
 .header-content {
-  padding-top: 95px;
+  
   max-width: 540px;
   position: relative;
   z-index: 5; }
@@ -2315,6 +2331,9 @@ p {
 /*===========================
         6.ABOUT css 
 ===========================*/
+.about-area {
+    background-color: #f4f6f7;
+}
 .about-feature .about-feature-image img {
   width: 100%; }
 .about-feature .about-feature-content {
@@ -2514,7 +2533,7 @@ p {
     .pricing .pricing-header .sub-title::before {
       position: absolute;
       content: '';
-      width: 150px;
+      width: 200px;
       height: 4px;
       bottom: 0;
       left: 0;
@@ -2636,6 +2655,59 @@ p {
     .testimonial-active .slick-dots li.slick-active button {
       background-color: #0067f4; }
 
+.slick-arrow {
+    display: block;
+    font-size:7em;
+    position: absolute;
+    top: 50%;
+    height: 1em;
+    width: 1em;
+    transform: translateY(-50%);
+    // this takes care of the vertical centering
+}
+.slick-next {
+    transform: translateY(-50%);
+    top: 50%;
+    right: 0;
+    color: #BFAFB2;
+    padding-left: 3em;
+}
+
+.slick-prev {
+    position: absolute;
+    transform: translateY(-50%);
+    top: 50%;
+    left: -1em;
+    color: #BFAFB2;
+    padding-right: 3em;
+}
+.userlogo-img {
+    padding:1em;
+}
+
+    .userlogos-active .slick-dots {
+        text-align: center;
+        margin-top: 25px;
+    }
+
+    .userlogos-active .slick-dots li {
+        display: inline-block;
+        margin: 0 3px;
+    }
+
+        .userlogos-active .slick-dots li button {
+            font-size: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #cbced1;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .userlogos-active .slick-dots li.slick-active button {
+            background-color: #0067f4;
+        }
 /*===========================
        10.BLOG css 
 ===========================*/

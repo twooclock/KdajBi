@@ -259,7 +259,7 @@ namespace KdajBi.Web
             switch (p_scheduleType)
             {
                 case 1:
-                    dt = new DateTime(2018, 01, 01);
+                    dt = new DateTime(2018, 01, 01); //monday
                     interval = "2";
                     break;
                 case 2:

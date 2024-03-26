@@ -31,6 +31,9 @@ namespace KdajBi.Web.Controllers
             
             vmBooking vm = new vmBooking();
             vm.token = appointmentToken;
+            vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId, "PublicBooking_MaxDays", 0);
+            vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId , "PublicBooking_CSS", "");
+
             return View(vm);
         }
 

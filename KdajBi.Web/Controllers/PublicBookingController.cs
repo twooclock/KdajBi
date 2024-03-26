@@ -44,6 +44,8 @@ namespace KdajBi.Web.Controllers
             }
             vm.Mobile = null;
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
+            vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
+            vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
             return View("~/Views/Book/Auth.cshtml", vm);
         }
 
@@ -71,6 +73,8 @@ namespace KdajBi.Web.Controllers
             }
             vm.Mobile = inputMobile;
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
+            vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
+            vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
 
 
             if (inputMobile != null && inputPIN == null)

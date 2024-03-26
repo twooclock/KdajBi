@@ -197,9 +197,12 @@ namespace KdajBi.API.Controllers
                 long schTypeId = 0;
                 if (bool.Parse(SettingsHelper.getSetting(_context, companyId, null, "cbEmployee_AlternatingWeeks", "false")) == true)
                 {
-                    Calendar cal = new CultureInfo("en-US").Calendar; //TODO!
-                    int weeks = cal.GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
-                    var wno = ISOWeek.GetWeekOfYear(date);
+                    //synchronized with FullCalendar.cs function getRRule
+                    int weeks = (int)Math.Ceiling((((date - new DateTime(2018, 01, 01)).TotalDays+1) / 7));
+                    //prej
+                    //Calendar cal = new CultureInfo("en-US").Calendar; //TODO!
+                    //int weeks = cal.GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
+                    //var wno = ISOWeek.GetWeekOfYear(date);
                     if (weeks % 2 == 0) { schTypeId = 2; } else { schTypeId = 1; }
                     if (p_workplace.Schedules.Where(s => s.Type == schTypeId).FirstOrDefault() == null)
                     { schTypeId = 0; }

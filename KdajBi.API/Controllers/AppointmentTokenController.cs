@@ -64,53 +64,57 @@ namespace KdajBi.API.Controllers
             {
                 AppointmentToken appointmentToken = new AppointmentToken();
 
-            appointmentToken.Token = generateToken(); 
-            appointmentToken.Service = appointmentTokenRequest.Service.Trim(); 
-            appointmentToken.Minutes = appointmentTokenRequest.Minutes; 
-            appointmentToken.CompanyId = _CurrentUserCompanyID(); 
-            appointmentToken.LocationId = appointmentTokenRequest.LocationId; 
-            appointmentToken.ClientId = appointmentTokenRequest.ClientId; 
-            appointmentToken.AppUserId = _CurrentUserID();
-            appointmentToken.WorkplaceId= appointmentTokenRequest.WorkplaceId;
-            appointmentToken.CreatedDate = DateTime.Now;
-            appointmentToken.CreatedUserID= _CurrentUserID();
+                appointmentToken.Token = generateToken(); 
+                appointmentToken.Service = appointmentTokenRequest.Service.Trim(); 
+                appointmentToken.Minutes = appointmentTokenRequest.Minutes; 
+                appointmentToken.CompanyId = _CurrentUserCompanyID(); 
+                appointmentToken.LocationId = appointmentTokenRequest.LocationId; 
+                appointmentToken.ClientId = appointmentTokenRequest.ClientId; 
+                appointmentToken.AppUserId = _CurrentUserID();
+                appointmentToken.WorkplaceId= appointmentTokenRequest.WorkplaceId;
+                appointmentToken.CreatedDate = DateTime.Now;
+                appointmentToken.CreatedUserID= _CurrentUserID();
 
-            _context.AppointmentTokens.Add(appointmentToken);
+                _context.AppointmentTokens.Add(appointmentToken);
                 
-            // obvesti stranko prek sms (appointmentToken.ClientId)
-            SmsCampaign newSmsCampaign = new SmsCampaign();
-            newSmsCampaign.Company.Id = _CurrentUserCompanyID();
-            newSmsCampaign.LocationId = appointmentTokenRequest.LocationId;
-            newSmsCampaign.AppUser.Id = _CurrentUserID();
+                if (appointmentTokenRequest.SendSMS==true)
+                { 
+                    // obvesti stranko prek sms (appointmentToken.ClientId)
+                    SmsCampaign newSmsCampaign = new SmsCampaign();
+                    newSmsCampaign.Company.Id = _CurrentUserCompanyID();
+                    newSmsCampaign.LocationId = appointmentTokenRequest.LocationId;
+                    newSmsCampaign.AppUser.Id = _CurrentUserID();
             
-            newSmsCampaign.MsgTxt = @"Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/"+ appointmentToken.Token;
+                    newSmsCampaign.MsgTxt = @"Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/"+ appointmentToken.Token;
 
-            var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
-            newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-            newSmsCampaign.Name = "AppointmentLink";
-            newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, appointmentToken.ClientId));
+                    var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+                    newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+                    newSmsCampaign.Name = "AppointmentLink";
+                    newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, appointmentToken.ClientId));
 
-            newSmsCampaign.SendAfter = DateTime.Now;
-            newSmsCampaign.ApprovedAt = DateTime.Now;
+                    newSmsCampaign.SendAfter = DateTime.Now;
+                    newSmsCampaign.ApprovedAt = DateTime.Now;
                     
 
-            _context.Attach(newSmsCampaign.Company);
-            _context.Attach(newSmsCampaign.AppUser);
-            _context.SmsCampaigns.Add(newSmsCampaign);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "/api/appointment-tokens Error");
-                throw;
-            }
-
-            return Ok(appointmentToken);
+                    _context.Attach(newSmsCampaign.Company);
+                    _context.Attach(newSmsCampaign.AppUser);
+                    _context.SmsCampaigns.Add(newSmsCampaign);
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "/api/appointment-tokens Error");
+                        throw;
+                    }
+                }
+                return Ok(appointmentToken);
             }
             return NotFound();
         }
+
+
 
         [HttpDelete("/api/appointment-tokens/{id}")]
         public async Task<ActionResult<AppointmentToken>> Delete(long id)

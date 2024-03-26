@@ -17,5 +17,7 @@ namespace KdajBi.Web.ViewModels
         public long PublicBoookingId;
         public string ErrorMsg;
         public bool EnterClientName;
+        public int PublicBoooking_MaxDays;
+        public string PublicBoooking_CSS;
     }
 }

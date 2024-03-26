@@ -10,7 +10,8 @@ namespace KdajBi.Web.ViewModels
     public class vmBooking : _BaseViewModel
     {
         public AppointmentToken token;
-
         public GoogleAuthToken gt;
+        public int PublicBoooking_MaxDays;
+        public string PublicBoooking_CSS;
     }
 }

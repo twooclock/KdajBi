@@ -182,13 +182,27 @@
                                                     <img id="imgQR" class="float-right" />
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="txtPublicBookingText" class="control-label">Tekst pri samostojnem naročanju</label>
-                                                <a href="#!" data-toggle="popover" data-content="Tekst se prikaže na dnu strani za naročanje. Mišljen je kot dodatne informacije za stranko, mogoče urnik, kontakt ipd."><i class="fa fa-info-circle"></i></a>
-                                                <div class="col-sm-10">
-                                                    <input class="form-control" id="txtPublicBookingText" placeholder="" value="">
+											<div class="form-group">
+												<label for="txtPublicBookingText" class="control-label">Tekst pri samostojnem naročanju</label>
+												<a href="#!" data-toggle="popover" data-content="Tekst se prikaže na dnu strani za naročanje. Mišljen je kot dodatne informacije za stranko, mogoče urnik, kontakt ipd."><i class="fa fa-info-circle"></i></a>
+												<div class="col-sm-10">
+													<input class="form-control" id="txtPublicBookingText" placeholder="" value="">
+												</div>
+											</div>
+											<div class="form-group">
+											<label for="txtPublicBookingMaxDays" class="control-label">Koliko dni vnaprej si lahko stranka izbere prost termin</label>
+											<a href="#!" data-toggle="popover" data-content="Vpišite koliko dni vnaprej si stranka lahko izbere prost termin. Stranka se bo lahko naročila za največ toliko dni vnaprej. (S tem lahko omejite, da bi se vam stranke naročile npr. 6 mesecev vnaprej)"><i class="fa fa-info-circle"></i></a>
+											<div class="col-sm-10">
+												<input class="form-control" id="txtPublicBookingMaxDays" type="number" pattern="[0-9.]+" placeholder="" value="">
+											</div>
+										    </div>
+                                                <div class="form-group">
+                                                    <label for="txtPublicBookingCSS" class="control-label">CSS za napredno oblikovanje strani</label>
+                                                    <a href="#!" data-toggle="popover" data-content="Vpišite css za napredno oblikovanje strani (Mora vsebovat <style></style>)"><i class="fa fa-info-circle"></i></a>
+                                                    <div class="col-sm-10">
+                                                        <input class="form-control" id="txtPublicBookingCSS"  placeholder="" value="">
+                                                    </div>
                                                 </div>
-                                            </div>
                                         </form>
 
                                         <div class="form-group">
@@ -341,6 +355,9 @@
                                                             <thead>
                                                                 <tr>
                                                                     <th>
+                                                                        Skupina
+                                                                    </th>
+                                                                    <th>
                                                                         Naziv
                                                                     </th>
                                                                     <th>
@@ -388,7 +405,7 @@
                                     </div>
                                     <!-- /.tab-pane sms -->
                                     <div class="tab-pane" id="sms" role="tabpanel" aria-labelledby="sms-tab">
-                                        <form class="form-horizontal">
+                                        <form id="formSMS" class="form-horizontal" name="formSMS">
                                             <div class="form-group">
                                                 <label for="SMS_SenderName" class="col-sm-2 control-label">
                                                     Ime pošiljatelja
@@ -429,7 +446,7 @@
                                                     <div class="form-group row">
                                                         <label for="SMS_GOO_Time" class="col-sm-2 control-label pt-2">Ob:</label>
                                                         <div class="col-sm-5">
-                                                            <input type="text" class="form-control" id="SMS_GOO_Time" placeholder="8:00" value="">
+                                                            <input type="text" class="form-control" id="SMS_GOO_Time" name="SMS_GOO_Time" placeholder="8:00" value="">
                                                         </div>
                                                     </div>
                                                     <div class="form-group mt-auto">
@@ -975,7 +992,29 @@
                     } else { error.insertAfter(element); }
                 }
             });
-            
+
+            $('#formSMS').validate({
+                rules: {
+                    SMS_GOO_Time: { time: true }
+                },
+                messages: {
+                    txtName: "Neveljavna ura!"
+                },
+                highlight: function (element) {
+                    $(element).closest('.form-control').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-control').removeClass('is-invalid');
+                },
+                errorElement: 'span',
+                errorClass: 'invalid-feedback',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.insertAfter(element.parent());
+                    } else { error.insertAfter(element); }
+                }
+            });
+
             $('#formServiceGroup').validate({
                     rules: {
                         txtServiceGroupName: {
@@ -1364,6 +1403,9 @@
                 //save public booking text
                 var settings = new Object();
                 settings["PublicBooking_Text"] = $("#txtPublicBookingText").val();
+                settings["PublicBooking_MaxDays"] = $("#txtPublicBookingMaxDays").val();
+                settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
+
                 getAPIToken().then((result) => {
                     $.ajax({
                         type: "post",
@@ -1385,10 +1427,12 @@
             } else { return false; }
         }
         function loadGeneral() {
-             var settings = new Object();
+            var settings = new Object();
             settings["PublicBooking_Text"] = $("#txtPublicBookingText").val();
-            
-            getAPIToken().then((result) => {
+            settings["PublicBooking_MaxDays"] = $("#txtPublicBookingMaxDays").val();
+                  settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
+
+                  getAPIToken().then((result) => {
             $.ajax({
                 type: "post",
                 data: JSON.stringify(settings),
@@ -1398,8 +1442,10 @@
                 dataType: "json",
                  success: function (result) {
                      $("#txtPublicBookingText").val(result["PublicBooking_Text"]);
-                    
-                },
+                     $("#txtPublicBookingMaxDays").val(result["PublicBooking_MaxDays"]);
+                           $("#txtPublicBookingCSS").val(result["PublicBooking_CSS"]);
+
+                      },
                 error: function (xhr, status, error) {
                     toastr.error("Napaka:" + error.toString());
                     return false;
@@ -2122,6 +2168,15 @@
 
                 },
                 'columns': [
+                          {  
+                              'data': 'serviceGroup', 
+                              render: function (data, type, row, meta) {
+                                        if ( row.serviceGroup !=null  )
+                                         { return row.serviceGroup.name; }
+                                  else
+                                  { return ''; }
+                              } 
+                          },
                     { 'data': 'name' },
                     { 'data': 'minutes' },
                     {
@@ -2326,6 +2381,7 @@
             { document.getElementById(p_IdlblInfo).innerHTML="To sporočilo bo poslano v enem delu."; }
         }
         function saveSMS() {
+                        if ($("#formSMS").validate().element('#SMS_GOO_Time') == false) {return; }
             var settings = new Object();
 
             settings["SMS_SenderName"] = $("#SMS_SenderName").val();
@@ -2338,7 +2394,10 @@
             }).get();
             settings["SMS_GOO_Cals"] = JSON.stringify(data);
             if ($("#SMS_genGOOsms").prop("checked") == false) { settings["SMS_GOO_Time"] = ''; }
-            else { settings["SMS_GOO_Time"] = $("#SMS_GOO_Time").val(); }
+            else { 
+                settings["SMS_GOO_Time"] = $("#SMS_GOO_Time").val(); 
+            }
+
             if ($("#rbGOODayCurrent").prop("checked")) { settings["SMS_GOO_Day"] = "CURR"; }
             if ($("#rbGOODayNext").prop("checked")) { settings["SMS_GOO_Day"] = "NEXT"; }
             settings["SMS_GOO_Msg"] = $("#SMS_GOO_Msg").val();

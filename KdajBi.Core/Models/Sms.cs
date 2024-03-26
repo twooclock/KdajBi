@@ -92,7 +92,7 @@ namespace KdajBi.Core.Models
         /// <param name="p_ClientId">Recipient clientid</param>
         public SmsMsg(string p_Recipient, long p_ClientId)
         {
-            Recipient = p_Recipient; ClientId = p_ClientId;
+            Recipient = p_Recipient?[0..Math.Min(p_Recipient.Length, 15)]; ; ClientId = p_ClientId;
         }
 
     }

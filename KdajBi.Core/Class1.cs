@@ -60,7 +60,24 @@ namespace KdajBi.Core
             { retval = mySetting.Value; }
             return retval;
         }
-
+        public static int getSetting(ApplicationDbContext p_context, long companyid, long? locationid, string settingName, int defaultValue)
+        {
+            int retval = defaultValue;
+            Setting mySetting;
+            if (locationid.HasValue == true)
+            {
+                mySetting = p_context.Settings.Where(a => a.CompanyId == companyid && a.LocationId == locationid && a.Key == settingName).FirstOrDefault();
+            }
+            else
+            { mySetting = p_context.Settings.Where(a => a.CompanyId == companyid && a.LocationId == null && a.Key == settingName).FirstOrDefault(); }
+            if (mySetting != null)
+            { 
+                int n;
+                bool isNumeric = int.TryParse(mySetting.Value, out n);
+                if (isNumeric == true) { retval = n; }
+            }
+            return retval;
+        }
         public static void saveSetting(ApplicationDbContext p_context, int userid, long companyid, long? locationid, string settingName, string settingValue)
         {
             Setting settingIndb;

@@ -50,18 +50,19 @@
         .card-selected {
         }
     </style>
+    @Html.Raw(@Model.PublicBoooking_CSS)
 }
 
 
 <!-- page content -->
 
-<div class="card mt-5">
-    <div class="card-body login-card-body">
+<div class="card mt-5 card-book">
+    <div class="card-body login-card-body card-body-book">
         @*<h3 class="mb-2 font-weight-bold">Naročanje</h3>*@
         <div class="row">
             <div class="col">
-                <h6>@Html.Raw(@Model.Location.Name)</h6>
-                <h6>@Html.Raw(@Model.CompanyName)</h6>
+                <h3 class="location-name">@Html.Raw(@Model.Location.Name)</h3>
+                @* <h6>@Html.Raw(@Model.CompanyName)</h6> *@
             </div>
         </div>
         <div class="row">
@@ -219,6 +220,7 @@
         var sid = 0;
         var date = new Date();
         var stepper2;
+        var pb_maxdays = @Html.Raw(@Model.PublicBoooking_MaxDays);
 
 
         function loadScript(src) {
@@ -385,6 +387,11 @@
                             locale: dayjs.locale(),
                             defaultDate: new Date(),
                             minDate: "today",
+                            @if (@Model.PublicBoooking_MaxDays > 0)
+                            {
+                                @Html.Raw("maxDate: new Date().fp_incr(pb_maxdays), ");
+                            }
+                            
                             time_24hr: true, inline: true,
                             onChange: function (selectedDates, dateStr, instance) {
                                 console.log(selectedDates);
@@ -493,11 +500,15 @@
             $("#selected-date").text(formatDate(date));
 
             $("#previous-day").prop("disabled", false);
-            if (date <= new Date()) {
-                $("#previous-day").prop("disabled", true);
-            }
+            $("#next-day").prop("disabled", false);
+            if (date <= new Date()) { $("#previous-day").prop("disabled", true); }
+        @if (@Model.PublicBoooking_MaxDays > 0)
+        {
+            @Html.Raw("if (date >= (dayjs().add(pb_maxdays-1, 'day')).toDate()) { $('#next-day').prop('disabled', true); }")
+                
+        }
 
-            $(".appointment").remove();
+    $(".appointment").remove();
             $("#no-appointments").hide();
             $("#appointments-loader").show();
 

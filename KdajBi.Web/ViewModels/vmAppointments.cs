@@ -37,13 +37,16 @@ namespace KdajBi.Web.ViewModels
             { calBGEvents = p_events; }
             else
             {
-                //remove []
-                calBGEvents = calBGEvents.Substring(1, calBGEvents.Length - 2);
-                if (calBGEvents != "") { calBGEvents += ","; }
-                calBGEvents += p_events.Substring(1, p_events.Length - 2);
-                calBGEvents = "[" + calBGEvents + "]";
+                if (p_events.Substring(1, p_events.Length - 2).Trim().Length > 0)
+                { 
+                    calBGEvents = calBGEvents.Substring(1, calBGEvents.Length - 2); //remove []
+                    if (calBGEvents != "") { calBGEvents += ","; }
+                    calBGEvents += p_events.Substring(1, p_events.Length - 2);
+                    calBGEvents = "[" + calBGEvents + "]"; //add [] back
+                }
             }
             calBGEvents = calBGEvents.Replace(",\"color\":null", "");
+            
         }
 
     }

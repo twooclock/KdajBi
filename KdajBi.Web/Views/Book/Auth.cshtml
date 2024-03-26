@@ -40,19 +40,20 @@
         font-family: 'Inter var', sans-serif;
     }
 </style>
+    @Html.Raw(@Model.PublicBoooking_CSS)
 </head>
 <body>
     <div class="container">
 
 <!-- page content -->
 
-<div class="card mt-5">
-    <div class="card-body login-card-body">
+        <div class="card mt-5 card-book">
+            <div class="card-body login-card-body card-body-book">
         @*<h3 class="mb-2 font-weight-bold">Naročanje</h3>*@
         <div class="row">
             <div class="col">
-                <h6>@Html.Raw(@Model.Location.Name)</h6>
-                <h6>@Html.Raw(@Model.CompanyName)</h6>
+                <h3 class="location-name">@Html.Raw(@Model.Location.Name)</h3>
+                @* <h6>@Html.Raw(@Model.CompanyName)</h6> *@
             </div>
         </div>
         <div class="row">
@@ -74,10 +75,10 @@
                     }
                     else
                     {
-                    <label for="inputMobile" class="control-label pl-2">Mobilna številko:</label>
+                    <label for="inputMobile" class="control-label pl-2">Mobilna številka:</label>
                     }
                     <div class="col-sm-10">
-                        <input type="tel" class="form-control" id="inputMobile" name="inputMobile" placeholder="[Vaša mobilna številka]" minlength ="9" value="@Html.Raw(@Model.Mobile)">
+                        <input type="tel" class="form-control" id="inputMobile" name="inputMobile" placeholder="[Vaša mobilna številka]" minlength="9" value="@Html.Raw(@Model.Mobile)" oninput="CheckMobileNumber(this);">
                     </div>
                 </div>
                 @if (Model.Mobile!=null)
@@ -120,7 +121,12 @@
     
 
     <script type="text/javascript">
-       
+        function CheckMobileNumber(el) {
+                var mobi = $(el).val();
+                mobi = mobi.replace(/[^\d\+]/g, '');
+                $(el).val(mobi);
+            }
+
     $(document).ready(function () {
 
         @if (Model.Mobile == null)

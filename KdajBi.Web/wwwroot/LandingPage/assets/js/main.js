@@ -107,7 +107,7 @@ $(function() {
     });
 
     
-    //===== Slick
+    //===== Slick testimonials
     
     $('.testimonial-active').slick({
         infinite: true,
@@ -171,6 +171,47 @@ $(function() {
     
     
     //===== 
+       //===== Slick userlogos
+    
+    $('.userlogos-active').slick({
+        infinite: true,
+        speed: 800,
+        arrows: true,
+        nextArrow: '<i class="lni lni-chevron-right slick-next"></i>',
+        prevArrow: '<i class="lni lni-chevron-left slick-prev"></i>',
+        dots: false,
+        initialSlide: Math.floor(Math.random() * 20),
+        slidesToShow: 6,
+        slidesToScroll: 1,
+        responsive: [
+            {
+              breakpoint: 1200,
+              settings: {
+                slidesToShow: 4,
+              }
+            },
+            {
+              breakpoint: 992,
+              settings: {
+                slidesToShow: 3,
+              }
+            },
+            {
+              breakpoint: 768,
+              settings: {
+                slidesToShow: 2,
+              }
+            },
+            {
+              breakpoint: 576,
+              settings: {
+                slidesToShow: 1,
+                arrows: false,
+                centerMode: true,
+              }
+            }
+        ]
+    });
     
     
     

@@ -15,20 +15,23 @@
         .appointment { cursor: pointer; }
         .appointment.card:hover { background: #007bff22; }
     </style>
+    @Html.Raw(@Model.PublicBoooking_CSS)
 }
 
 
 <!-- page content -->
 
-<div class="card mt-5">
-    <div class="card-body login-card-body">
-        <h1 class="mb-2">KdajBi naročanje</h1>
+<div class="card mt-5 card-book">
+    <div class="card-body login-card-body card-body-book">
+        <h1 class="mb-2">Izberite si prost termin</h1>
         <div class="row">
-            <div class="col">
-                <h3>@Html.Raw(@Model.token.Location.Name)</h3>
-                <h3>(@Html.Raw(@Model.token.Company.Name))</h3>
+            <div class="col-12 col-md-6">
+                <h3 class="loaction-name">@Html.Raw(@Model.token.Location.Name)</h3>
+                <h6><i class="fas fa-home"></i>&nbsp;@Html.Raw(@Model.token.Location.Address)</h6>
+                <h6><i class="far fa-clock"></i>&nbsp;@Html.Raw(@Model.token.Location.Timetable)</h6>
+                <h6><i class="fas fa-phone"></i>&nbsp;<a href="tel:@Html.Raw(@Model.token.Location.Tel)">@Html.Raw(@Model.token.Location.Tel)</a></h6>
             </div>
-            <div class="col" id="appointments">
+            <div class="col-12 col-md-6" id="appointments">
                 <div class="mb-2 align-center d-flex justify-content-between align-items-center">
                     <button type="button" class="btn btn-outline-primary" id="previous-day"><</button>
                     <button type="button" class="btn btn-outline-primary" id="selected-date"></button>
@@ -118,6 +121,7 @@
 
   var token = "@Html.Raw(@Model.token.Token)";
   var date = new Date();
+        var pb_maxdays = @Html.Raw(@Model.PublicBoooking_MaxDays);
 
         function loadScript(src) {
             return new Promise(function (resolve, reject) {
@@ -154,6 +158,12 @@
                             locale: dayjs.locale(),
                             defaultDate: new Date(),
                             minDate: "today",
+                            @if (@Model.PublicBoooking_MaxDays > 0)
+                            {
+                                @Html.Raw("maxDate: new Date().fp_incr(pb_maxdays), ")
+                                ;
+                            }
+
                             time_24hr: true, inline: true,
                             onChange: function (selectedDates, dateStr, instance) {
                                 console.log(selectedDates);
