@@ -86,8 +86,8 @@ namespace KdajBi.Web.Controllers
                     //allow only 3 bookings from one mobile number a day
                     if (_context.PublicBookings.Where(pb => pb.Token == token && pb.Mobile == inputMobile && pb.CreatedDate.Value.Date == DateTime.Now.Date).Count() < 3)
                     {
-                        //allow only slovenian mobile numbers
-                        if (Utils.siMobilePrefixes.Any(x => inputMobile.StartsWith(x)))
+                        //allow only slovenian, austrian and italian mobile numbers
+                        if (Utils.siMobilePrefixes.Any(x => inputMobile.StartsWith(x)) || Utils.allowedMobilePrefixes.Any(x => inputMobile.StartsWith(x)))
                         {
                             //create public booking 
                             newbooking.Token = token;
@@ -189,7 +189,6 @@ namespace KdajBi.Web.Controllers
                             }
                             catch (Exception ex)
                             {
-
                                 //ignore as its not needed...
                             }
                         }

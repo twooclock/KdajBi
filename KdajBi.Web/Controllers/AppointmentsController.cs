@@ -187,12 +187,14 @@ namespace KdajBi.Web.Controllers
                                 mySettings.Add("cbUseSingleListOfClients", "false");
                                 SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), null, mySettings);
                                 if (mySettings["cbUseSingleListOfClients"] == "false")
-                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName, mobile = p.Mobile, notes=p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }
+                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + Convert.ToChar(160).ToString() + p.Mobile), mobile = p.Mobile, notes=p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }
                                 else
-                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName, mobile = p.Mobile, notes = p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }
+                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + Convert.ToChar(160).ToString() + p.Mobile), mobile = p.Mobile, notes = p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }
 
                                 myVM.Token = _GetToken();
                                 myVM.UserUIShow = _UserUIShow();
+                                //myVM.Location.Workplaces= myVM.Location.Workplaces.OrderBy(s => s.SortPosition).ToList();
+
                                 return View(myVM);
                             }
                             else

@@ -13,13 +13,13 @@ namespace KdajBi.Web
         public class Resource
         {
             public string id;
-            public string order;
+            public int order;
             public string title;
             public string eventColor;
             public List<businessHours> businessHours;
             public Dictionary<string,string> extendedProps=new Dictionary<string, string>();
             public Resource() { businessHours = new List<businessHours>();  }
-            public Resource(string p_id, string p_order, string p_title, string p_eventColor)
+            public Resource(string p_id, int p_order, string p_title, string p_eventColor)
             { id = p_id; order = p_order; title = p_title; eventColor = p_eventColor; businessHours = new List<businessHours>(); }
 
             public string ToJson() { return Newtonsoft.Json.JsonConvert.SerializeObject(this); }

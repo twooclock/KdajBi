@@ -380,7 +380,7 @@
                             @for (int j = 1; j < 8; j++)
                             {
                                 var i = j % 7;
-                                FullCalendar.Resource myResource = new FullCalendar.Resource(i.ToString(),j.ToString(),CultureInfo.CurrentCulture.DateTimeFormat.DayNames[i],"blue");
+                                FullCalendar.Resource myResource = new FullCalendar.Resource(i.ToString(),j,CultureInfo.CurrentCulture.DateTimeFormat.DayNames[i],"blue");
                                 FullCalendar.businessHours myBH;
                                 myBH = new FullCalendar.businessHours(Model.Location.Schedule.SundayStart.ToString("HH:mm"), Model.Location.Schedule.SundayEnd.ToString("HH:mm"), new int[]{0});
                                 myResource.businessHours.Add(myBH);

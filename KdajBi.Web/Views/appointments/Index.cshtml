@@ -502,7 +502,7 @@
             {
                 if (val=="true"){
                     nakaziUrnike =true;
-                    if (Model.calBGEvents != null) { val = Model.calBGEvents; } else { val = ""; }
+                    if (Model.calBGEvents != null) { val = Model.calBGEvents; } else { val = "[]"; }
                     <text>calBGEvents=JSON.parse('</text> @Html.Raw(val.Replace(@"\",@"\\"))<text>');</text>
                  }
              }
@@ -879,11 +879,11 @@
                                     buttonText: '3 dni',
                                 }
                             },
-
+                            resourceOrder:"order",
                             resources: [
                             @foreach (var item in Model.Location.Workplaces)
                             {
-                                FullCalendar.Resource myResource = new FullCalendar.Resource(@item.Id.ToString(), @item.Id.ToString(), @item.Name, item.GoogleCalendarColor);
+                                FullCalendar.Resource myResource = new FullCalendar.Resource(@item.Id.ToString(), @item.SortPosition, @item.Name, item.GoogleCalendarColor);
                                 myResource.extendedProps.Add("gid", item.GoogleCalendarID);
                                 FullCalendar.businessHours myBH;
                                 myBH = new FullCalendar.businessHours(Model.Location.Schedule.SundayStart.ToString("HH:mm"), Model.Location.Schedule.SundayEnd.ToString("HH:mm"), new int[] { 0 });
@@ -903,7 +903,7 @@
                                 @Html.Raw(myResource.ToJson() + ",")
                             }
                             ],
-                            events:@Html.Raw(Model.calEvents),
+                            events:@Html.Raw((Model.calEvents.Length>0?Model.calEvents:"[]")),
                             @if (nakaziUrnike == true)
                             {
                                 <text>
@@ -1198,7 +1198,7 @@
                     source: myClients,
                     select: function (event, ui) {
                         hideKeyboard();
-                        $("#txtClientsearch").val(ui.item.label);
+                        $("#txtClientsearch").val(ui.item.label.split(String.fromCharCode(160))[0]);
                         $("#txtClientMobile").val(ui.item.mobile);
                         $("#txtClientNotes").text(ui.item.notes);
                         SelectedClientID = ui.item.value;
@@ -2020,7 +2020,7 @@
 
     </script>
 
-    //#region PageTour
+    
     <script type="text/javascript">
 			
 			gPageTour = new Shepherd.Tour({
@@ -2128,7 +2128,7 @@
 			});
             
         </script>
-    //#endregion
+    
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoadOkay()" onerror="gapiLoadFail(event)"></script>
 
 }
