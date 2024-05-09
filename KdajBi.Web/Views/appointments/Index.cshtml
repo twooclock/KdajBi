@@ -29,8 +29,13 @@
             @Html.Raw("border-bottom: 0}");
         }
     }
+
 }
 
+        td[data-time$="00:00"] { border-top-color: darkgray; }
+    
+        .fc-day-today { background: #FFF !important; border-color:darkgray !important; } 
+ 
         .fc-fullscreen-button:before {
             font-family: "Font Awesome 5 Free";
             content: "\f065";
@@ -824,12 +829,13 @@
                             selectable: true,
                             selectLongPressDelay:250,
                             dayMaxEvents: true, // allow "more" link when too many events
-                            //dayMinWidth: 200,
+                            
                             headerToolbar: {
                                 left: 'datepicker prev,next today',
                                 center: 'title',
                                 right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth mnuResources,slotinterval,linkcreator,fullscreen'
                             },
+                            buttonText: { today: 'danes',  day: 'dan',  week:'teden',  month:'mesec'},
                             customButtons: {
                                 fullscreen: {
                                     click: function () {
@@ -1073,14 +1079,18 @@
                                 }
                             }
                         });
+
+                        $('.fc-timegrid-slot-label').hover(function() {
+                            const ura = this.getAttribute("data-time");
+                    $('td[data-time="'+ura+'"]').css('background-color', '#EEEEEE');
+                  }, function() {
+                    // on mouseout, reset the background colour
+                    const ura = this.getAttribute("data-time");
+                    $('td[data-time="'+ura+'"]').css('background-color', '');
+                  });
+
                     });
         }
-
-
-
-
-
-
 
 
             document.addEventListener('DOMContentLoaded', function() {
@@ -1269,6 +1279,21 @@
                 $("#cmdCopyLink").click(function (evt) {
                     if (CopyLink() != false) { $("#myModal").modal("hide"); }
                 });
+                $('#txtClientsearch').keyup(function(event) {
+                    if (event.keyCode === 13) { 
+                        $("#txtClientMobile").focus();
+                    }
+                });
+                $('#txtClientMobile').keyup(function(event) {
+                    if (event.keyCode === 13) { 
+                        document.getElementById("txtNotes").click();
+                        setTimeout(() => { document.getElementById("txtNotes-tokenfield").focus(); }, 400);
+                    }
+                });
+
+                $('.main-sidebar').off();
+                  
+
             });
 
 
@@ -1717,6 +1742,7 @@
                     async: false,
                     success: function (result) {
                         var retval = [];
+                        var createdToken=false;
                         result.forEach(function (item) {
                             var token = {};
                             token.value = item.id;
@@ -1733,18 +1759,25 @@
                                 delay: 100
                             },
                             showAutocompleteOnFocus: true, createTokensOnBlur: true
-                        })
-
-                      $('#txtNotes').on('tokenfield:createdtoken', function (e) {
-                          $('#txtMinDuration').val(getServiceDuration());
-                          setEndTime("#txtEndTime", getServiceDuration());
-
-                      })
-                        $('#txtNotes').on('tokenfield:removedtoken', function (e) {
+                            }).data("bs.tokenfield").$input.on("autocompletefocus", function (e, ui) {
+                            e.preventDefault();
+                            //$(this).val(ui.item.label);
+                        });
+                        $('#txtNotes-tokenfield').keyup(function(event) {
+                            if (event.keyCode === 13) { 
+                                if (createdToken==true){createdToken=false} else {$("#cmdSave").focus();}
+                            }
+                        });
+                        $('#txtNotes').on('tokenfield:createdtoken', function (event) {
+                            createdToken=true;
                             $('#txtMinDuration').val(getServiceDuration());
                             setEndTime("#txtEndTime", getServiceDuration());
 
-                      })
+                        });
+                        $('#txtNotes').on('tokenfield:removedtoken', function (e) {
+                            $('#txtMinDuration').val(getServiceDuration());
+                            setEndTime("#txtEndTime", getServiceDuration());
+                        });
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Error getting data:" + error);

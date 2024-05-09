@@ -62,7 +62,7 @@ namespace KdajBi.Web.Controllers
                                 globalSettings.Add("AppointmentsShow3Calendars", "false");
                                 globalSettings.Add("AppointmentsRowHeight", "");
                                 globalSettings.Add("AppointmentsMinColWidth", "");
-                                
+
                                 SettingsHelper.getSettings(_context, _CurrentUserCompanyID(),null, globalSettings);
                                 foreach (var item in globalSettings)
                                 {

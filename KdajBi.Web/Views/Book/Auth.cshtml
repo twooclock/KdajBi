@@ -118,7 +118,8 @@
     <script src="~/plugins/jquery/jquery.min.js"></script>
     <!-- Bootstrap 4 -->
     <script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    
+    <!-- jQuery validation -->
+    <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
 
     <script type="text/javascript">
         function CheckMobileNumber(el) {
@@ -135,6 +136,25 @@
             {@Html.Raw("document.getElementById('inputPIN').focus();"); }
 
         $('inputPIN').attr('autocomplete', 'off');
+
+        $('#formMobile').validate({
+            rules: { inputMobile: { minlength: 9, required: true } },
+            messages: { inputMobile: "Neveljavna številka!" },
+            highlight: function (element) {
+                $(element).closest('.form-control').addClass('is-invalid');
+            },
+            unhighlight: function (element) {
+                $(element).closest('.form-control').removeClass('is-invalid');
+            },
+            errorElement: 'span',
+            errorClass: 'invalid-feedback',
+            errorPlacement: function (error, element) {
+                if (element.parent('.input-group').length) {
+                    error.insertAfter(element.parent());
+                } else { error.insertAfter(element); }
+            }
+        });
+
     });
 
  

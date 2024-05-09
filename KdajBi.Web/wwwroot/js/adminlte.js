@@ -591,6 +591,7 @@
 
         var shownEvent = $.Event(Event.SHOWN);
         $(this._element).trigger(shownEvent);
+        $("body").addClass("sidebar-mini");
       };
 
       _proto.collapse = function collapse() {
@@ -608,6 +609,7 @@
 
         var collapsedEvent = $.Event(Event.COLLAPSED);
         $(this._element).trigger(collapsedEvent);
+        $("body").removeClass("sidebar-mini");
       };
 
       _proto.toggle = function toggle() {
@@ -643,6 +645,7 @@
           var toggleState = localStorage.getItem("remember" + EVENT_KEY);
 
           if (toggleState == ClassName.COLLAPSED) {
+              $("body").removeClass("sidebar-mini");
             if (this._options.noTransitionAfterReload) {
               $("body").addClass('hold-transition').addClass(ClassName.COLLAPSED).delay(50).queue(function () {
                 $(this).removeClass('hold-transition');
@@ -652,6 +655,7 @@
               $("body").addClass(ClassName.COLLAPSED);
             }
           } else {
+              $("body").addClass("sidebar-mini");
             if (this._options.noTransitionAfterReload) {
               $("body").addClass('hold-transition').removeClass(ClassName.COLLAPSED).delay(50).queue(function () {
                 $(this).removeClass('hold-transition');

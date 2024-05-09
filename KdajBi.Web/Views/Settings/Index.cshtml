@@ -12,6 +12,7 @@
     <link href="~/plugins/datatables-fixedheader/css/fixedHeader.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/datatables-responsive/css/responsive.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
+    <link href="~/plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" />
 }
 
 
@@ -36,9 +37,9 @@
                         <div class="card card-primary card-outline card-outline-tabs">
                             <div class="card-header p-0 border-bottom-0">
                                 <ul class="nav nav-tabs" role="tablist">
-                                    <li class="nav-item"><a class="nav-link active" id="user-tab" data-toggle="pill" href="#user" role="tab" aria-controls="user" aria-selected="true">Pravice uporabnikov</a></li>
-                                    <li class="nav-item"><a class="nav-link" id="appointments-tab" data-toggle="pill" href="#appointments" role="tab" aria-controls="appointments" aria-selected="false">Naročanje</a></li>
-                                    <li class="nav-item"><a class="nav-link" id="password-tab" data-toggle="pill" href="#password" role="tab" aria-controls="appointments" aria-selected="false">Geslo nadzornika</a></li>
+                                    <li class="nav-item"><a class="nav-link active" id="user-tab" data-toggle="tab" href="#user" role="tab" aria-controls="user" aria-selected="true">Pravice uporabnikov</a></li>
+                                    <li class="nav-item"><a class="nav-link" id="appointments-tab" data-toggle="tab" href="#appointments" role="tab" aria-controls="appointments" aria-selected="false">Naročanje</a></li>
+                                    <li class="nav-item"><a class="nav-link" id="password-tab" data-toggle="tab" href="#password" role="tab" aria-controls="password" aria-selected="false">Geslo nadzornika</a></li>
                                     <li class="nav-item" role="presentation">
                                         <a class="nav-link" id="tags-tab" data-toggle="tab" href="#tags" role="tab" aria-controls="tags" aria-selected="false">Oznake pri strankah</a>
                                     </li>
@@ -271,6 +272,7 @@
     <script src="~/plugins/datatables/jquery.dataTables.js"></script>
     <script src="~/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
+    <script src="~/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
 
     <script type="text/javascript">
 
@@ -283,7 +285,7 @@
 
             loadUserUISettings();
             $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-                 if (e.target.id == "appointments-tab" && AppointmentSettingsLoaded == false) { LoadAppointmentSettings(); AppointmentSettingsLoaded = true;}
+                 if (e.target.id == "appointments-tab" && AppointmentSettingsLoaded == false) { LoadAppointmentsSettings(); AppointmentSettingsLoaded = true;}
                  if (e.target.id == "tags-tab" && tagsLoaded == false) {GetTagsTable(); tagsLoaded = true; }
             });
 
@@ -350,7 +352,7 @@
             $('#myTagModal').on('hidden.bs.modal', function (e) {
                 CancelTagModal();
             });
-        
+
             
         });
 
@@ -421,8 +423,8 @@
             var settings = new Object();
             settings["AppointmentsShow3Calendars"] = $("#cbShow3Calendars").prop("checked");
             settings["AppointmentsRowHeight"] = $("#txtRowHeight").val(); 
-            settings["AppointmentsMinColWidth"] = $("#txtMinColWidth").val(); 
-        
+            settings["AppointmentsMinColWidth"] = $("#txtMinColWidth").val();
+            
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
@@ -443,12 +445,12 @@
             });
         }
 
-        async function loadAppointmentsSettings() {
+        async function LoadAppointmentsSettings() {
             var settings = new Object();
             settings["AppointmentsShow3Calendars"] = 'false';
             settings["AppointmentsRowHeight"] = '';
             settings["AppointmentsMinColWidth"] = '';
-            
+
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
