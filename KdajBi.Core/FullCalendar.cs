@@ -1,7 +1,9 @@
-﻿using KdajBi.Core.Models;
+﻿using KdajBi.Core;
+using KdajBi.Core.Models;
 using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,11 +18,12 @@ namespace KdajBi.Web
             public int order;
             public string title;
             public string eventColor;
+            public string eventTextColor;
             public List<businessHours> businessHours;
             public Dictionary<string,string> extendedProps=new Dictionary<string, string>();
             public Resource() { businessHours = new List<businessHours>();  }
             public Resource(string p_id, int p_order, string p_title, string p_eventColor)
-            { id = p_id; order = p_order; title = p_title; eventColor = p_eventColor; businessHours = new List<businessHours>(); }
+            { id = p_id; order = p_order; title = p_title; eventColor = p_eventColor; eventTextColor = Utils.PickTextColorBasedOnBgColorSimple(p_eventColor); businessHours = new List<businessHours>(); }
 
             public string ToJson() { return Newtonsoft.Json.JsonConvert.SerializeObject(this); }
         }
@@ -36,6 +39,7 @@ namespace KdajBi.Web
 
         public class Event
         {
+            private string _color;
             public String id { get; set; }
             public String resourceId { get; set; }
             public String title { get; set; }
@@ -43,7 +47,11 @@ namespace KdajBi.Web
             public String end { get; set; }
             public bool allDay { get; set; }
             public String display { get; set; }
-            public String color { get; set; }
+            public String color {
+                get { return _color; }
+                set { _color = value; this.textColor = Utils.PickTextColorBasedOnBgColorSimple(_color); }
+            }
+            public String textColor { get; set; }
 
             public Dictionary<string, string> extendedProps = new Dictionary<string, string>();
         }

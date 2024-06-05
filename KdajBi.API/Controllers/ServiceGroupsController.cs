@@ -137,7 +137,8 @@ namespace KdajBi.API.Controllers
                 ServiceGroupindb.LocationId = ServiceGroup.LocationId;
                 ServiceGroupindb.SortPosition = ServiceGroup.SortPosition;
                 ServiceGroupindb.Name = ServiceGroup.Name;
-                
+                ServiceGroupindb.Color = ServiceGroup.Color;
+
                 ServiceGroupindb.Active = ServiceGroup.Active;
 
                 _context.Entry(ServiceGroupindb).State = EntityState.Modified;

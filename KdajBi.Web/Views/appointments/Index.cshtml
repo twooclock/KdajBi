@@ -60,6 +60,14 @@
             font-weight: 900;
         }
 
+        .fc-mnuResources-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f017";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 400;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -406,7 +414,7 @@
         var fp; var dp; var tp;
         var SelectedClientID = 0;
         var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
-
+        var myServices;
 
         //#region events
         @Html.Raw("var eventsMonths = []; eventsMonths.push(dayjs(Date()).format(\"YYYYMM\"));")
@@ -436,6 +444,18 @@
             });
 
         }
+        
+function pickTextColorBasedOnBgColorSimple(bgColor) { 
+    if (bgColor==null){return 'white';}
+    try {
+        var color = (bgColor.charAt(0) === '#') ? bgColor.substring(1, 7) : bgColor;
+        var r = parseInt(color.substring(0, 2), 16); // hexToR
+        var g = parseInt(color.substring(2, 4), 16); // hexToG
+        var b = parseInt(color.substring(4, 6), 16); // hexToB
+        return (((r * 0.299) + (g * 0.587) + (b * 0.114)) > 186) ? 'black' : 'white';
+        } catch (error) { return 'white';}
+}
+
         async function getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,pageToken) {
             return new Promise(function (resolve, reject) {
                 if (typeof pageToken === "undefined") { console.log('no next page'); reject(); return; }
@@ -464,7 +484,14 @@
                                 {
                                     try {
                                         let notes = JSON.parse(item.extendedProperties.shared.notes);
-                                        if (notes.length > 0) { if(notes[0].color!=null){ barva = "#" + notes[0].color;} }
+                                        //if (notes.length > 0) { if(notes[0].color!=null){ barva = "#" + notes[0].color;} }
+                                        if (notes.length > 0) { 
+                                            if(notes[0].value!=null)
+                                            { var result = myServices.filter(obj => { return obj.value.toString() === notes[0].value}); 
+                                                if (result !=null) 
+                                                {barva = "#" + result[0].color;}
+                                            } 
+                                        }
                                     } catch (e) {
 
                                     }
@@ -476,7 +503,7 @@
                                     start: item.start.dateTime,
                                     end: item.end.dateTime,
                                     display: null,
-                                    backgroundColor:barva,
+                                    backgroundColor:barva, textColor:pickTextColorBasedOnBgColorSimple(barva),
                                     extendedProps: ((typeof item.extendedProperties === "undefined") ? {} : item.extendedProperties.shared)
                                 });
                             });
@@ -781,13 +808,16 @@
         }
         var resourceA=null;
         function loadCalendar() {
-            var mySlot = localStorage.getItem("Slot");
+            var mySlot = localStorage.getItem("Slot"); //15 or 30 mins
             var myView = localStorage.getItem("View");
+            var myDisplayEventTime =  localStorage.getItem("displayEventTime");
             var cancelSwipe = false;
-            //var calEvents=@Html.Raw(Model.calEvents);
             if (mySlot == null) { mySlot = "00:30"; }
             if (myView == null) { myView = "resourceTimeGridDay"; }
-                loadLocale(navigator.language.slice(0, 2))
+            if (myDisplayEventTime == null) { myDisplayEventTime = true; } else { myDisplayEventTime = (myDisplayEventTime === 'true')  }
+            
+                
+            loadLocale(navigator.language.slice(0, 2))
                     .then(function () {
                         var idate = new Date();
                         let searchParams = new URLSearchParams(window.location.search);
@@ -805,6 +835,7 @@
     }
 }
                             eventDisplay: 'block',
+                            displayEventTime: myDisplayEventTime,
                             themeSystem: 'bootstrap',
                             stickyFooterScrollbar: true,
                             stickyHeaderDates: true,
@@ -851,7 +882,7 @@
                                 slotinterval: {
                                     text:  "",
                                     click: function (a) {
-                                        if (mySlot == "00:30") { mySlot = "00:15"; this.innerText = "30'"; } else { mySlot = "00:30"; $(this).attr("title", "15'"); this.innerText="15'"; }
+                                        if (mySlot == "00:30") { mySlot = "00:15"; this.innerText = "30'"; } else { mySlot = "00:30"; this.innerText="15'"; }
                                         localStorage.setItem("Slot", mySlot);
                                         calendar.setOption('slotDuration', mySlot);
                                         calendar.setOption('slotLabelInterval', mySlot)
@@ -859,14 +890,11 @@
                                     }
                                 },
                                 mnuResources: {
-                                    text: "R",
                                     click: function () {
-                                        console.log('change selectLongPressDelay from...');
-                                        let person = prompt("Please enter number", '100');
-                                          if (person != null) {
-                                            calendar.setOption('selectLongPressDelay',Number(person));
-                                          }
-                                        console.log('changed selectLongPressDelay to...');
+                                        if (myDisplayEventTime == true) { myDisplayEventTime = false; $(this).attr("title", "Prikaži čas pri naročilih"); } else { myDisplayEventTime = true; $(this).attr("title", "Skrij čas pri naročilih");  }
+                                        localStorage.setItem("displayEventTime", myDisplayEventTime);
+                                        calendar.setOption('displayEventTime',myDisplayEventTime);
+                                        //console.log('changed selectLongPressDelay to...');
                                     }
                                 },
                                 datepicker: {
@@ -925,20 +953,6 @@
                                 </text>
                             }
                             
-                            //events: function (info, successCallback, failureCallback) {
-                            //pazi, če delaš prek funkcije moraš spreminjat calevents tudi pri SaveMoveEvent!
-                            //    if (resourceA == null) { successCallback(calEvents); return; }
-                            //    else {
-                            //        var novi = [];
-
-                            //        calEvents.forEach(function (item) {
-                            //            if (item.display == 'background') { novi.push(item); }
-                            //            else {
-                            //                if (item.resourceId!= '2') {novi.push(item);  } }
-                            //        });
-                            //        successCallback(novi);
-                            //    }
-                            //},
                             eventTimeFormat: {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -1082,7 +1096,7 @@
 
                         $('.fc-timegrid-slot-label').hover(function() {
                             const ura = this.getAttribute("data-time");
-                    $('td[data-time="'+ura+'"]').css('background-color', '#EEEEEE');
+                    $('td[data-time="'+ura+'"]').css('background-color', '#BEBEBE');
                   }, function() {
                     // on mouseout, reset the background colour
                     const ura = this.getAttribute("data-time");
@@ -1745,9 +1759,11 @@
                         var createdToken=false;
                         result.forEach(function (item) {
                             var token = {};
+                            token.color = item.color;
+                            if (token.color ==null && item.serviceGroup !=null ) 
+                            { if ( item.serviceGroup.color !=null && item.serviceGroup.color.length > 0 ) { token.color = item.serviceGroup.color; } }
                             token.value = item.id;
                             token.minutes = item.minutes;
-                            token.color = item.color;
                             token.label = item.name;
                             if (item.minutes > 0) { token.label=token.label+' ('+item.minutes+' min)'}
                             retval.push(token)
@@ -1778,9 +1794,11 @@
                             $('#txtMinDuration').val(getServiceDuration());
                             setEndTime("#txtEndTime", getServiceDuration());
                         });
+                        myServices = retval;
                     },
                     error: function (xhr, status, error) {
                         toastr.error("Error getting data:" + error);
+                        myServices = null;
                     }
                 });
             });

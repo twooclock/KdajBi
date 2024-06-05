@@ -139,6 +139,28 @@ namespace KdajBi.Core
                 // return sb.ToString();
             }
         }
+
+        public static string PickTextColorBasedOnBgColorSimple(string bgColor)
+        {
+            if (bgColor == null) { 
+                return "white"; }
+            try
+            {
+                string color = (bgColor[0] == '#') ? bgColor.Substring(1, 6) : bgColor;
+                int r = int.Parse(color.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+                int g = int.Parse(color.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+                int b = int.Parse(color.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+
+                double brightness = (r * 0.299) + (g * 0.587) + (b * 0.114);
+                return brightness > 186 ? "black" : "white";
+            }
+            catch (Exception)
+            {
+                return "white";
+            }
+            
+        }
+
     }
 
     public class TimeSlot

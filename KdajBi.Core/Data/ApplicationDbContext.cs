@@ -77,7 +77,6 @@ namespace KdajBi.Core
             builder.Entity<WorkplaceSchedule>().HasIndex(p => new { p.WorkplaceId, p.ScheduleId }).IsUnique(true);
             builder.Entity<Location>().HasIndex(p => new { p.PublicBookingToken }).IsUnique(true);
             builder.Entity<WorkplaceExcludedService>().HasIndex(p => new { p.WorkplaceId, p.ServiceId }).IsUnique(true);
-
         }
     }
 }

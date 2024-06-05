@@ -4,6 +4,7 @@ using System.Text;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace KdajBi.Core.Models
 {
@@ -27,9 +28,14 @@ namespace KdajBi.Core.Models
         public string Color { get; set; }
         public int SortPosition { get; set; }
         public bool UsedInClientBooking { get; set; }
-		[ForeignKey("ServiceGroup")]
+		
+        [ForeignKey("ServiceGroup")]
 		public long? ServiceGroupId { get; set; }
 		public virtual ServiceGroup ServiceGroup { get; set; }
 
-	}
+        [MaxLength(50)]
+        [DefaultValue("")]
+        public string PriceDescription { get; set; }
+
+    }
 }

@@ -181,8 +181,8 @@ namespace KdajBi.API.Controllers
                 {
                     data = JObject.Parse(exSch.ToString());
                     schedule.Add(new TimeSlot(p_workplace.Id,
-                            (DateTime)data.start.ToLocalTime(),
-                            (DateTime)data.end.ToLocalTime()
+                            ((DateTime)(data.start)).ToLocalTime(),
+                            ((DateTime)(data.end)).ToLocalTime()
                         )
                     );
                 }

@@ -284,7 +284,9 @@
                 let newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1").attr({ id: 's_' + element.id }).attr({ style: "min-width: 18rem; border-width: 3px;" });
                 let lbl = $('<div/>').addClass("card-body");
                 let input = $('<h5/>').text(element.name).addClass("card-title");
-
+                let br = $('<br/>');
+                let desc = $('<div/>').text(element.priceDescription).attr({ style: "font-size: smaller;" });
+                input.append(br).append(desc);
                 lbl.append(input);
                 newDiv.append(lbl);
                 newDiv.click(function () { selectService(this); });

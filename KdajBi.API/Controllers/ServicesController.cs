@@ -54,9 +54,9 @@ namespace KdajBi.API.Controllers
             try
             {
                 if (locationid > 0)
-                { Service = _context.Services.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == locationid).OrderBy(t => t.Name).ToList(); }
+                { Service = _context.Services.Include(b => b.ServiceGroup).Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == locationid).OrderBy(t => t.Name).ToList(); }
                 else
-                { Service = _context.Services.Where(c => c.CompanyId == _CurrentUserCompanyID()).OrderBy(t => t.Name).ToList(); }
+                { Service = _context.Services.Include(b => b.ServiceGroup).Where(c => c.CompanyId == _CurrentUserCompanyID()).OrderBy(t => t.Name).ToList(); }
             }
             catch (Exception ex)
             {
@@ -111,6 +111,7 @@ namespace KdajBi.API.Controllers
         [HttpPost("/api/Service")]
         public async Task<ActionResult<Service>> PostService(Service Service)
         {
+            if (Service.ServiceGroupId == 0) { Service.ServiceGroupId = null; }
             if (Service.Id == 0)
             {
                 Service.CreatedUserID = _CurrentUserID();
@@ -142,6 +143,7 @@ namespace KdajBi.API.Controllers
                 Serviceindb.ServiceGroupId = Service.ServiceGroupId;
 				Serviceindb.Color = Service.Color;
                 Serviceindb.UsedInClientBooking = Service.UsedInClientBooking;
+                Serviceindb.PriceDescription = Service.PriceDescription;
                 Serviceindb.Active = Service.Active;
 
                 _context.Entry(Serviceindb).State = EntityState.Modified;

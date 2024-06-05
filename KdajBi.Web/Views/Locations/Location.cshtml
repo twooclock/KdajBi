@@ -323,6 +323,9 @@
                                                                 <th>
                                                                     Naziv
                                                                 </th>
+                                                                 <th>
+                                                                    Barva
+                                                                </th>
                                                                 <th>
                                                                     Aktivno
                                                                 </th>
@@ -361,7 +364,7 @@
                                                                         Naziv
                                                                     </th>
                                                                     <th>
-                                                                        Trajanje (min)
+                                                                        Trajanje
                                                                     </th>
                                                                     <th>
                                                                         Barva
@@ -628,6 +631,17 @@
                         <input type="text" id="txtServiceGroupName" name="txtServiceGroupName" class="form-control" />
                     </div>
                     <div class="form-group">
+                        <label>Barva:</label>
+                        <a href="#!" data-toggle="popover" data-content="Tako se bodo obarvala naročila s storitvami v tej skupini. Če barva ni določena se naročila obarvajo z barvo storitve (če je določena)."><i class="fa fa-info-circle"></i></a>
+                        <div id="cpServiceGroupColor" class="input-group">
+                            <input type="text" class="form-control">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="fas fa-square"></i></span>
+                            </div>
+                        </div>
+                        <!-- /.input group -->
+                    </div>
+                    <div class="form-group">
                         <label class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="cbServiceGroupActive" value="true" checked="">
                             <span class="custom-control-label">Aktivno</span>
@@ -671,7 +685,16 @@
                         <input id="txtServiceMinutes" type="number" pattern="[0-9.]+" name="txtServiceMinutes" class="form-control" />
                     </div>
                     <div class="form-group">
+                        <label for="txtPriceDescription">
+                            Cena ali opis:
+                        </label>
+                        <a href="#!" data-toggle="popover" data-content="Ta cena/opis bo prikazan pri storitvi pri samostojnem naročanju stranke."><i class="fa fa-info-circle"></i></a>
+
+                        <input type="text" id="txtPriceDescription" name="txtPriceDescription" class="form-control" maxlength="50" />
+                    </div>
+                    <div class="form-group">
                         <label>Barva:</label>
+                        <a href="#!" data-toggle="popover" data-content="Tako se bodo obarvala naročila s to storitvijo. Če barva ni določena se naročila obarvajo z barvo skupine (če je določena)."><i class="fa fa-info-circle"></i></a>
                         <div id="cpServiceColor" class="input-group">
                             <input type="text" class="form-control">
                             <div class="input-group-append">
@@ -691,7 +714,7 @@
                         <label class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="cbUsedInClientBooking" value="true" checked="">
                             <span class="custom-control-label">Uporabi za samostojno naročanje</span>
-                        <a href="#!" data-toggle="popover" data-content="Storitev bo na voljo pri samostojnem naročanju strank."><i class="fa fa-info-circle"></i></a>
+                            <a href="#!" data-toggle="popover" data-content="Storitev bo na voljo pri samostojnem naročanju strank."><i class="fa fa-info-circle"></i></a>
                         </label>
                     </div>
                     <div class="form-group">
@@ -1090,12 +1113,19 @@
             };
             //sms end
 
-            //color picker with addon
+            //service color - color picker with addon
             $('#cpServiceColor').colorpicker({useAlpha: false,useHashPrefix: false,autoInputFallback:false})
 
             $('#cpServiceColor').on('colorpickerChange', function(event) {
                 if (event.color != null) { $('#cpServiceColor .fa-square').removeClass('far').addClass('fas').css('color', event.color.toString()); }
                 else { $('#cpServiceColor .fa-square').removeClass('fas').addClass('far'); $('#cpServiceColor .form-control').val(''); }
+            })
+            //service group color
+            $('#cpServiceGroupColor').colorpicker({useAlpha: false,useHashPrefix: false,autoInputFallback:false})
+
+            $('#cpServiceGroupColor').on('colorpickerChange', function(event) {
+                if (event.color != null) { $('#cpServiceGroupColor .fa-square').removeClass('far').addClass('fas').css('color', event.color.toString()); }
+                else { $('#cpServiceGroupColor .fa-square').removeClass('fas').addClass('far'); $('#cpServiceGroupColor .form-control').val(''); }
             })
 
             //init popovers
@@ -1947,6 +1977,15 @@
            'columns': [
                { 'data': 'sortPosition' },
                { 'data': 'name' },
+                {
+                    'data': 'color', className: 'text-center',
+                    render: function (data, type, row, meta) {
+                        if ( row.color !=null && row.color.length > 0 )
+                        { return '<i class="fas fa-square" style=\"color:#' + row.color + '\"></i>'; }
+                        else
+                        { return '<i class="far fa-square"></i>'; }
+                    }
+                },
                {
                    'data': 'active', className: 'text-center',
                    render: function (data, type, row, meta) {
@@ -2005,6 +2044,8 @@
                async: true,
                success: function (result) {
                    $("#txtServiceGroupName").val(result.name);
+                    if (result.color != null) { $("#cpServiceGroupColor").colorpicker('setValue', '#' + result.color); }
+                        else { $("#cpServiceGroupColor").colorpicker('setValue', ''); }
                    $("#txtServiceGroupSortPosition").val(result.sortPosition);
                    $("#cbActive").prop('checked', result.active);
 
@@ -2068,6 +2109,8 @@
            service.id = p_ID;
            service.LocationId = parseInt($("#cboLocations").val());
            service.Name = $('#txtServiceGroupName').val();
+           service.color = $('#cpServiceGroupColor .form-control').val();
+           if (service.color.length != 6) { service.color = null; }
            service.SortPosition = parseInt($("#txtServiceGroupSortPosition").val());
            if (isNaN(service.SortPosition)) { service.SortPosition = 0; }
            
@@ -2138,6 +2181,17 @@
             });
         }
 
+        function pickTextColorBasedOnBgColorSimple(bgColor) {
+            if (bgColor==null){return 'white';}
+            try {
+              var color = (bgColor.charAt(0) === '#') ? bgColor.substring(1, 7) : bgColor;
+              var r = parseInt(color.substring(0, 2), 16); // hexToR
+              var g = parseInt(color.substring(2, 4), 16); // hexToG
+              var b = parseInt(color.substring(4, 6), 16); // hexToB
+              return (((r * 0.299) + (g * 0.587) + (b * 0.114)) > 186) ? 'black' : 'white';
+                } catch (error) { return 'white';}
+            }
+
         var GetServicesTable = async function () {
 
             var table = $('#dtServices').DataTable({
@@ -2172,14 +2226,36 @@
                           {  
                               'data': 'serviceGroup', 
                               render: function (data, type, row, meta) {
-                                        if ( row.serviceGroup !=null  )
-                                         { return row.serviceGroup.name; }
+                                if ( row.serviceGroup !=null  )
+                                    {
+                                        if ( row.serviceGroup.color !=null && row.serviceGroup.color.length > 0 )
+                                        { return '<span class="badge " style=\"font-size: unset;background-color:#' + row.serviceGroup.color + '; color:' + pickTextColorBasedOnBgColorSimple(row.serviceGroup.color) + ';line-height: 3;padding-left: 2em;padding-right: 2em;\">'+row.serviceGroup.name+'</span> '; }
+                                        else
+                                              { return '<span class="badge " style=\"font-size: unset;border: solid 1px;line-height: 3;padding-left: 2em;padding-right: 2em;\">'+row.serviceGroup.name+'</span> '; }
+                                    }
                                   else
                                   { return ''; }
                               } 
                           },
-                    { 'data': 'name' },
-                    { 'data': 'minutes' },
+                    { 
+                        'data': 'name',
+                          render: function (data, type, row, meta) {
+                              var retval="";
+                              var barva=row.color;
+                                if (barva==null && row.serviceGroup !=null ) 
+                                { if ( row.serviceGroup.color !=null && row.serviceGroup.color.length > 0 ) { barva= row.serviceGroup.color; } }
+                                if (barva!=null)
+                                {retval='<span class="badge " style=\"width: 100%;text-align: left;font-size: initial;background-color:#' + barva + '; color:' + pickTextColorBasedOnBgColorSimple(barva) + ';\">'+row.name+'</span> ';}
+                                    else
+                                            {retval='<span class="badge " style=\"width: 100%;text-align: left;font-size: initial;border: solid 1px;\">'+row.name+'</span> ';}
+                                
+                                if ( row.priceDescription !=null && row.priceDescription.length > 0 ) { retval+= '<p style="font-size: smaller;margin-bottom: initial;">' + row.priceDescription + '</p>'; }
+                                return retval;
+                              }
+                    },
+                          { 'data': 'minutes', className: 'text-center', 
+                          render:  function (data, type, row, meta) { return row.minutes+' min'}
+                          },
                     {
                         'data': 'color', className: 'text-center',
                         render: function (data, type, row, meta) {
@@ -2238,6 +2314,7 @@
                 //clear form
                 $("#txtServiceName").val('');
                 $("#txtServiceMinutes").val('');
+                $("#txtPriceDescription").val('');
                 $("#cboServiceGroup").selectpicker('val', '0');
                 $("#cpServiceColor").colorpicker('setValue', null);
                 $("#cbUsedInClientBooking").prop('checked', false);
@@ -2256,6 +2333,7 @@
                     success: function (result) {
                         $("#txtServiceName").val(result.name);
                         $("#txtServiceMinutes").val(result.minutes);
+                        $("#txtPriceDescription").val(result.priceDescription);
                         $("#cboServiceGroup").selectpicker('val', result.serviceGroupId);
                         if (result.color != null) { $("#cpServiceColor").colorpicker('setValue', '#' + result.color); }
                         else { $("#cpServiceColor").colorpicker('setValue', ''); }
@@ -2323,6 +2401,7 @@
                 service.LocationId = parseInt($("#cboLocations").val());
                 service.Name = $('#txtServiceName').val();
                 service.Minutes = parseInt($("#txtServiceMinutes").val());
+                service.PriceDescription = $("#txtPriceDescription").val();
                 if (isNaN(service.Minutes)) { service.Minutes = 0; }
                 service.serviceGroupId = Number($('#cboServiceGroup').val());
                 service.color = $('#cpServiceColor .form-control').val();

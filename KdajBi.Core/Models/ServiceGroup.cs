@@ -23,5 +23,8 @@ namespace KdajBi.Core.Models
         
         public int SortPosition { get; set; }
 
+        [MinLength(6), MaxLength(6)]
+        public string Color { get; set; }
+
     }
 }

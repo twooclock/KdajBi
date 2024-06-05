@@ -73,6 +73,7 @@ namespace KdajBi.Web.Controllers
                                 var gt = _CurrentUserGooToken();
                                 if (gt != null)
                                 {
+                                    var services = _context.Services.Include(g => g.ServiceGroup).Where(c => c.CompanyId == _CurrentUserCompanyID()).ToList();
                                     var events = new List<FullCalendar.Event>();
                                     using (GoogleService service = new GoogleService(User.Identity.Name, gt))
                                     {
@@ -83,6 +84,11 @@ namespace KdajBi.Web.Controllers
                                             {
                                                 var item = myVM.Location.Workplaces.ElementAt(i);
                                                 if (cals.Where(c => c.Id == item.GoogleCalendarID).Count() == 0) { item.GoogleCalendarID = null; }
+                                                //get calendar color
+                                                foreach (var cal in cals)
+                                                {
+                                                    if (cal.Id == item.GoogleCalendarID) { item.GoogleCalendarColor = cal.BackgroundColor; }
+                                                }
                                                 if (item.GoogleCalendarID != null)
                                                 {
                                                     myVM.GoogleCalendars.Add(new Tuple<string, string, long>(item.GoogleCalendarID, item.Name, item.Id));
@@ -111,35 +117,26 @@ namespace KdajBi.Web.Controllers
                                                                 newEvent.extendedProps = (Dictionary<string, string>)calEvent.ExtendedProperties.Shared;
                                                                 if (newEvent.extendedProps != null)
                                                                 {
-                                                                    //if (newEvent.extendedProps.ContainsKey("client"))
-                                                                    //{
-                                                                    //    var client = newEvent.extendedProps["client"];
-                                                                    //    try
-                                                                    //    {
-                                                                    //        dynamic myClient = JsonConvert.DeserializeObject<dynamic>(client);
-                                                                    //        newEvent.title = myClient.label;
-                                                                    //        if (myClient.mobile.ToString().Length > 0) { newEvent.title = newEvent.title + " (" + myClient.mobile + ")"; }
-                                                                    //    }
-                                                                    //    catch (Exception ex)
-                                                                    //    {
-                                                                    //        newEvent.title = client;
-                                                                    //    }
-                                                                    //}
+
                                                                     if (newEvent.extendedProps.ContainsKey("notes"))
                                                                     {
                                                                         try
                                                                         {
                                                                             dynamic myNotes = JsonConvert.DeserializeObject<dynamic>(newEvent.extendedProps["notes"]);
-                                                                            //foreach (var myNote in myNotes)
-                                                                            //{
-                                                                            //    if (myNote.minutes != null)
-                                                                            //    { newEvent.title = newEvent.title + "\r\n" + myNote.label.Value.Replace("(" + myNote.minutes.Value + " min)", ""); }
-                                                                            //    else
-                                                                            //    { newEvent.title = newEvent.title + "\r\n" + myNote.label.Value; }
-                                                                            //}
-
-                                                                            if (myNotes[0].color != null)
-                                                                            { newEvent.color = "#" + myNotes[0].color.Value; }
+                                                                            //if (myNotes[0].color != null)
+                                                                            //{ newEvent.color = "#" + myNotes[0].color.Value; newEvent.textColor = Core.Utils.PickTextColorBasedOnBgColorSimple(myNotes[0].color.Value) ; }
+                                                                            if (myNotes[0].value != null)
+                                                                            {
+                                                                                var storitev = services.FirstOrDefault(c => c.Id == long.Parse((string)(myNotes[0].value)));
+                                                                                if (storitev!=null)
+                                                                                { 
+                                                                                    string barva = storitev.Color;
+                                                                                    if (barva == null && storitev.ServiceGroup != null ) {
+                                                                                        barva= storitev.ServiceGroup.Color;
+                                                                                    }
+                                                                                    if (barva != null) { newEvent.color = "#" + barva; }
+                                                                                }
+                                                                            }
 
                                                                         }
                                                                         catch (Exception)
@@ -150,6 +147,7 @@ namespace KdajBi.Web.Controllers
                                                                 }
 
                                                             }
+                                                            if (newEvent.color == null) { newEvent.color = item.GoogleCalendarColor; }
                                                             events.Add(newEvent);
                                                         }
                                                     }
@@ -163,11 +161,7 @@ namespace KdajBi.Web.Controllers
                                                 {
                                                     myVM.Location.Workplaces.Remove(item);
                                                 }
-                                                //get calendar color
-                                                foreach (var cal in cals)
-                                                {
-                                                    if (cal.Id == item.GoogleCalendarID) { item.GoogleCalendarColor = cal.BackgroundColor; }
-                                                }
+                                                
                                             }
                                         }
                                         else {
