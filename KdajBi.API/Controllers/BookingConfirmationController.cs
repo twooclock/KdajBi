@@ -74,33 +74,37 @@ namespace KdajBi.API.Controllers
                 );
             }
 
-            // obvesti stranko prek sms (TODO: naredi prek service)
-            SmsCampaign newSmsCampaign = new SmsCampaign();
-            newSmsCampaign.Company.Id = _CurrentUserCompanyID();
-            newSmsCampaign.LocationId = bookingConfirmation.LocationId;
-            newSmsCampaign.AppUser.Id = _CurrentUserID();
+            if (bool.Parse(SettingsHelper.getSetting(_context, bookingConfirmation.Location.CompanyId, bookingConfirmation.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
+            {
+                // obvesti stranko prek sms (TODO: naredi prek service)
+                SmsCampaign newSmsCampaign = new SmsCampaign();
+                newSmsCampaign.Company.Id = bookingConfirmation.Location.CompanyId;
+                newSmsCampaign.LocationId = bookingConfirmation.LocationId;
+                var myUser = _context.Users.Where(c => c.CompanyId == bookingConfirmation.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
+                newSmsCampaign.AppUser.Id = myUser.Id;
 
-            newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste "+ bookingConfirmation.Start.Value.ToString("dd.MM.yyyy")+" ob "+ bookingConfirmation.Start.Value.ToString("HH:mm")+". Lep pozdrav! ";
-            if (string.IsNullOrEmpty(bookingConfirmation.Location.Tel) == false)
-            { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookingConfirmation.Location.Tel; }
-            var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+                newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + bookingConfirmation.Start.Value.ToString("dd.MM.yyyy") + " ob " + bookingConfirmation.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + bookingConfirmation.Location.Name;
+                if (string.IsNullOrEmpty(bookingConfirmation.Location.Tel) == false)
+                { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookingConfirmation.Location.Tel; }
+                var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
 
-            newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+                newSmsCampaign.MsgSegments = mySmsInfo.Messages;
 
-            newSmsCampaign.Name = "AppointmentConfimation";
+                newSmsCampaign.Name = "AppointmentConfimation";
 
-            newSmsCampaign.Recipients.Add(new SmsMsg(bookingConfirmation.Client.Mobile , bookingConfirmation.Client.Id));
+                newSmsCampaign.Recipients.Add(new SmsMsg(bookingConfirmation.Client.Mobile, bookingConfirmation.Client.Id));
 
-            newSmsCampaign.SendAfter = DateTime.Now;
-            newSmsCampaign.ApprovedAt = DateTime.Now;
+                newSmsCampaign.SendAfter = DateTime.Now;
+                newSmsCampaign.ApprovedAt = DateTime.Now;
 
 
-            _context.Attach(newSmsCampaign.Company);
-            _context.Attach(newSmsCampaign.AppUser);
-            _context.SmsCampaigns.Add(newSmsCampaign);
+                _context.Attach(newSmsCampaign.Company);
+                _context.Attach(newSmsCampaign.AppUser);
+                _context.SmsCampaigns.Add(newSmsCampaign);
+            }
             try
             {
-                 _context.SaveChangesAsync();
+                  _context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -119,9 +123,11 @@ namespace KdajBi.API.Controllers
                 .Include(b => b.Workplace)
                 .Where(b => b.CompanyId == _CurrentUserCompanyID())
                 .FirstOrDefault(b => b.Id == id);
-
+            if (bookingConfirmation == null) { return NotFound(); }
+            
             bookingConfirmation.Status = 2;
             bookingConfirmation.UpdatedUserID = _CurrentUserID();
+            bookingConfirmation.UpdatedDate = DateTime.Now;
 
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {
@@ -130,7 +136,15 @@ namespace KdajBi.API.Controllers
                     bookingConfirmation.GCalId
                 );
             }
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "/api/booking-confirmation");
+                throw;
+            }
 
             return Ok();
         }

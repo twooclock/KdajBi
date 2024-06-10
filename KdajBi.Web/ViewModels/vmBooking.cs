@@ -12,6 +12,8 @@ namespace KdajBi.Web.ViewModels
         public AppointmentToken token;
         public GoogleAuthToken gt;
         public int PublicBoooking_MaxDays;
+        public bool PublicBooking_AllowCurrentDay;
+        public bool PublicBooking_AlertMeWithSMS;
         public string PublicBoooking_CSS;
     }
 }

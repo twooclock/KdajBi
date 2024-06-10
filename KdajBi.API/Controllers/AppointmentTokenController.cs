@@ -84,9 +84,12 @@ namespace KdajBi.API.Controllers
                     newSmsCampaign.Company.Id = _CurrentUserCompanyID();
                     newSmsCampaign.LocationId = appointmentTokenRequest.LocationId;
                     newSmsCampaign.AppUser.Id = _CurrentUserID();
-            
-                    newSmsCampaign.MsgTxt = @"Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/"+ appointmentToken.Token;
 
+                    newSmsCampaign.MsgTxt = @"Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/" + appointmentToken.Token;
+                    Location myLocation = _context.Locations.Find(appointmentTokenRequest.LocationId);
+                    newSmsCampaign.MsgTxt += Environment.NewLine + @"Lep pozdrav! " + myLocation.Name;
+                    if (string.IsNullOrEmpty(myLocation.Tel) == false)
+                    { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myLocation.Tel; }
                     var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
                     newSmsCampaign.MsgSegments = mySmsInfo.Messages;
                     newSmsCampaign.Name = "AppointmentLink";

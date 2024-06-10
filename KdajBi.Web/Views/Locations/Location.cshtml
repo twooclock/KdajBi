@@ -141,34 +141,39 @@
                                 <div class="tab-content" id="custom-tabs-four-tabContent">
                                     <div class="tab-pane fade active show" id="general" role="tabpanel" aria-labelledby="general-tab">
                                         <form id="formGeneral" name="formGeneral" class="form-horizontal">
-                                            <div class="form-group">
-                                                <label for="inputName" class="col-sm-2 control-label">Ime</label>
+                                            <div class="row">
+                                            <div class="col-sm form-group">
+                                                <label for="inputName" class="col-sm control-label">Ime</label>
                                                 <div class="col-sm-10">
                                                     <input class="form-control" id="inputName" placeholder="Ime" value="@Html.Raw(@Model.Location.Name)">
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="inputTel" class="col-sm-2 control-label">Telefon</label>
+                                            <div class="col-sm form-group">
+                                                <label for="inputTel" class="col-sm control-label">Telefon</label>
                                                 <div class="col-sm-10">
                                                     <input class="form-control" id="inputTel" placeholder="Telefon" value="@Html.Raw(@Model.Location.Tel)">
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="inputAddress" class="col-sm-2 control-label">Naslov</label>
+                                                </div>
+                                                <div class="row">
+                                            <div class="col-sm form-group">
+                                                <label for="inputAddress" class="col-sm control-label">Naslov</label>
                                                 <div class="col-sm-10">
                                                     <input class="form-control" id="inputAddress" placeholder="Naslov" value="@Html.Raw(@Model.Location.Address)">
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="inputTimetable" class="col-sm-2 control-label">Urnik</label>
+                                                    <div class="col-sm form-group">
+                                                <label for="inputTimetable" class="col-sm control-label">Urnik</label>
                                                 <div class="col-sm-10">
                                                     <input class="form-control" id="inputTimetable" placeholder="Urnik" value="@Html.Raw(@Model.Location.Timetable)">
                                                 </div>
                                             </div>
+                                                </div>
                                             <div class="row">
                                                 <div class="form-group col-sm-8">
-                                                    <label for="inputPublicBookingToken" class="control-label">Naslov za samostojno naročanje strank</label>
+                                                    <label for="inputPublicBookingToken" class="control-label">Naslov za samostojno naročanje strank
                                                     <a href="#!" data-toggle="popover" data-content="Samostojno nočanje bo omogočeno na povezavi https://kdajbi.si/narocanje/[Del naslova za naročanje]. Stranka, s katero boste delili naslov, se bo lahko samostojno naročila."><i class="fa fa-info-circle"></i></a>
+                                                    </label>
                                                     <div>
                                                         <input class="form-control" id="inputPublicBookingToken" placeholder="[Če želite omogočiti vtipkajte vsaj 3 znake]" value="@Html.Raw(@Model.Location.PublicBookingToken)">
                                                         @if (string.IsNullOrEmpty(@Model.Location.PublicBookingToken) == false)
@@ -183,22 +188,45 @@
                                                 </div>
                                             </div>
 											<div class="form-group">
-												<label for="txtPublicBookingText" class="control-label">Tekst pri samostojnem naročanju</label>
+												<label for="txtPublicBookingText" class="control-label">Tekst pri samostojnem naročanju
 												<a href="#!" data-toggle="popover" data-content="Tekst se prikaže na dnu strani za naročanje. Mišljen je kot dodatne informacije za stranko, mogoče urnik, kontakt ipd."><i class="fa fa-info-circle"></i></a>
-												<div class="col-sm-10">
+												</label>
+                                                <div class="col-sm-10">
 													<input class="form-control" id="txtPublicBookingText" placeholder="" value="">
 												</div>
 											</div>
-											<div class="form-group">
-											<label for="txtPublicBookingMaxDays" class="control-label">Koliko dni vnaprej si lahko stranka izbere prost termin</label>
-											<a href="#!" data-toggle="popover" data-content="Vpišite koliko dni vnaprej si stranka lahko izbere prost termin. Stranka se bo lahko naročila za največ toliko dni vnaprej. (S tem lahko omejite, da bi se vam stranke naročile npr. 6 mesecev vnaprej)"><i class="fa fa-info-circle"></i></a>
-											<div class="col-sm-10">
-												<input class="form-control" id="txtPublicBookingMaxDays" type="number" pattern="[0-9.]+" placeholder="" value="">
-											</div>
+                                            <div class="row">
+											<div class="col-sm form-group">
+											    <label for="txtPublicBookingMaxDays" class="control-label">Koliko dni vnaprej si lahko stranka izbere prost termin
+											    <a href="#!" data-toggle="popover" data-content="Vpišite koliko dni vnaprej si stranka lahko izbere prost termin. Stranka se bo lahko naročila za največ toliko dni vnaprej. (S tem lahko omejite, da bi se vam stranke naročile npr. 6 mesecev vnaprej)"><i class="fa fa-info-circle"></i></a>
+                                                </label>
+                                                <div class="col-sm-10">
+												    <input class="form-control" id="txtPublicBookingMaxDays" type="number" pattern="[0-9.]+" placeholder="" value="">
+											    </div>
 										    </div>
+                                                    <div class="form-group col-sm d-flex flex-column justify-content-end">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingAllowCurrentDay">
+                                                            <label class="form-check-label" for="chkPublicBookingAllowCurrentDay">
+                                                                Dovoli naročanje na trenutni dan
+                                                                <a href="#!" data-toggle="popover" data-content="Dovoli stranki, da se naroči na trenutni dan"><i class="fa fa-info-circle"></i></a>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-sm d-flex flex-column justify-content-end">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingAlertMeWithSMS">
+                                                            <label class="form-check-label" for="chkPublicBookingAlertMeWithSMS">
+                                                                Ko se stranka naroči, me obvesti prek SMS
+                                                                <a href="#!" data-toggle="popover" data-content="Ko si bo stranka izbrala termin, boste oveščeni prek SMS, da  boste termin lahko čimprej potrdili.(SMS bo poslan na telefon naveden zgoraj.)"><i class="fa fa-info-circle"></i></a>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 <div class="form-group">
-                                                    <label for="txtPublicBookingCSS" class="control-label">CSS za napredno oblikovanje strani</label>
+                                                    <label for="txtPublicBookingCSS" class="control-label">CSS za napredno oblikovanje strani
                                                     <a href="#!" data-toggle="popover" data-content="Vpišite css za napredno oblikovanje strani (Mora vsebovat <style></style>)"><i class="fa fa-info-circle"></i></a>
+                                                    </label>
                                                     <div class="col-sm-10">
                                                         <input class="form-control" id="txtPublicBookingCSS"  placeholder="" value="">
                                                     </div>
@@ -426,11 +454,11 @@
                                                 <div class="row">
                                                     <div class="col-sm-10">
                                                         <textarea rows="2" id="SMS_GOO_Msg" name="SMS_GOO_Msg" class="form-control" placeholder="Pozdravljeni naročeni ste..." oninput="showSMSInfo(this.value,'lblGOO_MsgSMSinfo')"></textarea>
-                                                        <label id="lblGOO_MsgSMSinfo" class="form-check-label">
+                                                        < id="lblGOO_MsgSMSinfo" class="form-check-label">
                                                             [Pri pošiljanju se sporočilo lahko razdeli na več delov!]
-                                                        </label>
-                                                        <a href="#!" data-toggle="popover" data-content="Sporočilo se pri pošiljanju razdeli na dele dolge 160 znakov, če pa vsebuje šumnike ali posebne znake pa na dele dolge 67 znakov. Limit se porablja glede na število poslanih delov. Če želite prihraniti limit, naj bodo vaša sporočila kratka in brez šumnikov in posebnih znakov."><i class="fa fa-info-circle"></i></a>
-                                                    </div>
+                                                            <a href="#!" data-toggle="popover" data-content="Sporočilo se pri pošiljanju razdeli na dele dolge 160 znakov, če pa vsebuje šumnike ali posebne znake pa na dele dolge 67 znakov. Limit se porablja glede na število poslanih delov. Če želite prihraniti limit, naj bodo vaša sporočila kratka in brez šumnikov in posebnih znakov."><i class="fa fa-info-circle"></i></a>
+                                                            </label>
+                                                        </div>
                                                     <div class="col-sm-2">
                                                         <button type="button" class="btn btn-info" onclick="resetSMSText()">Privzeto sporočilo</button>
                                                     </div>
@@ -514,11 +542,11 @@
                                                     <div class="row">
                                                         <div class="col-sm-10">
                                                             <textarea rows="2" id="SMS_RD_Msg" name="SMS_RD_Msg" class="form-control" placeholder="Voščilo..." oninput="showSMSInfo(this.value,'lblRD_MsgSMSinfo')"></textarea>
-                                                            <label id="lblRD_MsgSMSinfo" class="form-check-label">
+                                                            < id="lblRD_MsgSMSinfo" class="form-check-label">
                                                                 [Pri pošiljanju se sporočilo lahko razdeli na več delov!]
-                                                            </label>
-                                                            <a href="#!" data-toggle="popover" data-content="Sporočilo se pri pošiljanju razdeli na dele dolge 160 znakov, če pa vsebuje šumnike ali posebne znake pa na dele dolge 67 znakov. Limit se porablja glede na število poslanih delov. Če želite prihraniti limit, naj bodo vaša sporočila kratka in brez šumnikov in posebnih znakov."><i class="fa fa-info-circle"></i></a>
-                                                        </div>
+                                                                <a href="#!" data-toggle="popover" data-content="Sporočilo se pri pošiljanju razdeli na dele dolge 160 znakov, če pa vsebuje šumnike ali posebne znake pa na dele dolge 67 znakov. Limit se porablja glede na število poslanih delov. Če želite prihraniti limit, naj bodo vaša sporočila kratka in brez šumnikov in posebnih znakov."><i class="fa fa-info-circle"></i></a>
+                                                                </label>
+                                                            </div>
                                                         <div class="col-sm-2">
                                                             <button type="button" class="btn btn-info" onclick="resetRDSMSText()">Privzeto sporočilo</button>
                                                         </div>
@@ -631,8 +659,9 @@
                         <input type="text" id="txtServiceGroupName" name="txtServiceGroupName" class="form-control" />
                     </div>
                     <div class="form-group">
-                        <label>Barva:</label>
+                        <label>Barva:
                         <a href="#!" data-toggle="popover" data-content="Tako se bodo obarvala naročila s storitvami v tej skupini. Če barva ni določena se naročila obarvajo z barvo storitve (če je določena)."><i class="fa fa-info-circle"></i></a>
+                        </label>
                         <div id="cpServiceGroupColor" class="input-group">
                             <input type="text" class="form-control">
                             <div class="input-group-append">
@@ -687,14 +716,14 @@
                     <div class="form-group">
                         <label for="txtPriceDescription">
                             Cena ali opis:
+                            <a href="#!" data-toggle="popover" data-content="Ta cena/opis bo prikazan pri storitvi pri samostojnem naročanju stranke."><i class="fa fa-info-circle"></i></a>
                         </label>
-                        <a href="#!" data-toggle="popover" data-content="Ta cena/opis bo prikazan pri storitvi pri samostojnem naročanju stranke."><i class="fa fa-info-circle"></i></a>
-
                         <input type="text" id="txtPriceDescription" name="txtPriceDescription" class="form-control" maxlength="50" />
                     </div>
                     <div class="form-group">
-                        <label>Barva:</label>
+                        <label>Barva:
                         <a href="#!" data-toggle="popover" data-content="Tako se bodo obarvala naročila s to storitvijo. Če barva ni določena se naročila obarvajo z barvo skupine (če je določena)."><i class="fa fa-info-circle"></i></a>
+                        </label>
                         <div id="cpServiceColor" class="input-group">
                             <input type="text" class="form-control">
                             <div class="input-group-append">
@@ -1434,6 +1463,8 @@
                 var settings = new Object();
                 settings["PublicBooking_Text"] = $("#txtPublicBookingText").val();
                 settings["PublicBooking_MaxDays"] = $("#txtPublicBookingMaxDays").val();
+                      settings["PublicBooking_AllowCurrentDay"] = $("#chkPublicBookingAllowCurrentDay").prop("checked");
+                      settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
                 settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
 
                 getAPIToken().then((result) => {
@@ -1460,7 +1491,9 @@
             var settings = new Object();
             settings["PublicBooking_Text"] = $("#txtPublicBookingText").val();
             settings["PublicBooking_MaxDays"] = $("#txtPublicBookingMaxDays").val();
-                  settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
+            settings["PublicBooking_AllowCurrentDay"] = 'true';
+            settings["PublicBooking_AlertMeWithSMS"] = 'true';
+            settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
 
                   getAPIToken().then((result) => {
             $.ajax({
@@ -1473,9 +1506,15 @@
                  success: function (result) {
                      $("#txtPublicBookingText").val(result["PublicBooking_Text"]);
                      $("#txtPublicBookingMaxDays").val(result["PublicBooking_MaxDays"]);
-                           $("#txtPublicBookingCSS").val(result["PublicBooking_CSS"]);
+                     if (result["PublicBooking_AllowCurrentDay"] != undefined) {
+                        if (result["PublicBooking_AllowCurrentDay"] == "true") { $('#chkPublicBookingAllowCurrentDay').prop('checked', true);}
+                     }
+                    if (result["PublicBooking_AlertMeWithSMS"] != undefined) {
+                        if (result["PublicBooking_AlertMeWithSMS"] == "true") { $('#chkPublicBookingAlertMeWithSMS').prop('checked', true);}
+                    }
+                    $("#txtPublicBookingCSS").val(result["PublicBooking_CSS"]);
 
-                      },
+                 },
                 error: function (xhr, status, error) {
                     toastr.error("Napaka:" + error.toString());
                     return false;

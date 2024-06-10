@@ -33,6 +33,7 @@ namespace KdajBi
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+                options.EnableDetailedErrors();
                 options.EnableSensitiveDataLogging();
             });
 
@@ -52,7 +53,7 @@ namespace KdajBi
 
             services.AddRazorPages();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            //obsolete services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             services.AddAuthentication(options =>
             {

@@ -23,10 +23,10 @@ namespace KdajBi.Web.Areas.Identity.Pages.Account
             _logger = logger;
         }
 
-        public void OnGet()
+        public async Task OnGet()
         {
-            _signInManager.SignOutAsync();
-            _logger.LogInformation("User " + User.Identity.Name  + " logged out.");
+            _logger.LogInformation("User " + User.Identity.Name + " logged out.");
+            await _signInManager.SignOutAsync();
         }
 
         public async Task<IActionResult> OnPost(string returnUrl = null)

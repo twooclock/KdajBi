@@ -349,7 +349,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         type: 'DELETE',
                         headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         success: function (data) {
+                            var par = card.parent();
                             card.remove();
+                            if (par.children().length == 1) { par.remove(); }
+                            ShowHideRightSlidebar();
                         }
                     });
                 });
@@ -365,7 +368,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         type: 'PUT',
                         headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         success: function (data) {
+                            var par = card.parent();
                             card.remove();
+                            if (par.children().length == 1) { par.remove(); }
+                            ShowHideRightSlidebar();
                         }
                     });
                 });
@@ -381,7 +387,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         type: 'DELETE',
                         headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         success: function (data) {
+                            var par = card.parent();
                             card.remove();
+                            if (par.children().length == 1) { par.remove(); }
+                            ShowHideRightSlidebar();
                         }
                     });
                 });
@@ -397,7 +406,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         type: 'PUT',
                         headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         success: function (data) {
+                            var par = card.parent();
                             card.remove();
+                            if (par.children().length == 1) { par.remove(); }
+                            ShowHideRightSlidebar();
                         }
                     });
                 });
@@ -427,10 +439,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
         });
 
         function ShowHideRightSlidebar() {
-            if ($("#rightSideBar").children().length > 0)
+            if ($("#rightSideBar").children('div:first').children().length > 1)
             {
                 $('#toggleRightSidebar').ControlSidebar('show');
-                $("#RightSidebarItems").text($("#rightSideBar").children().length);
+                $("#RightSidebarItems").text($("#rightSideBar").children('div:first').children().length-1);
                 $("#RightSidebarItems").show();
             }
             else

@@ -240,7 +240,7 @@ namespace KdajBi.API.Controllers
         {
 
             AppointmentToken appointmentToken = _context.AppointmentTokens
-                .Include(s => s.Company)
+                .Include(s => s.Location)
                 .Include(s => s.Client)
                 .Include(s => s.Workplace)
                 .Where(x => x.Active == true)
@@ -264,6 +264,31 @@ namespace KdajBi.API.Controllers
             }
             
             appointmentToken.Active = false;
+
+            if (bool.Parse(SettingsHelper.getSetting(_context, appointmentToken.Location.CompanyId, appointmentToken.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
+            {
+                //alert about new appointment
+                //(TODO: naredi prek service)
+                SmsCampaign newSmsCampaign = new SmsCampaign();
+                newSmsCampaign.Company.Id = appointmentToken.Location.CompanyId;
+                newSmsCampaign.LocationId = appointmentToken.Location.Id;
+                var myUser = _context.Users.Where(c => c.CompanyId == appointmentToken.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
+                newSmsCampaign.AppUser.Id = myUser.Id;
+
+                newSmsCampaign.MsgTxt = @"Novo narocilo prek spleta! Poglej v https://KdajBi.si";
+                var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+
+                newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+                newSmsCampaign.Name = "PublicBookingAlert";
+                newSmsCampaign.Recipients.Add(new SmsMsg(appointmentToken.Location.Tel.Replace(" ", ""), 0));
+
+                newSmsCampaign.SendAfter = DateTime.Now;
+                newSmsCampaign.ApprovedAt = DateTime.Now;
+
+                _context.Attach(newSmsCampaign.Company);
+                _context.Attach(newSmsCampaign.AppUser);
+                _context.SmsCampaigns.Add(newSmsCampaign);
+            }
             _context.SaveChanges();
 
 

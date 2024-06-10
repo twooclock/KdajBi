@@ -36,15 +36,17 @@ namespace KdajBi.Web.Controllers
             {
                 if (User.Identity.IsAuthenticated)
                 {
-                    if (LocationIsMine(DefaultLocationId()))
+                    long defaultLocationID = DefaultLocationId();
+                    if (LocationIsMine(defaultLocationID))
                     {
                         long scheduletype = 0;
-                        bool alternateWeeks = (SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbEmployee_AlternatingWeeks", "false")) == "true";
+                        long currUserCompanyID = _CurrentUserCompanyID();
+                        bool alternateWeeks = (SettingsHelper.getSetting(_context, currUserCompanyID, null, "cbEmployee_AlternatingWeeks", "false")) == "true";
                         if (alternateWeeks == true) { scheduletype = 1; }
                         try
                         {
                             vmAppointments myVM = new vmAppointments();
-                            myVM.Location = _context.Locations.Include(s => s.Schedule).Include(w => w.Workplaces).FirstOrDefault(x => x.Id == DefaultLocationId());
+                            myVM.Location = _context.Locations.Include(s => s.Schedule).Include(w => w.Workplaces).FirstOrDefault(x => x.Id == defaultLocationID);
                             if (myVM.Location != null)
                             {
                                 myVM.Location.Schedule = _context.Schedules.Find(myVM.Location.ScheduleId);
@@ -52,7 +54,7 @@ namespace KdajBi.Web.Controllers
                                 myVM.Settings = new Dictionary<string, string>();
                                 myVM.Settings.Add("SMS_AppointmentSMS", "false"); //mind missing sms settings if set to true!
                                 myVM.Settings.Add("SMS_GOO_Msg", "Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA>. Veselimo se vašega obiska!");
-                                SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), DefaultLocationId(), myVM.Settings);
+                                SettingsHelper.getSettings(_context, currUserCompanyID, defaultLocationID, myVM.Settings);
                                 //load setting for null location
                                 var globalSettings = new Dictionary<string, string>();
                                 globalSettings.Add("cbUseSingleListOfServices", "false");
@@ -62,18 +64,26 @@ namespace KdajBi.Web.Controllers
                                 globalSettings.Add("AppointmentsShow3Calendars", "false");
                                 globalSettings.Add("AppointmentsRowHeight", "");
                                 globalSettings.Add("AppointmentsMinColWidth", "");
-
-                                SettingsHelper.getSettings(_context, _CurrentUserCompanyID(),null, globalSettings);
+                                globalSettings.Add("cbUseSingleListOfClients", "false");
+                                SettingsHelper.getSettings(_context, currUserCompanyID,null, globalSettings);
                                 foreach (var item in globalSettings)
                                 {
                                     myVM.Settings.Add(item.Key,item.Value);
                                 }
-                                //myVM.Settings.Add("cbUseSingleListOfServices", SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbUseSingleListOfServices", "false"));
                                 //load google calendars
                                 var gt = _CurrentUserGooToken();
                                 if (gt != null)
                                 {
-                                    var services = _context.Services.Include(g => g.ServiceGroup).Where(c => c.CompanyId == _CurrentUserCompanyID()).ToList();
+                                    //lets TRY
+                                    List<Service> services;
+                                    var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+                                    optionsBuilder.UseSqlServer(_context.Database.GetConnectionString());
+                                    using (ApplicationDbContext dbContext = new ApplicationDbContext(optionsBuilder.Options))
+                                    {
+                                        { services = dbContext.Services.Include(g => g.ServiceGroup).Where(c => c.CompanyId == currUserCompanyID).ToList(); }
+                                    }
+                                    //now lets TEST
+
                                     var events = new List<FullCalendar.Event>();
                                     using (GoogleService service = new GoogleService(User.Identity.Name, gt))
                                     {
@@ -177,17 +187,14 @@ namespace KdajBi.Web.Controllers
 
                                 }
 
-                                Dictionary<string, string> mySettings = new Dictionary<string, string>();
-                                mySettings.Add("cbUseSingleListOfClients", "false");
-                                SettingsHelper.getSettings(_context, _CurrentUserCompanyID(), null, mySettings);
-                                if (mySettings["cbUseSingleListOfClients"] == "false")
-                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + Convert.ToChar(160).ToString() + p.Mobile), mobile = p.Mobile, notes=p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }
+                                
+                                if (globalSettings["cbUseSingleListOfClients"] == "false")
+                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == currUserCompanyID && c.LocationId == defaultLocationID).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + Convert.ToChar(160).ToString() + p.Mobile), mobile = p.Mobile, notes=p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }
                                 else
-                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + Convert.ToChar(160).ToString() + p.Mobile), mobile = p.Mobile, notes = p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }
+                                { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == currUserCompanyID).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + Convert.ToChar(160).ToString() + p.Mobile), mobile = p.Mobile, notes = p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }
 
                                 myVM.Token = _GetToken();
                                 myVM.UserUIShow = _UserUIShow();
-                                //myVM.Location.Workplaces= myVM.Location.Workplaces.OrderBy(s => s.SortPosition).ToList();
 
                                 return View(myVM);
                             }

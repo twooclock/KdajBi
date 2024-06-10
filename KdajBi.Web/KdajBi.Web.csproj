@@ -1955,6 +1955,7 @@
 
   <ItemGroup>
     <Folder Include="Views\Tags\" />
+    <Folder Include="wwwroot\LandingPage\blog\" />
   </ItemGroup>
 
 </Project>

@@ -18,6 +18,8 @@ namespace KdajBi.Web.ViewModels
         public string ErrorMsg;
         public bool EnterClientName;
         public int PublicBoooking_MaxDays;
+        public bool PublicBooking_AllowCurrentDay;
+        public bool PublicBooking_AlertMeWithSMS;
         public string PublicBoooking_CSS;
     }
 }

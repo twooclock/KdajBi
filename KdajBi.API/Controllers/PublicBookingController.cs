@@ -20,6 +20,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System.Globalization;
+using System.ComponentModel.Design;
 
 namespace KdajBi.API.Controllers
 {
@@ -294,7 +295,7 @@ namespace KdajBi.API.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("/api/publicbooking/{pbid}/{wpid}/{sid}")]
-        public ActionResult<List<TimeSlot>> Store(
+        public async Task<ActionResult<List<TimeSlot>>> Store(
             long pbid, long wpid, long sid,
             BookingRequest bookingRequest)
         {
@@ -328,7 +329,49 @@ namespace KdajBi.API.Controllers
                 myPB.WorkplaceId = wpid;
             }
             
-            _context.SaveChanges();
+                //_context.SaveChanges();
+               
+            if (bool.Parse(SettingsHelper.getSetting(_context, myPB.Location.CompanyId, myPB.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
+            {
+                //alert about new appointment
+                //(TODO: naredi prek service)
+                try
+                {
+                    SmsCampaign newSmsCampaign = new SmsCampaign();
+                    newSmsCampaign.Company.Id = myPB.Location.CompanyId;
+                    newSmsCampaign.LocationId = myPB.LocationId;
+                    var myUser = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
+                    newSmsCampaign.AppUser.Id = myUser.Id;
+                    newSmsCampaign.MsgTxt = @"Novo narocilo prek spleta! Poglej v https://KdajBi.si";
+                    var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+
+                    newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+                    newSmsCampaign.Name = "PublicBookingAlert";
+                    newSmsCampaign.Recipients.Add(new SmsMsg(myPB.Location.Tel.Replace(" ",""), 0));
+
+                    newSmsCampaign.SendAfter = DateTime.Now;
+                    newSmsCampaign.ApprovedAt = DateTime.Now;
+
+
+                    _context.Attach(newSmsCampaign.Company);
+                    _context.Attach(newSmsCampaign.AppUser);
+                    _context.SmsCampaigns.Add(newSmsCampaign);
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+            }
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+             
 
             return Ok();
         }
@@ -380,7 +423,7 @@ namespace KdajBi.API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPut("/api/publicbooking-confirmation/{id}")]
-        public ActionResult<List<TimeSlot>> Update(int id)
+        public async Task<ActionResult<List<TimeSlot>>> Update(int id)
         {
             // validate timeslot
             var myPB = _context.PublicBookings.Include(pb => pb.Workplace)
@@ -395,7 +438,7 @@ namespace KdajBi.API.Controllers
             myPB.UpdatedDate = DateTime.Now;
             try
             {
-                _context.SaveChangesAsync();
+                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -418,7 +461,7 @@ namespace KdajBi.API.Controllers
             newSmsCampaign.LocationId = myPB.LocationId;
             newSmsCampaign.AppUser.Id = _CurrentUserID();
 
-            newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + myPB.Start.Value.ToString("dd.MM.yyyy") + " ob " + myPB.Start.Value.ToString("HH:mm") + ". Lep pozdrav! ";
+            newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + myPB.Start.Value.ToString("dd.MM.yyyy") + " ob " + myPB.Start.Value.ToString("HH:mm") + ". Lep pozdrav! "+myPB.Location.Name;
             if (string.IsNullOrEmpty(myPB.Location.Tel) == false)
             { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myPB.Location.Tel; }
             var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
@@ -436,7 +479,7 @@ namespace KdajBi.API.Controllers
             _context.SmsCampaigns.Add(newSmsCampaign);
             try
             {
-                _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -453,7 +496,7 @@ namespace KdajBi.API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("/api/publicbooking-confirmation/{id}")]
-        public ActionResult<List<TimeSlot>> Destroy(int id)
+        public async Task<ActionResult<List<TimeSlot>>> Destroy(int id)
         {
             var myPB = _context.PublicBookings.Include(pb => pb.Workplace)
                 .Include(pb => pb.Workplace)
@@ -462,6 +505,8 @@ namespace KdajBi.API.Controllers
 
             myPB.Status = 2;
             myPB.UpdatedDate = DateTime.Now;
+            myPB.UpdatedUserID = _CurrentUserID();
+
 
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {
@@ -472,7 +517,7 @@ namespace KdajBi.API.Controllers
             }
             try
             {
-                _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {

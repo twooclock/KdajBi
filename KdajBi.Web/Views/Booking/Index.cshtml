@@ -121,6 +121,11 @@
 
   var token = "@Html.Raw(@Model.token.Token)";
   var date = new Date();
+        @if (@Model.PublicBooking_AllowCurrentDay == false)
+        {
+            @Html.Raw("date.setDate(date.getDate() + 1);")
+            ;
+        }
         var pb_maxdays = @Html.Raw(@Model.PublicBoooking_MaxDays);
 
         function loadScript(src) {
@@ -157,7 +162,15 @@
                             dateFormat: "d.m.Y",
                             locale: dayjs.locale(),
                             defaultDate: new Date(),
-                            minDate: "today",
+                            
+                            @if (@Model.PublicBooking_AllowCurrentDay ==false)
+                            {
+                                @Html.Raw("minDate: new Date().fp_incr(1), ")
+                                ;
+                            }
+                            else{
+                                @Html.Raw("minDate: \'today\', ");
+                            }
                             @if (@Model.PublicBoooking_MaxDays > 0)
                             {
                                 @Html.Raw("maxDate: new Date().fp_incr(pb_maxdays), ")
@@ -215,7 +228,7 @@
                         "timeSlot": appointment
                     }),
                     success: function (result) {
-                        window.location.href = "/booking-successful";
+                              window.location.href = "/booking-successful/" + token;
                     },
                     error: function (error) {
                         // TODO
@@ -272,11 +285,21 @@
   function loadFreeAppointments() {
     $( "#selected-date" ).text( formatDate( date ) );
 
-    $( "#previous-day" ).prop( "disabled", false );
-    if ( date <= new Date() ) {
-      $( "#previous-day" ).prop( "disabled", true );
-    }
+        $("#previous-day").prop("disabled", false);
+        $("#next-day").prop("disabled", false);
+        @if (@Model.PublicBooking_AllowCurrentDay==false)
+        {
+            @Html.Raw("if (date <= (dayjs().add(1, 'day')).toDate()) { $('#previous-day').prop('disabled', true); }")
 
+        }
+        if ( date <= new Date() ) {
+          $( "#previous-day" ).prop( "disabled", true );
+        }
+        @if (@Model.PublicBoooking_MaxDays > 0)
+        {
+            @Html.Raw("if (date >= (dayjs().add(pb_maxdays-1, 'day')).toDate()) { $('#next-day').prop('disabled', true); }")
+
+        }
     $( ".appointment" ).remove();
     $( "#no-appointments" ).hide();
     $( "#appointments-loader" ).show();

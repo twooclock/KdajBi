@@ -45,6 +45,8 @@ namespace KdajBi.Web.Controllers
             vm.Mobile = null;
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
             vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
+            vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
+            vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
             return View("~/Views/Book/Auth.cshtml", vm);
         }
@@ -74,6 +76,8 @@ namespace KdajBi.Web.Controllers
             vm.Mobile = inputMobile;
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
             vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
+            vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
+            vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
 
 
@@ -230,10 +234,17 @@ namespace KdajBi.Web.Controllers
         }
 
         [AllowAnonymous]
-        [Route("/booked")]
-        public IActionResult Success()
+        [Route("/booked/{token}")]
+        public IActionResult Success(string token)
         {
-            return View("~/Views/Book/Success.cshtml");
+            vmBooking vm = new vmBooking();
+            var myLocation = _context.Locations.Where(l => l.PublicBookingToken == token).FirstOrDefault();
+            if (myLocation != null)
+            { vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, myLocation.CompanyId, myLocation.Id, "PublicBooking_CSS", ""); }
+            else
+            { vm.PublicBoooking_CSS = ""; }
+
+            return View("~/Views/Book/Success.cshtml",vm);
         }
 
         [AllowAnonymous]

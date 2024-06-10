@@ -8,7 +8,7 @@
 }
 
 @section styles{
-
+    @Html.Raw(@Model.PublicBoooking_CSS)
 }
 
 
@@ -20,6 +20,8 @@
         <div>
             Hvala, uspešno ste oddali naročilo na termin!
             <br />Po sms-u boste v kratkem prejeli potrditev vašega izbranega termina.
+            <br/>
+            <h3><a class="btn btn-primary" href="https://kdajbi.si" >KdajBi.si</a></h3>
         </div>
     </div>
     <div class="card-footer px-auto">

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using Google;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
@@ -140,7 +142,15 @@ namespace KdajBi.GoogleHelper
 
         public void DeleteEvent( string calendarId, string eventId)
         {
-            myCALservice.Events.Delete(calendarId, eventId).Execute();
+            try
+            {
+                myCALservice.Events.Delete(calendarId, eventId).Execute();
+            }
+            catch (GoogleApiException ex)
+            {
+                if (ex.HttpStatusCode == HttpStatusCode.Gone) { return; } //ignore if already deleted
+                throw;
+            }
         }
 
         public void Dispose()

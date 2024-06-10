@@ -78,6 +78,24 @@ namespace KdajBi.Core
             }
             return retval;
         }
+        public static bool getSetting(ApplicationDbContext p_context, long companyid, long? locationid, string settingName, bool defaultValue)
+        {
+            bool retval = defaultValue;
+            Setting mySetting;
+            if (locationid.HasValue == true)
+            {
+                mySetting = p_context.Settings.Where(a => a.CompanyId == companyid && a.LocationId == locationid && a.Key == settingName).FirstOrDefault();
+            }
+            else
+            { mySetting = p_context.Settings.Where(a => a.CompanyId == companyid && a.LocationId == null && a.Key == settingName).FirstOrDefault(); }
+            if (mySetting != null)
+            {
+                bool n;
+                bool isBool = bool.TryParse(mySetting.Value, out n);
+                if (isBool == true) { retval = n; }
+            }
+            return retval;
+        }
         public static void saveSetting(ApplicationDbContext p_context, int userid, long companyid, long? locationid, string settingName, string settingValue)
         {
             Setting settingIndb;

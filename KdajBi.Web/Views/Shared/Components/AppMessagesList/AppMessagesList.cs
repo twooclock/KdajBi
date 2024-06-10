@@ -18,7 +18,7 @@ namespace KdajBi.Web.ViewComponents
             db = context;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(int CompanyId)
+        public IViewComponentResult Invoke(int CompanyId)
         {
             if (User.HasClaim("Nadzornik", bool.TrueString))
             {
@@ -36,11 +36,11 @@ namespace KdajBi.Web.ViewComponents
                     db.UserAppMessages
                         .Include(b => b.AppMessage)
                         .Where(b => b.AppMessage.ToCompanyId == CompanyId)
-                        .Where(b => b.Read == false && b.AppMessage.ForAdminOnly==false)
+                        .Where(b => b.Read == false && b.AppMessage.ForAdminOnly == false)
                         .ToList()
                     );
             }
-                
+
         }
     }
 }
