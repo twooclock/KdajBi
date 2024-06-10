@@ -97,8 +97,8 @@ namespace KdajBi.API.Controllers
                     availableAppointments = TimeSlotManager.removeOccupiedAppointments(
                         availableAppointments,
                         new TimeSlot(
-                            evt.Start.DateTime.Value,
-                            evt.End.DateTime.Value
+                            evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
+                            evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
                         )
                     );
                 }

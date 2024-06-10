@@ -108,10 +108,10 @@ namespace KdajBi.Web.Controllers
                                                     foreach (var calEvent in calEvents)
                                                     {
                                                         //ignore all day events
-                                                        if (calEvent.Start.DateTime != null && calEvent.End.DateTime != null)
+                                                        if (calEvent.Start.DateTimeDateTimeOffset.HasValue == true && calEvent.End.DateTimeDateTimeOffset.HasValue == true)
                                                         {
-                                                            var start = calEvent.Start.DateTime.Value;
-                                                            var end = calEvent.End.DateTime.Value;
+                                                            var start = calEvent.Start.DateTimeDateTimeOffset.Value.LocalDateTime;
+                                                            var end = calEvent.End.DateTimeDateTimeOffset.Value.LocalDateTime;
                                                             var newEvent = new FullCalendar.Event()
                                                             {
                                                                 id = calEvent.Id,

@@ -177,8 +177,8 @@ namespace KdajBi.GoogleHelper
             {
                 request.OauthToken = googleAuthToken.access_token;
                 if (nextpageToken != null) { request.PageToken = nextpageToken; }
-                request.TimeMin = firstDayOfMonth;
-                request.TimeMax = lastDayOfMonth;
+                request.TimeMinDateTimeOffset = firstDayOfMonth;
+                request.TimeMaxDateTimeOffset = lastDayOfMonth;
                 request.ShowDeleted = false;
                 request.SingleEvents = true;
                 //request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
