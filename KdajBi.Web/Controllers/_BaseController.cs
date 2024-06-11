@@ -4,6 +4,7 @@ using KdajBi.GoogleHelper;
 using KdajBi.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -47,7 +48,7 @@ namespace KdajBi.Web.Controllers
             return long.Parse(User.FindFirst("CompanyId").Value);
         }
 
-        protected GoogleAuthToken _CurrentUserGooToken()
+        protected async Task<GoogleAuthToken> _CurrentUserGooToken()
         {
             try
             {
@@ -68,19 +69,19 @@ namespace KdajBi.Web.Controllers
                         if (service.googleAuthToken.refresh_token != null) { gooToken.refresh_token = service.googleAuthToken.refresh_token; }
                         var strJson = JsonConvert.SerializeObject(gooToken);
                         var myClaim = new Claim("GooToken", strJson);
-                        AppUser appUser = _userManager.FindByNameAsync(User.Identity.Name).Result;
-                        var claimsPrincipal = _signInManager.CreateUserPrincipalAsync(appUser).Result;
+                        AppUser appUser = await _userManager.FindByNameAsync(User.Identity.Name);
+                        var claimsPrincipal = await _signInManager.CreateUserPrincipalAsync(appUser);
                         var existingClaim = claimsPrincipal.Claims.FirstOrDefault(r => r.Type == "GooToken");
                         if (existingClaim == null)
                         {
                             //add Google token to claims
-                            _ = _userManager.AddClaimAsync(appUser, myClaim).Result;
+                            await _userManager.AddClaimAsync(appUser, myClaim);
                         }
                         else
                         {
-                            _ = _userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim).Result;
+                            await _userManager.ReplaceClaimAsync(appUser, existingClaim, myClaim);
                         }
-                        _ = _signInManager.SignInAsync(appUser, false, null); //to refresh user claims
+                        await _signInManager.SignInAsync(appUser, false, null); //to refresh user claims
                     }
                 }
                 return gooToken;
@@ -92,12 +93,12 @@ namespace KdajBi.Web.Controllers
             }
         }
 
-        protected JwtToken _GetToken()
+        protected async Task<JwtToken> _GetToken()
         {
             JwtToken retval;
             if (User.Identity.IsAuthenticated)
             {
-                retval = _apiTokenProvider.GetToken(User.Identity.Name);
+                retval = await _apiTokenProvider.GetToken(User.Identity.Name);
                 if (retval != null)
                 { return retval; }
                 else
@@ -115,16 +116,16 @@ namespace KdajBi.Web.Controllers
             }
         }
 
-        protected bool LocationIsMine(long locationId)
+        protected async Task<bool> LocationIsMine(long locationId)
         {
-            return (_context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == locationId).Count() == 1);
+            return (await _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == locationId).CountAsync() == 1);
         }
-        protected bool ClientIsMine(long clientId)
+        protected async Task<bool> ClientIsMine(long clientId)
         {
-            return (_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == clientId).Count() == 1);
+            return (await _context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == clientId).CountAsync() == 1);
         }
 
-        protected long DefaultLocationId()
+        protected async Task<long> DefaultLocationId()
         {
             long retval = -1;
             string id = HttpContext.Request.Cookies[Utils.CookieNames.DefaultLocation];
@@ -132,16 +133,16 @@ namespace KdajBi.Web.Controllers
             {
                 id = Utils.GetCookieValueFromResponse(HttpContext.Response, Utils.CookieNames.DefaultLocation);
                 if (long.TryParse(id, out retval) == false)
-                { retval = _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID()).FirstOrDefault().Id; }
+                { retval = (await _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID()).FirstOrDefaultAsync()).Id; }
             }
-            if (LocationIsMine(retval) == false)
-            { retval = _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID()).FirstOrDefault().Id; }
+            if (await LocationIsMine(retval) == false)
+            { retval = (await _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID()).FirstOrDefaultAsync()).Id; }
             return retval;
         }
 
-        protected List<string> _UserUIShow()
+        protected async Task<List<string>> _UserUIShow()
         {
-            var retval= _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == null && a.Key == "UserUIShow").FirstOrDefault();
+            var retval= await _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == null && a.Key == "UserUIShow").FirstOrDefaultAsync();
             if (retval == null) { 
                 //return default menu for an ordinary user
                 return new List<string>() {"Appointments","Clients", "ClientsList","SMSCampaigns" };

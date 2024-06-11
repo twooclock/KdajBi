@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
 {
@@ -20,21 +21,21 @@ namespace KdajBi.Web.Controllers
 
 
         [Route("/companies")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             _BaseViewModel vmModel = new _BaseViewModel();
-            vmModel.Token = _GetToken();
+            vmModel.Token = await _GetToken();
             return View(vmModel);
         }
 
         [Route("/companies/mycompany")]
-        public IActionResult MyCompany()
+        public async Task<IActionResult> MyCompany()
         {
             vmCompany myVM = new vmCompany();
             myVM.Company = _context.Companies.Find(_CurrentUserCompanyID());
             if (myVM.Company != null)
             {
-                myVM.Token = _GetToken();
+                myVM.Token = await _GetToken();
                 return View(myVM);
             }
             else

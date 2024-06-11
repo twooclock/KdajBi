@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
 {
@@ -20,11 +21,11 @@ namespace KdajBi.Web.Controllers
 
 
         [Route("/users")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             _BaseViewModel vmModel = new _BaseViewModel();
-            vmModel.Token = _GetToken();
-            vmModel.UserUIShow = _UserUIShow();
+            vmModel.Token = await _GetToken();
+            vmModel.UserUIShow = await _UserUIShow();
 
             return View(vmModel);
         }
