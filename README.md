@@ -1,6 +1,8 @@
 # KdajBi
  Yet another the best appointment application/appointment scheduler/appointment system
 
+See it in action: [KdajBi.si](https://KdajBi.si) (Page in Slovenian)
+
 ~~Plan is to have~~ We have:
 1. Backend (core 3.1 webapp) and ~~frontend (vue.js)~~ [adminlte.io](https://adminlte.io) frontend for managing and accepting appointments. 
 2. User authentication via Google. 
