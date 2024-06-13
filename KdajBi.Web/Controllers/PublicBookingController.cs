@@ -116,6 +116,7 @@ namespace KdajBi.Web.Controllers
                             SmsCampaign newSmsCampaign = new SmsCampaign();
                             newSmsCampaign.Company.Id = bookinglocation.CompanyId;
                             newSmsCampaign.LocationId = bookinglocation.Id;
+                            newSmsCampaign.PublicBookingId = newbooking.Id;
                             newSmsCampaign.AppUser.Id = _context.Users.AsNoTracking().Where(u => u.CompanyId == bookinglocation.CompanyId).First().Id;
 
                             newSmsCampaign.MsgTxt = @"PIN za prijavo je " + myPIN.ToString() + ". Lep pozdrav! ";

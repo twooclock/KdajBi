@@ -76,13 +76,24 @@ namespace KdajBi.API.Controllers
                 appointmentToken.CreatedUserID= _CurrentUserID();
 
                 _context.AppointmentTokens.Add(appointmentToken);
-                
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "/api/appointment-tokens Error");
+                    throw;
+                }
+
                 if (appointmentTokenRequest.SendSMS==true)
                 { 
                     // obvesti stranko prek sms (appointmentToken.ClientId)
                     SmsCampaign newSmsCampaign = new SmsCampaign();
                     newSmsCampaign.Company.Id = _CurrentUserCompanyID();
                     newSmsCampaign.LocationId = appointmentTokenRequest.LocationId;
+                    newSmsCampaign.AppointmentTokenId = appointmentToken.Id;
                     newSmsCampaign.AppUser.Id = _CurrentUserID();
 
                     newSmsCampaign.MsgTxt = @"Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/" + appointmentToken.Token;

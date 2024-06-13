@@ -272,6 +272,7 @@ namespace KdajBi.API.Controllers
                 SmsCampaign newSmsCampaign = new SmsCampaign();
                 newSmsCampaign.Company.Id = appointmentToken.Location.CompanyId;
                 newSmsCampaign.LocationId = appointmentToken.Location.Id;
+                newSmsCampaign.AppointmentTokenId = appointmentToken.Id;
                 var myUser = _context.Users.Where(c => c.CompanyId == appointmentToken.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
                 newSmsCampaign.AppUser.Id = myUser.Id;
 

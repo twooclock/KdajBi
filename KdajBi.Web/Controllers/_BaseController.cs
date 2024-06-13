@@ -142,12 +142,17 @@ namespace KdajBi.Web.Controllers
 
         protected async Task<List<string>> _UserUIShow()
         {
-            var retval= await _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == null && a.Key == "UserUIShow").FirstOrDefaultAsync();
-            if (retval == null) { 
-                //return default menu for an ordinary user
-                return new List<string>() {"Appointments","Clients", "ClientsList","SMSCampaigns" };
+            List<string> retval = new List<string>() { "Appointments", "Clients", "ClientsList", "SMSCampaigns" };
+            var fromSettings= await _context.Settings.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.LocationId == null && a.Key == "UserUIShow").FirstOrDefaultAsync();
+            if (fromSettings != null) { retval= JsonConvert.DeserializeObject<List<string>>(fromSettings.Value); }
+            //check if public booking is enabled
+            long defLoc = await DefaultLocationId();
+            var loc= await _context.Locations.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == defLoc).FirstOrDefaultAsync();
+            if (loc != null)
+            {
+                if(String.IsNullOrEmpty(loc.PublicBookingToken)==false) { retval.Add("StatsPublicAppointments"); }
             }
-            else { return JsonConvert.DeserializeObject<List<string>>(retval.Value); }
+            return retval;
         }
     }
 }
