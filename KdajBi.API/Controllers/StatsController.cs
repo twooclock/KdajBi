@@ -92,7 +92,7 @@ namespace KdajBi.API.Controllers
                     if (smsItem.SentError > 0 || smsItem.SentAt == null) { myDatum = smsItem.Date; myCssClass = "text-danger"; }
                     else { myDatum = smsItem.SentAt; }
                     if (smsItem.Name == "PublicBookingAuthorization") { newEvent = new { date = myDatum, text = "SMS PIN za prijavo", cssClass = myCssClass }; newPB.Events.Add(newEvent); }
-                    if (smsItem.Name == "PublicBookingAlert") { newEvent = new { date = myDatum, text = "SMS Novo narocilo prek spleta!", cssClass = myCssClass }; newPB.Events.Add(newEvent); }
+                    if (smsItem.Name == "PublicBookingAlert") { newEvent = new { date = myDatum, text = "SMS Novo naročilo prek spleta!", cssClass = myCssClass }; newPB.Events.Add(newEvent); }
                     if (smsItem.Name == "PublicBookingConfimation") { newEvent = new { date = myDatum, text = "SMS Vaš termin je bil potrjen!", cssClass = myCssClass }; newPB.Events.Add(newEvent); }
                 }
 

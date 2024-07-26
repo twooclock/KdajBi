@@ -59,7 +59,7 @@ namespace KdajBi.API.Controllers
         [HttpPost("/api/appointment-tokens")]
         public async Task<ActionResult<AppointmentToken>> Store(AppointmentTokenRequest appointmentTokenRequest)
         {
-            Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == appointmentTokenRequest.ClientId && a.Mobile != null && a.AllowsSMS == true).SingleOrDefault();
+            Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == appointmentTokenRequest.ClientId && a.Mobile != null && a.Mobile != "" && a.AllowsSMS == true).SingleOrDefault();
             if (client != null)
             {
                 AppointmentToken appointmentToken = new AppointmentToken();

@@ -147,7 +147,7 @@ namespace KdajBi.Web.Controllers
                         }
                         else
                         {
-                            vm.ErrorMsg = "Neveljavna mobilna številka? Pokličte nas.";
+                            vm.ErrorMsg = "Neveljavna mobilna številka? Pokličite nas.";
                             return View("~/Views/Book/Error.cshtml", vm);
                         }
                     }

@@ -49,6 +49,11 @@
 
         .card-selected {
         }
+
+        @@media all and (max-width: 768px)
+{
+    .makswidth { width:-moz-available; }
+}
     </style>
     @Html.Raw(@Model.PublicBoooking_CSS)
 }
@@ -128,7 +133,7 @@
                                 </div>
                                 <div id="no-appointments" class="card card-outline card-primary p-1" style="display: none">
                                     <div class="card-body text-center">
-                                        <h4>Žal, ni prostih terminov</h4>
+                                        <h4>Ni prostih terminov</h4>
                                     </div>
                                 </div>
                                 <div id="appointments-loader" class="card card-outline card-primary p-1" style="display: none">
@@ -213,6 +218,11 @@
     <script src="~/plugins/bs-stepper/js/bs-stepper.min.js"></script>
 
     <script type="text/javascript">
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+
         var apiURL = "@Html.Raw(apiTP.Settings().BaseAddress)"
 
         var pbid = "@Html.Raw(@Model.PublicBoookingId)";
@@ -268,25 +278,31 @@
         }
 
         function createServices(p_items) {
+            var gCounter=0;
             var groupName=null;
             var newGroupDiv=null;
+            var newRowDiv=null;
             p_items.forEach((element) => {
                 if (element.serviceGroup !== null)
                 {
                     if (element.serviceGroup.name != groupName)
                     {
+                        gCounter++;
                         $('#services').append(newGroupDiv);
-                        newGroupDiv = $('<div/>').addClass("row");
+                        newGroupDiv = $('<div/>').addClass("row").addClass("collapse").attr({ id: 'gr_' + gCounter });
                         groupName=element.serviceGroup.name;
-                        let newP = $('<p>'+groupName+'</p>').attr({ style: "margin-bottom: 0;font-weight: bolder;" });
-                        $('#services').append(newP);
+                        let newP = $('<button>'+groupName+'</button>').addClass("btn btn-primary mb-1 makswidth").attr({ 'data-id': 'gr_' + gCounter }).attr({ style: "margin-left: -0.25rem;min-width: 18rem;margin-bottom: 0;font-weight: bolder;" });
+                        newP.click(function () { $('#' + $(this).data('id')).collapse('toggle'); });
+                        newRowDiv = $('<div/>').addClass("row");
+                        newRowDiv.append(newP);
+                        $('#services').append(newRowDiv);
                     }
                 }
                 else
                 {
                     if ( newGroupDiv==null) { newGroupDiv = $('<div/>').addClass("row");}
                 }
-                let newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1").attr({ id: 's_' + element.id }).attr({ style: "min-width: 18rem; border-width: 3px;" });
+                      let newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1 makswidth").attr({ id: 's_' + element.id }).attr({ style: "min-width: 18rem; border-width: 3px;" });
                 let lbl = $('<div/>').addClass("card-body");
                 let input = $('<h5/>').text(element.name).addClass("card-title");
                 let br = $('<br/>');
@@ -452,13 +468,15 @@
             modal.find('#selected-appointment-time').text(appointment);
             modal.find('#create-appointment').off();
             modal.find('#create-appointment').on("click", function () {
+                $(this).attr("disabled", true);
+                $(this).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Naročam...`);
                 $.ajax({
                     type: "POST",
                     url: apiURL + "/api/publicbooking/" +pbid + "/"+appwpid+"/"+sid+"/",
                     contentType: "application/json; charset=utf-8",
                     data: JSON.stringify({
                         "date": onlyISODate(date),
-                        "timeSlot":  appointment 
+                        "timeSlot": appointment 
                     }),
                     success: function (result) {
                         window.location.href = "/booked/@Model.token";
@@ -512,22 +530,26 @@
             return dayjs(p_date).format("YYYY-MM-DD") ;
         }
 
-        function loadFreeAppointments() {
-            $("#selected-date").text(formatDate(date));
-
+        function EnablePrevNext(){
             $("#previous-day").prop("disabled", false);
             $("#next-day").prop("disabled", false);
-            @if (@Model.PublicBooking_AllowCurrentDay ==false)
+            @if (@Model.PublicBooking_AllowCurrentDay == false)
             {
                 @Html.Raw("if (date <= (dayjs().add(1, 'day')).toDate()) { $('#previous-day').prop('disabled', true); }")
-
             }
             if (date <= new Date()) { $("#previous-day").prop("disabled", true); }
             @if (@Model.PublicBoooking_MaxDays > 0)
             {
                 @Html.Raw("if (date >= (dayjs().add(pb_maxdays-1, 'day')).toDate()) { $('#next-day').prop('disabled', true); }")
-                
+
             }
+        }
+
+        function loadFreeAppointments() {
+            $("#selected-date").text(formatDate(date));
+
+            $("#previous-day").prop("disabled", true);
+            $("#next-day").prop("disabled", true);
 
             $(".appointment").remove();
             $("#no-appointments").hide();
@@ -542,6 +564,7 @@
                     $("#no-appointments").hide();
                     if (result.length === 0) {
                         $("#no-appointments").show();
+                        EnablePrevNext();
                         return;
                     }
                         result.forEach(appointment => {
@@ -559,11 +582,14 @@
               </div>
               `);
                     });
+
+                    EnablePrevNext();
                 },
                 error: function (xhr, status, error) {
                     $("#appointments-loader").hide();
                     $("#no-appointments").show();
-                    // TODO: Show invalid token error
+                    // TODO: Show error?
+                    EnablePrevNext();
                     return false;
                 }
             });

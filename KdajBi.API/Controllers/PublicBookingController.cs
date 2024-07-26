@@ -335,7 +335,7 @@ namespace KdajBi.API.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "/api/publicbooking/Store");
                 throw;
             }
 
@@ -368,6 +368,7 @@ namespace KdajBi.API.Controllers
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "/api/publicbooking/ create PublicBookingAlert SmsCampaign");
                     throw;
                 }
             }
@@ -377,7 +378,7 @@ namespace KdajBi.API.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "/api/publicbooking/ save PublicBookingAlert SmsCampaign");
                 throw;
             }
              
