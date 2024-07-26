@@ -14,7 +14,7 @@ namespace KdajBi.Web.Services
     public interface IApiTokenProvider
     {
         ApiSettings Settings();
-        JwtToken GetToken(string email);
+        Task<JwtToken> GetToken(string email);
     }
 
     public class ApiSettings
@@ -46,7 +46,7 @@ namespace KdajBi.Web.Services
         }
 
 
-        public JwtToken GetToken(string email)
+        public async Task<JwtToken> GetToken(string email)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace KdajBi.Web.Services
                     {
                         //request token
                         _logger.LogInformation("GetAPIToken.Expiration=0 -> RequestToken("+ email + ")");
-                        myTokens[email] = RequestToken(email);
+                        myTokens[email] = await RequestToken(email);
                     }
                     else
                     {
@@ -65,13 +65,13 @@ namespace KdajBi.Web.Services
                         {
                             //refresh token if expired
                             _logger.LogInformation("GetAPIToken.Expired -> RefreshToken("+ email + ")");
-                            myTokens[email] = RefreshToken(email);
+                            myTokens[email] = await RefreshToken(email);
                         }
                     }
                 }
                 else {
                     _logger.LogInformation("GetAPIToken.FirstRequestToken("+ email + ")");
-                    myTokens[email] = RequestToken(email); }
+                    myTokens[email] = await RequestToken(email); }
             }
             catch (Exception ex)
             {
@@ -86,7 +86,7 @@ namespace KdajBi.Web.Services
             return _apiSettings;
         }
 
-        private JwtToken RefreshToken(string email)
+        private async Task<JwtToken> RefreshToken(string email)
         {
             JwtToken fals = new JwtToken();
             try
@@ -97,8 +97,8 @@ namespace KdajBi.Web.Services
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + myTokens[email].AccessToken);
                 string stringData = "{\"UserEmail\":\"" + email + "\",\"Token\":\"" + myTokens[email].RefreshToken + "\"}";
                 var contentData = new StringContent(stringData, System.Text.Encoding.UTF8, "application/json");
-                HttpResponseMessage response = client.PostAsync(_apiSettings.RefreshAddress, contentData).Result;
-                string jsonstringJWT = response.Content.ReadAsStringAsync().Result;
+                HttpResponseMessage response = await client.PostAsync(_apiSettings.RefreshAddress, contentData);
+                string jsonstringJWT = await response.Content.ReadAsStringAsync();
 
                 switch (response.StatusCode)
                 {
@@ -108,7 +108,7 @@ namespace KdajBi.Web.Services
                         break;
                     default:
                         _logger.LogInformation("RefreshToken("+email+") Unexpected StatusCode:"+response.StatusCode.ToString()+" got:"+ jsonstringJWT+" payload was:"+ stringData);
-                        myTokens[email] = RequestToken(email);
+                        myTokens[email] = await RequestToken(email);
                         break;
                 }
 
@@ -122,7 +122,7 @@ namespace KdajBi.Web.Services
             return myTokens[email];
         }
 
-        private JwtToken RequestToken(string email)
+        private async Task<JwtToken> RequestToken(string email)
         {
             JwtToken fals = new JwtToken();
             try
@@ -139,8 +139,8 @@ namespace KdajBi.Web.Services
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 string stringData = "{\"email\":\"" + email + "\",\"password\":\"" + email + "\"}";
                 var contentData = new StringContent(stringData, System.Text.Encoding.UTF8, "application/json");
-                HttpResponseMessage response = client.PostAsync(_apiSettings.LoginAddress, contentData).Result;
-                string jsonstringJWT = response.Content.ReadAsStringAsync().Result;
+                HttpResponseMessage response = await client.PostAsync(_apiSettings.LoginAddress, contentData);
+                string jsonstringJWT = await response.Content.ReadAsStringAsync();
                 switch (response.StatusCode)
                 {
                     case System.Net.HttpStatusCode.OK:

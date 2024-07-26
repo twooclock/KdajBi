@@ -75,6 +75,14 @@
             <param name="id"></param>
             <returns></returns>
         </member>
+        <member name="M:KdajBi.API.Controllers.StatsController.PublicBookingsTimeline(System.Int64,System.Nullable{System.DateTime})">
+            <summary>
+            returns a list of public booking events
+            </summary>
+            <param name="locationid"></param>
+            <param name="date"></param>
+            <returns></returns>
+        </member>
         <member name="T:KdajBi.API.Security.Hashing.PasswordHasher">
             <summary>
             This password hasher is the same used by ASP.NET Identity.

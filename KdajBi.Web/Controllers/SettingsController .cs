@@ -12,6 +12,7 @@ using System.Linq.Dynamic.Core;
 using KdajBi.Web.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using KdajBi.GoogleHelper;
+using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
 {
@@ -24,11 +25,11 @@ namespace KdajBi.Web.Controllers
         {
         }
         [Route("/settings/")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             vmLocation myVM = new vmLocation();
 
-            var gt = _CurrentUserGooToken();
+            var gt = await _CurrentUserGooToken();
             if (gt != null)
             {
                 using (GoogleService service = new GoogleService(User.Identity.Name, gt))
@@ -39,8 +40,8 @@ namespace KdajBi.Web.Controllers
                     }
                 }
             }
-            myVM.Token = _GetToken();
-            myVM.UserUIShow = _UserUIShow();
+            myVM.Token = await _GetToken();
+            myVM.UserUIShow = await _UserUIShow();
 
             return View(myVM);
         }

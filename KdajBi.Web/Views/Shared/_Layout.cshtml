@@ -212,6 +212,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                     </p>
                                 </a>
                             </li>
+                            //StatsPublicAppointments
+                            @if (Model.UserUIShow.Contains("StatsPublicAppointments") )
+                            {
+                                <li class="nav-item ">
+                                    <a href="@Url.Content("~/stats/PublicBookingsTimeline")" class="nav-link ">
+                                        <i class="nav-icon far fa-calendar-plus"></i>
+                                        <p>
+                                            Samostojna naročila
+                                        </p>
+                                    </a>
+                                </li>
+                            }
                         }
                         <div class="smClients nav-sidebar">
                         @if (Model.UserUIShow.Contains("ClientsList") || isSuper == true || isNadzornik == true)

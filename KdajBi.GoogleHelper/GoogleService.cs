@@ -113,7 +113,7 @@ namespace KdajBi.GoogleHelper
             calendarService.Dispose();
         }
 
-        public string CreateCalendar(string p_Summary)
+        public async Task<string> CreateCalendar(string p_Summary)
         {
             try
             {
@@ -126,7 +126,7 @@ namespace KdajBi.GoogleHelper
                     };
                     var request = calendarService.Calendars.Insert(newCalendar);
                     request.OauthToken = googleAuthToken.access_token;
-                    retval = request.Execute();
+                    retval = await request.ExecuteAsync();
                     return retval.Id;
                 }
                 
@@ -177,8 +177,8 @@ namespace KdajBi.GoogleHelper
             {
                 request.OauthToken = googleAuthToken.access_token;
                 if (nextpageToken != null) { request.PageToken = nextpageToken; }
-                request.TimeMin = firstDayOfMonth;
-                request.TimeMax = lastDayOfMonth;
+                request.TimeMinDateTimeOffset = firstDayOfMonth;
+                request.TimeMaxDateTimeOffset = lastDayOfMonth;
                 request.ShowDeleted = false;
                 request.SingleEvents = true;
                 //request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;

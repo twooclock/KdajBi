@@ -59,7 +59,7 @@ namespace KdajBi.API.Controllers
         [HttpPost("/api/appointment-tokens")]
         public async Task<ActionResult<AppointmentToken>> Store(AppointmentTokenRequest appointmentTokenRequest)
         {
-            Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == appointmentTokenRequest.ClientId && a.Mobile != null && a.AllowsSMS == true).SingleOrDefault();
+            Client client = _context.Clients.Where(a => a.CompanyId == _CurrentUserCompanyID() && a.Id == appointmentTokenRequest.ClientId && a.Mobile != null && a.Mobile != "" && a.AllowsSMS == true).SingleOrDefault();
             if (client != null)
             {
                 AppointmentToken appointmentToken = new AppointmentToken();
@@ -76,13 +76,24 @@ namespace KdajBi.API.Controllers
                 appointmentToken.CreatedUserID= _CurrentUserID();
 
                 _context.AppointmentTokens.Add(appointmentToken);
-                
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "/api/appointment-tokens Error");
+                    throw;
+                }
+
                 if (appointmentTokenRequest.SendSMS==true)
                 { 
                     // obvesti stranko prek sms (appointmentToken.ClientId)
                     SmsCampaign newSmsCampaign = new SmsCampaign();
                     newSmsCampaign.Company.Id = _CurrentUserCompanyID();
                     newSmsCampaign.LocationId = appointmentTokenRequest.LocationId;
+                    newSmsCampaign.AppointmentTokenId = appointmentToken.Id;
                     newSmsCampaign.AppUser.Id = _CurrentUserID();
 
                     newSmsCampaign.MsgTxt = @"Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/" + appointmentToken.Token;

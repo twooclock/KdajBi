@@ -41,7 +41,7 @@ namespace KdajBi.Web.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                if (LocationIsMine(locationid))
+                if (await LocationIsMine(locationid))
                 {
                     return await SendMail(_userManager.GetUserName(User), _CurrentUserCompanyID(), locationid, _emailSender.emailSettings().AdminMail, 0, 0, pMessage);
                 }
@@ -421,8 +421,8 @@ namespace KdajBi.Web.Controllers
         public async Task<IActionResult> QuickSetup(string p_name, string p_tel, string p_address, string p_timetable, string p_wpnames, string p_usesms, string p_ignoretimetables)
         {
             int cuser = _CurrentUserID();
-            long cLoc = DefaultLocationId();
-            var Locationindb = _context.Locations.Single(c => c.Id == DefaultLocationId());
+            long cLoc = await DefaultLocationId();
+            var Locationindb = await _context.Locations.SingleAsync(c => c.Id == cLoc);
 
             Locationindb.UpdatedUserID = cuser;
             Locationindb.UpdatedDate = DateTime.Now;
@@ -442,10 +442,10 @@ namespace KdajBi.Web.Controllers
             }
 
             var calList = new List<string>();
-            var gt = _CurrentUserGooToken();
+            var gt = await _CurrentUserGooToken();
             if (gt != null)
             {
-                var myWP = _context.Workplaces.Where(loc => loc.LocationId == cLoc).FirstOrDefault();
+                var myWP = await _context.Workplaces.Where(loc => loc.LocationId == cLoc).FirstOrDefaultAsync();
                 using (GoogleService service = new GoogleService(User.Identity.Name, gt))
                 {
                     //create calendars
@@ -456,7 +456,7 @@ namespace KdajBi.Web.Controllers
                     {
                         if (string.IsNullOrEmpty((item.Trim())) == false)
                         {
-                            calId = service.CreateCalendar("KDAJBI_" + item);
+                            calId = await service.CreateCalendar("KDAJBI_" + item);
                             if (calId != null)
                             {
                                 calList.Add(calId);
@@ -574,7 +574,7 @@ namespace KdajBi.Web.Controllers
         [HttpPost("/account/gapitoken")]
         public async Task<IActionResult> gapitoken()
         {
-            GoogleAuthToken myToken = _CurrentUserGooToken();
+            GoogleAuthToken myToken = await _CurrentUserGooToken();
             if (myToken != null)
             {
                 myToken.refresh_token = "";
@@ -585,7 +585,7 @@ namespace KdajBi.Web.Controllers
         [HttpPost("/account/apitoken")]
         public async Task<IActionResult> apitoken()
         {
-            JwtToken myToken = _GetToken();
+            JwtToken myToken = await _GetToken();
 
             JwtToken retval = new JwtToken();
             retval.AccessToken = myToken.AccessToken;

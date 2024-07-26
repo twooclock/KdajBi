@@ -1,0 +1,819 @@
+﻿@using Newtonsoft.Json;
+
+@inject KdajBi.Web.Services.IApiTokenProvider apiTP
+
+@{
+	ViewData["Title"] = "Pregled smostojnih naročil";
+}
+
+
+@section styles {
+    <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
+    <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
+	<style>
+        /* --------------------------------
+
+        Modules - reusable parts of our design
+
+        -------------------------------- */
+        .cd-container {
+            /* this class is used to give a max-width to the element it is applied to, and center it horizontally when it reaches that max-width */
+            width: 90%;
+            max-width: 768px;
+            margin: 0 auto;
+        }
+
+            .cd-container::after {
+                /* clearfix */
+                content: "";
+                display: table;
+                clear: both;
+            }
+
+        /* --------------------------------
+
+        Main components
+
+        -------------------------------- */
+
+        @@media only screen and (min-width: 768px) {
+        }
+
+        .cd-timeline {
+            position: relative;
+            padding: 2em 0;
+            margin-top: 2em;
+            margin-bottom: 2em;
+        }
+
+            .cd-timeline::before {
+                /* this is the vertical line */
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 18px;
+                height: 100%;
+                width: 4px;
+                background: #d7e4ed;
+            }
+
+        @@media only screen and (min-width: 768px) {
+            .cd-timeline {
+                margin-top: 3em;
+                margin-bottom: 3em;
+            }
+
+                .cd-timeline::before {
+                    left: 50%;
+                    margin-left: -2px;
+                }
+        }
+
+        .cd-timeline-block {
+            position: relative;
+            margin: 2em 0;
+        }
+
+            .cd-timeline-block::after {
+                clear: both;
+                content: "";
+                display: table;
+            }
+
+            .cd-timeline-block:first-child {
+                margin-top: 0;
+            }
+
+            .cd-timeline-block:last-child {
+                margin-bottom: 0;
+            }
+
+        @@media only screen and (min-width: 768px) {
+            .cd-timeline-block {
+                margin: 3em 0;
+            }
+
+                .cd-timeline-block:first-child {
+                    margin-top: 0;
+                }
+
+                .cd-timeline-block:last-child {
+                    margin-bottom: 0;
+                }
+        }
+
+        .cd-timeline-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px #ffffff, inset 0 2px 0 rgba(0, 0, 0, 0.08), 0 3px 0 4px rgba(0, 0, 0, 0.05);
+        }
+
+            .cd-timeline-img img {
+                display: block;
+                width: 24px;
+                height: 24px;
+                position: relative;
+                left: 50%;
+                top: 50%;
+                margin-left: -12px;
+                margin-top: -12px;
+            }
+
+            .cd-timeline-img.cd-green {
+                background: #75ce66;
+            }
+
+            .cd-timeline-img.cd-red {
+                background: #c03b44;
+            }
+
+            .cd-timeline-img.cd-yellow {
+                background: #f0ca45;
+            }
+
+        @@media only screen and (min-width: 768px) {
+            .cd-timeline-img {
+                width: 60px;
+                height: 60px;
+                left: 50%;
+                margin-left: -30px;
+                /* Force Hardware Acceleration in WebKit */
+                -webkit-transform: translateZ(0);
+                -webkit-backface-visibility: hidden;
+            }
+
+             .cd-timeline-img.is-hidden {
+                visibility: hidden;
+            }
+
+             .cd-timeline-img.bounce-in {
+                visibility: visible;
+                -webkit-animation: cd-bounce-1 0.6s;
+                -moz-animation: cd-bounce-1 0.6s;
+                animation: cd-bounce-1 0.6s;
+            }
+        }
+
+        @@-webkit-keyframes cd-bounce-1 {
+            0% {
+                opacity: 0;
+                -webkit-transform: scale(0.5);
+            }
+
+            60% {
+                opacity: 1;
+                -webkit-transform: scale(1.2);
+            }
+
+            100% {
+                -webkit-transform: scale(1);
+            }
+        }
+
+        @@-moz-keyframes cd-bounce-1 {
+            0% {
+                opacity: 0;
+                -moz-transform: scale(0.5);
+            }
+
+            60% {
+                opacity: 1;
+                -moz-transform: scale(1.2);
+            }
+
+            100% {
+                -moz-transform: scale(1);
+            }
+        }
+
+        @@keyframes cd-bounce-1 {
+            0% {
+                opacity: 0;
+                -webkit-transform: scale(0.5);
+                -moz-transform: scale(0.5);
+                -ms-transform: scale(0.5);
+                -o-transform: scale(0.5);
+                transform: scale(0.5);
+            }
+
+            60% {
+                opacity: 1;
+                -webkit-transform: scale(1.2);
+                -moz-transform: scale(1.2);
+                -ms-transform: scale(1.2);
+                -o-transform: scale(1.2);
+                transform: scale(1.2);
+            }
+
+            100% {
+                -webkit-transform: scale(1);
+                -moz-transform: scale(1);
+                -ms-transform: scale(1);
+                -o-transform: scale(1);
+                transform: scale(1);
+            }
+        }
+
+        .cd-timeline-content {
+            position: relative;
+            margin-left: 60px;
+            background: #ffffff;
+            border-radius: 0.25em;
+            padding: 1em;
+            box-shadow: 0 3px 0 #d7e4ed;
+        }
+
+            .cd-timeline-content::after {
+                clear: both;
+                content: "";
+                display: table;
+            }
+
+            .cd-timeline-content h2 {
+                color: #303e49;
+            }
+
+            .cd-timeline-content p, .cd-timeline-content .cd-read-more, .cd-timeline-content .cd-date {
+                font-size: 13px;
+                font-size: 0.8125rem;
+            }
+
+            .cd-timeline-content .cd-read-more, .cd-timeline-content .cd-date {
+                display: inline-block;
+            }
+
+            .cd-timeline-content p {
+                margin: 0.5em 0;
+                line-height: 1.6;
+            }
+
+            .cd-timeline-content .cd-read-more {
+                float: right;
+                padding: 0.8em 1em;
+                background: #acb7c0;
+                color: #ffffff;
+                border-radius: 0.25em;
+            }
+
+        .no-touch .cd-timeline-content .cd-read-more:hover {
+            background-color: #bac4cb;
+        }
+
+        .cd-timeline-content .cd-date {
+            float: left;
+            padding: 0.8em 0;
+            opacity: 0.7;
+        }
+
+        .cd-timeline-content::before {
+            content: "";
+            position: absolute;
+            top: 16px;
+            right: 100%;
+            height: 0;
+            width: 0;
+            border: 7px solid transparent;
+            border-right: 7px solid #ffffff;
+        }
+
+        @@media only screen and (min-width: 768px) {
+            .cd-timeline-content h2 {
+                font-size: 20px;
+                font-size: 1.25rem;
+            }
+
+            .cd-timeline-content p {
+                font-size: 16px;
+                font-size: 1rem;
+            }
+
+            .cd-timeline-content .cd-read-more, .cd-timeline-content .cd-date {
+                font-size: 14px;
+                font-size: 0.875rem;
+            }
+        }
+
+        @@media only screen and (min-width: 768px) {
+            .cd-timeline-content {
+                margin-left: 0;
+                padding: 1.6em;
+                width: 45%;
+            }
+
+                .cd-timeline-content::before {
+                    top: 24px;
+                    left: 100%;
+                    border-color: transparent;
+                    border-left-color: #ffffff;
+                }
+
+                .cd-timeline-content .cd-read-more {
+                    float: left;
+                }
+
+                .cd-timeline-content .cd-date {
+                    position: absolute;
+                    width: 100%;
+                    left: 122%;
+                    top: 6px;
+                    font-size: 16px;
+                    font-size: 1rem;
+                }
+
+            .cd-timeline-block:nth-child(even) .cd-timeline-content {
+                float: right;
+            }
+
+                .cd-timeline-block:nth-child(even) .cd-timeline-content::before {
+                    top: 24px;
+                    left: auto;
+                    right: 100%;
+                    border-color: transparent;
+                    border-right-color: #ffffff;
+                }
+
+                .cd-timeline-block:nth-child(even) .cd-timeline-content .cd-read-more {
+                    float: right;
+                }
+
+                .cd-timeline-block:nth-child(even) .cd-timeline-content .cd-date {
+                    left: auto;
+                    right: 122%;
+                    text-align: right;
+                }
+
+             .cd-timeline-content.is-hidden {
+                visibility: hidden;
+            }
+
+             .cd-timeline-content.bounce-in {
+                visibility: visible;
+                -webkit-animation: cd-bounce-2 0.6s;
+                -moz-animation: cd-bounce-2 0.6s;
+                animation: cd-bounce-2 0.6s;
+            }
+        }
+
+        @@media only screen and (min-width: 768px) {
+            /* inverse bounce effect on even content blocks */
+             .cd-timeline-block:nth-child(even) .cd-timeline-content.bounce-in {
+                -webkit-animation: cd-bounce-2-inverse 0.6s;
+                -moz-animation: cd-bounce-2-inverse 0.6s;
+                animation: cd-bounce-2-inverse 0.6s;
+            }
+        }
+
+        @@-webkit-keyframes cd-bounce-2 {
+            0% {
+                opacity: 0;
+                -webkit-transform: translateX(-100px);
+            }
+
+            60% {
+                opacity: 1;
+                -webkit-transform: translateX(20px);
+            }
+
+            100% {
+                -webkit-transform: translateX(0);
+            }
+        }
+
+        @@-moz-keyframes cd-bounce-2 {
+            0% {
+                opacity: 0;
+                -moz-transform: translateX(-100px);
+            }
+
+            60% {
+                opacity: 1;
+                -moz-transform: translateX(20px);
+            }
+
+            100% {
+                -moz-transform: translateX(0);
+            }
+        }
+
+        @@keyframes cd-bounce-2 {
+            0% {
+                opacity: 0;
+                -webkit-transform: translateX(-100px);
+                -moz-transform: translateX(-100px);
+                -ms-transform: translateX(-100px);
+                -o-transform: translateX(-100px);
+                transform: translateX(-100px);
+            }
+
+            60% {
+                opacity: 1;
+                -webkit-transform: translateX(20px);
+                -moz-transform: translateX(20px);
+                -ms-transform: translateX(20px);
+                -o-transform: translateX(20px);
+                transform: translateX(20px);
+            }
+
+            100% {
+                -webkit-transform: translateX(0);
+                -moz-transform: translateX(0);
+                -ms-transform: translateX(0);
+                -o-transform: translateX(0);
+                transform: translateX(0);
+            }
+        }
+
+        @@-webkit-keyframes cd-bounce-2-inverse {
+            0% {
+                opacity: 0;
+                -webkit-transform: translateX(100px);
+            }
+
+            60% {
+                opacity: 1;
+                -webkit-transform: translateX(-20px);
+            }
+
+            100% {
+                -webkit-transform: translateX(0);
+            }
+        }
+
+        @@-moz-keyframes cd-bounce-2-inverse {
+            0% {
+                opacity: 0;
+                -moz-transform: translateX(100px);
+            }
+
+            60% {
+                opacity: 1;
+                -moz-transform: translateX(-20px);
+            }
+
+            100% {
+                -moz-transform: translateX(0);
+            }
+        }
+
+        @@keyframes cd-bounce-2-inverse {
+            0% {
+                opacity: 0;
+                -webkit-transform: translateX(100px);
+                -moz-transform: translateX(100px);
+                -ms-transform: translateX(100px);
+                -o-transform: translateX(100px);
+                transform: translateX(100px);
+            }
+
+            60% {
+                opacity: 1;
+                -webkit-transform: translateX(-20px);
+                -moz-transform: translateX(-20px);
+                -ms-transform: translateX(-20px);
+                -o-transform: translateX(-20px);
+                transform: translateX(-20px);
+            }
+
+            100% {
+                -webkit-transform: translateX(0);
+                -moz-transform: translateX(0);
+                -ms-transform: translateX(0);
+                -o-transform: translateX(0);
+                transform: translateX(0);
+            }
+        }
+
+    </style>
+
+}
+
+<div class="right_col col-md-12" role="main">
+    <div class="row">
+        <div class="col-md-12 mt-1">
+            <h2>Pregled samostojnega naročanja strank</h2>
+            <div class="pt-2">
+                <div class="mb-2 d-flex justify-content-center">
+                    <button type="button" class="btn btn-outline-primary" id="previous-day"><</button>
+                    <button type="button" class="btn btn-outline-primary col-6" id="selected-date"></button>
+                    <button type="button" class="btn btn-outline-primary" id="next-day">></button>
+                </div>
+                <div id="no-timeline" class="card card-outline card-primary p-1 mh-100" style="display: none">
+                        <div class="card-body text-center">
+                            <h4>Ta dan ni samostojnih naročil...</h4>
+                        </div>
+                    </div>
+                    <div id="timeline-loader" class="card card-outline card-primary p-1 mh-100" style="display: none">
+                        <div class="card-body text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="sr-only">Nalagam...</span>
+                            </div>
+                        </div>
+                    </div>
+                <div id="timeline-card" class="card card-outline card-primary p-1 mh-100" style="background-color: transparent;display: none;">
+                        <section id="pbTimeline" class="cd-timeline cd-container">
+                        </section>
+                    </div>
+               
+                 <!-- cd-timeline -->
+                
+                
+               
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DatePick modal content-->
+<div id="myDatePickModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: fit-content;">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">skoči na datum</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body ui-front">
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="datepick" style="visibility: hidden" aria-describedby="emailHelp">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
+@section scripts {
+    <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
+    <script src="~/plugins/flatpickr/plugins/confirmDate/confirmDate.js"></script>
+    <script src="~/plugins/dayjs/dayjs.min.js"></script>
+    <script src="~/plugins/dayjs/plugin/utc.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_utc)</script>
+    <script src="~/plugins/dayjs/plugin/localizedFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localizedFormat);</script>
+    <script src="~/plugins/dayjs/plugin/localeData.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_localeData)</script>
+    <script src="~/plugins/dayjs/plugin/customParseFormat.js"></script>
+    <script>dayjs.extend(window.dayjs_plugin_customParseFormat)</script>
+    <script src="~/plugins/AlloyFinger/alloy_finger.js"></script>
+
+	<script type="text/javascript">
+        var apiURL = "@Html.Raw(apiTP.Settings().BaseAddress)";
+		var date = new Date();
+        var dateString = getQueryParameter('date');
+
+        @await Html.PartialAsync("_ApiAccess")
+
+        function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                const s = document.createElement('script');
+                let r = false;
+                s.type = 'text/javascript';
+                s.src = src;
+                s.async = true;
+                s.onerror = function (err) {
+                    reject(err, s);
+                };
+                s.onload = s.onreadystatechange = function () {
+                    // console.log(this.readyState); // uncomment this line to see which ready states are called.
+                    if (!r && (!this.readyState || this.readyState == 'complete')) {
+                        r = true;
+                        resolve();
+                    }
+                };
+                const t = document.getElementsByTagName('script')[0];
+                t.parentElement.insertBefore(s, t);
+            });
+        }
+
+        function onlyISODate(p_date) {
+            return dayjs(p_date).format("YYYY-MM-DD") ;
+        }
+
+        dateFormatRegex = /([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/;
+
+        if (dateFormatRegex.test(dateString)) {
+            date = new Date(dateString);
+        }
+
+		$(document).ready(function () {
+            loadScript("/plugins/dayjs/locale/" + navigator.language.slice(0, 2) + ".js")
+                .then(async function () {
+                    //get data, render ui
+                    GetTimelineData(date);
+                    
+                    loadScript("/plugins/flatpickr/l10n/" + navigator.language.slice(0, 2) + ".js")
+                        .then(function () {
+
+                            dp = $("#datepick").flatpickr({
+                                dateFormat: "d.m.Y",
+                                locale: dayjs.locale(),
+                                defaultDate: new Date(),
+                                maxDate: new Date(),
+                                time_24hr: true, inline: true,
+                                onChange: function (selectedDates, dateStr, instance) {
+                                    console.log(selectedDates);
+                                    //calendar.gotoDate(selectedDates[0]);
+                                    date = selectedDates[0];
+                                    GetTimelineData();
+                                    $("#myDatePickModal").modal("hide");
+                                }
+                                });
+                        var af = new AlloyFinger(document.getElementById('myDatePickModal'), {
+                            swipe: function (evt) {
+                                switch (evt.direction) {
+                                    case "Left": dp.changeMonth(1);
+                                        break;
+                                    case "Right": dp.changeMonth(-1);
+                                        break;
+                                }
+                            }
+                        });
+                        // var afw = new AlloyFinger(window, {
+                        //     swipe: function (evt) {
+                        //         switch (evt.direction) {
+                        //             case "Left": changeDate(1);
+                        //                 break;
+                        //             case "Right": changeDate(-1);
+                        //                 break;
+                        //         }
+                        //     }
+                        // });
+                });
+        });
+
+
+        $("#previous-day").click(function () {
+            changeDate(-1)
+        });
+
+        $("#selected-date").click(function () {
+            $("#myDatePickModal").modal("show");
+        });
+
+        $("#next-day").click(function () {
+            changeDate(1)
+        });
+            //bind cboLocations
+            $("#cboLocations").off('change').change(function (evt) {
+                Cookies.set('DefaultLocation', $(this).val());
+                GetTimelineData(date);
+            });
+
+            
+			
+
+            
+
+		});
+
+        function formatDate(date) {
+            var days = [
+                'Nedelja',
+                'Ponedeljek',
+                'Torek',
+                'Sreda',
+                'Četrtek',
+                'Petek',
+                'Sobota'
+            ];
+            var months = [
+                'januar',
+                'februar',
+                'marec',
+                'april',
+                'maj',
+                'junij',
+                'julij',
+                'avgust',
+                'september',
+                'oktober',
+                'november',
+                'december',
+            ];
+
+            return days[date.getDay()] + ", " + date.getDate() + ". " + months[date.getMonth()];
+        }
+
+        
+        function GetTimelineData() {
+            $("#timeline-loader").show();
+            $("#selected-date").text(formatDate(date));
+
+            $("#previous-day").prop("disabled", false);
+            $("#next-day").prop("disabled", false);
+        
+                
+            if (date >= new Date()) { $('#next-day').prop('disabled', true) }; 
+                
+            $("#no-timeline").hide();
+            $("#timeline-card").hide();
+            $("#timeline-loader").show();
+
+
+            getAPIToken().then((result) => {
+                    $.ajax({
+                        type: "get",
+                        url: apiURL + "/api/stats/PublicBookingsTimeline/" + $("#cboLocations").val()+"/?date=" + onlyISODate(date),
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "json",
+                        async: true,
+                        success: function (result) {
+                        $("#pbTimeline").empty(); 
+                            $("#timeline-loader").hide();
+                            $("#no-timeline").hide();
+                            if (result.length === 0) {
+                                $("#no-timeline").show();
+                                return;
+                            }
+                            result.forEach(function (eventItem) {
+                                        $( "#pbTimeline" ).append( `
+                                                      <div class="cd-timeline-block">
+                                                        <div class="cd-timeline-img cd-`+ eventItem.type + `">
+                                                </div>
+                                                <div class="cd-timeline-content">
+                                                        <a data-toggle="collapse" href="#pbid`+ eventItem.pbid + `" aria-expanded="false" aria-controls="pbid` + eventItem.pbid + `">
+                                                                <h2>`+ eventItem.client + `</h2>
+                                                    </a>
+                                                            <div id="pbid`+eventItem.pbid+`" class="collapse hide">
+                                                    </div>
+                                                    <span class="cd-date">` + dayjs(new Date(eventItem.date)).format("LT") + `</span>
+                                                </div> 
+                                            </div> 
+                                        `);
+                            var sortedE = eventItem.events.sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+                            sortedE.forEach(function (event) { $("#pbid" + eventItem.pbid).append("<p class='" + event.cssClass + "'>" + dayjs(new Date(event.date)).format("LT") + " " + event.text + "</p>") });
+                            
+                                        });
+                            $("#timeline-card").show();
+
+                            //bounce
+                            var $timeline_block = $('.cd-timeline-block');
+                            //hide timeline blocks which are outside the viewport
+                            $timeline_block.each(function () {
+                                if ($(this).offset().top > $(window).scrollTop() + $(window).height() * 0.75) {
+                                    $(this).find('.cd-timeline-img, .cd-timeline-content').addClass('is-hidden');
+                                }
+                            });
+
+                            //on scolling, show/animate timeline blocks when enter the viewport
+                            $(window).on('scroll', function () {
+                                $timeline_block.each(function () {
+                                    if ($(this).offset().top <= $(window).scrollTop() + $(window).height() * 0.75 && $(this).find('.cd-timeline-img').hasClass('is-hidden')) {
+                                        $(this).find('.cd-timeline-img, .cd-timeline-content').removeClass('is-hidden').addClass('bounce-in');
+                                    }
+                                });
+                            });
+
+
+
+                        },
+                        error: function (xhr, status, error) {
+                            $("#timeline-loader").hide();
+                            $("#no-timeline").show();
+                            toastr.error("Error getting timeline data:" + error);
+                        }
+                    });
+                },
+                    function (error) { $("#timeline-loader").hide(); $("#no-timeline").show(); toastr.error("Error getting token:" + error); }
+            );
+        
+        }
+
+        function formatAppointmentDate(appointment) {
+            var start = new Date(appointment.start);
+            var end = new Date(appointment.end);
+
+            return start.getHours() + ":"
+                + (start.getMinutes() < 10 ? "0" + start.getMinutes() : start.getMinutes())
+                + " - " + end.getHours() + ":"
+                + (end.getMinutes() < 10 ? "0" + end.getMinutes() : end.getMinutes());
+        }
+
+        function changeDate(noOfDays) {
+            var newDate = new Date(date);
+            newDate.setDate(newDate.getDate() + noOfDays);
+            var url = new URL(window.location.href);
+            url.searchParams.set("date", onlyISODate(newDate)); // setting your param
+            window.history.pushState({ path: url.href }, '', url.href);
+            date = newDate;
+            GetTimelineData();
+        }
+
+        function getQueryParameter(name) {
+            var results = new RegExp('[\?&]' + name + '=([^&#]*)')
+                .exec(window.location.search);
+
+            return (results !== null) ? results[1] || 0 : false;
+        }
+
+
+	</script>
+}

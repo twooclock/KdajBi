@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
 {
@@ -28,14 +29,15 @@ namespace KdajBi.Web.Controllers
 
 
         [Route("/Clients/List")]
-        public IActionResult List()
+        public async Task<IActionResult> List()
         {
-            if (LocationIsMine(DefaultLocationId()))
+            long defLocId = await DefaultLocationId();
+            if (await LocationIsMine(defLocId))
             {
                 vmClient myVM = new vmClient();
-                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName }).ToList()).Replace(@"\", @"\\");
-                myVM.Token = _GetToken();
-                myVM.UserUIShow = _UserUIShow();
+                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == defLocId).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = p.FullName }).ToList()).Replace(@"\", @"\\");
+                myVM.Token = await _GetToken();
+                myVM.UserUIShow = await _UserUIShow();
                 return View(myVM);
             }
             return NotFound();
@@ -43,17 +45,18 @@ namespace KdajBi.Web.Controllers
 
 
         [Route("/Clients")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            if (LocationIsMine(DefaultLocationId()))
+            long defLocId = await DefaultLocationId();
+            if (await LocationIsMine(defLocId))
             {
                 vmClient myVM = new vmClient();
-                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId()).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + " " + p.Mobile) }).ToList()).Replace(@"\", @"\\");
-                var myLocation = _context.Locations.Include(s => s.Schedule).Include(w => w.Workplaces).FirstOrDefault(x => x.Id == DefaultLocationId());
+                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == defLocId).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + " " + p.Mobile) }).ToList()).Replace(@"\", @"\\");
+                var myLocation = _context.Locations.Include(s => s.Schedule).Include(w => w.Workplaces).FirstOrDefault(x => x.Id == defLocId);
                 if (myLocation != null)
                 {
                     //load google calendars
-                    var gt = _CurrentUserGooToken();
+                    var gt = await _CurrentUserGooToken();
                     if (gt != null)
                     {
                         using (GoogleService service = new GoogleService(User.Identity.Name, gt))
@@ -86,22 +89,23 @@ namespace KdajBi.Web.Controllers
                         }
                     }
                 }
-                myVM.Token = _GetToken();
-                myVM.UserUIShow = _UserUIShow();
+                myVM.Token = await _GetToken();
+                myVM.UserUIShow = await _UserUIShow();
                 return View(myVM);
             }
             return NotFound();
         }
 
         [Route("/Clients/Notification")]
-        public IActionResult Notification()
+        public async Task<IActionResult> Notification()
         {
-            if (LocationIsMine(DefaultLocationId()))
+            long defLocId = await DefaultLocationId();
+            if (await LocationIsMine(defLocId))
             {
                 vmClient myVM = new vmClient();
-                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == DefaultLocationId() && c.AllowsSMS == true && c.Mobile != "").OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { Id = p.Id, FullName = p.FullName, ct = "#" + String.Join("#", p.ClientTags.Select(t => t.TagId.ToString())) + "#" }).ToList()).Replace(@"\", @"\\");
-                myVM.Token = _GetToken();
-                myVM.UserUIShow = _UserUIShow();
+                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == defLocId  && c.AllowsSMS == true && c.Mobile != "").OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { Id = p.Id, FullName = p.FullName, ct = "#" + String.Join("#", p.ClientTags.Select(t => t.TagId.ToString())) + "#" }).ToList()).Replace(@"\", @"\\");
+                myVM.Token = await _GetToken();
+                myVM.UserUIShow = await _UserUIShow();
                 return View(myVM);
             }
             return NotFound();

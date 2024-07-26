@@ -54,7 +54,7 @@ namespace KdajBi.API.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("/api/publicbooking/{pbid}/{wpid}/{sid}")]
-        public ActionResult<List<TimeSlot>> Get(
+        public async Task<ActionResult<List<TimeSlot>>> Get(
             long pbid, long wpid, long sid,
             [FromQuery] DateTime? date = null)
         {
@@ -66,24 +66,24 @@ namespace KdajBi.API.Controllers
 
             DateTime dateEnd = date.Value.AddDays(1).AddTicks(-1);
 
-            var myPB = _context.PublicBookings.Find(pbid);
+            var myPB = await _context.PublicBookings.FindAsync(pbid);
             if (myPB == null) { return NotFound(); }
 
-            var myService = _context.Services.Find(sid);
+            var myService = await _context.Services.FindAsync(sid);
             if (myService == null) { return NotFound(); }
 
             List<Workplace> myWP = new List<Workplace>();
             if (wpid > 0) {
-                myWP.Add( _context
+                myWP.Add( await _context
                 .Workplaces
                 .Include(s => s.WorkplaceSchedules)
                 .ThenInclude(x => x.Schedule)
                 .Include(e => e.WorkplaceScheduleExceptions)
-                .FirstOrDefault(x => x.Id == wpid && x.LocationId== myPB.LocationId));
+                .FirstOrDefaultAsync(x => x.Id == wpid && x.LocationId== myPB.LocationId));
             }
             else
             {
-                myWP.AddRange(_context
+                myWP.AddRange( _context
                .Workplaces
                .Include(s => s.WorkplaceSchedules)
                .ThenInclude(x => x.Schedule)
@@ -93,7 +93,7 @@ namespace KdajBi.API.Controllers
             //remove workplaces that do not provide service specified
             for (int i = myWP.Count-1; i >= 0; i--)
             {
-                if (_context.WorkplaceExcludedServices.Where(e => e.WorkplaceId == myWP[i].Id && e.ServiceId == myService.Id).Count() > 0)
+                if ((await _context.WorkplaceExcludedServices.Where(e => e.WorkplaceId == myWP[i].Id && e.ServiceId == myService.Id).CountAsync()) > 0)
                 { myWP.RemoveAt(i); }
             }
             //remove already booked timeslots
@@ -102,7 +102,7 @@ namespace KdajBi.API.Controllers
                 foreach (var wp in myWP)
                 {
                     List<TimeSlot> availableworkhours = new List<TimeSlot>();
-                    availableworkhours = getWorkplaceWorkhours(wp, date.Value);
+                    availableworkhours = await getWorkplaceWorkhours(wp, date.Value);
 
                     List<TimeSlot> availableAppointments = new List<TimeSlot>();
                     if (availableworkhours.Count > 0)
@@ -118,8 +118,8 @@ namespace KdajBi.API.Controllers
                                     availableAppointments = TimeSlotManager.removeOccupiedAppointments(
                                         availableAppointments,
                                         new TimeSlot(wp.Id,
-                                            evt.Start.DateTime.Value,
-                                            evt.End.DateTime.Value
+                                            evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
+                                            evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
                                         )
                                     );
                                 }
@@ -165,7 +165,7 @@ namespace KdajBi.API.Controllers
         /// <param name="p_workplace"></param>
         /// <param name="date"></param>
         /// <returns></returns>
-        private List<TimeSlot> getWorkplaceWorkhours(Workplace p_workplace, DateTime date)
+        private async Task<List<TimeSlot>> getWorkplaceWorkhours(Workplace p_workplace, DateTime date)
         {
             List<TimeSlot> schedule = new List<TimeSlot>();
 
@@ -173,7 +173,7 @@ namespace KdajBi.API.Controllers
 
             dynamic data = JObject.Parse("{}");
 
-            var workplaceScheduleException = _context.WorkplaceScheduleExceptions.Where(x => x.WorkplaceId == p_workplace.Id && x.Date == date).ToList();
+            var workplaceScheduleException = await _context.WorkplaceScheduleExceptions.Where(x => x.WorkplaceId == p_workplace.Id && x.Date == date).ToListAsync();
             if (workplaceScheduleException.Count > 0)
             {
                 //extra urnik
@@ -194,7 +194,7 @@ namespace KdajBi.API.Controllers
             {
                 //urnik za dan
                 //check setting cbEmployee_AlternatingWeeks to determine appropriate schedule
-                long companyId = _context.Locations.Where(l => l.Id == p_workplace.LocationId).FirstOrDefault().CompanyId;
+                long companyId = (await _context.Locations.Where(l => l.Id == p_workplace.LocationId).FirstOrDefaultAsync()).CompanyId;
                 long schTypeId = 0;
                 if (bool.Parse(SettingsHelper.getSetting(_context, companyId, null, "cbEmployee_AlternatingWeeks", "false")) == true)
                 {
@@ -228,7 +228,7 @@ namespace KdajBi.API.Controllers
             }
 
             //urnik lokacije
-            var location = _context.Locations.Include(s => s.Schedule).Where(x => x.Id == p_workplace.LocationId).FirstOrDefault();
+            var location = await _context.Locations.Include(s => s.Schedule).Where(x => x.Id == p_workplace.LocationId).FirstOrDefaultAsync();
             
             if (location.Schedule.EventsJson != null)
             {
@@ -299,9 +299,9 @@ namespace KdajBi.API.Controllers
             long pbid, long wpid, long sid,
             BookingRequest bookingRequest)
         {
-            var myPB = _context.PublicBookings.Include(pb=>pb.Workplace)
+            var myPB = await _context.PublicBookings.Include(pb=>pb.Workplace)
                 .Include(pb => pb.Location)
-                .Where(pb=>pb.Id==pbid).FirstOrDefault();
+                .Where(pb=>pb.Id==pbid).FirstOrDefaultAsync();
             if (myPB == null) { return NotFound(); }
             if (string.IsNullOrEmpty(myPB.GCalId)==false) { return NotFound(); } //this PB was already used
             var myWP = _context.Workplaces.Find(wpid);
@@ -309,7 +309,7 @@ namespace KdajBi.API.Controllers
             var myService = _context.Services.Find(sid);
             if (myService == null) { return NotFound(); }
             myPB.ServiceId = myService.Id;
-            var myClient = _context.Clients.Where(c=>c.CompanyId==myPB.Location.CompanyId && c.Mobile.EndsWith(myPB.Mobile.Substring(1))).FirstOrDefault();
+            var myClient = await _context.Clients.Where(c=>c.CompanyId==myPB.Location.CompanyId && c.Mobile.EndsWith(myPB.Mobile.Substring(1))).FirstOrDefaultAsync();
             long ClientId = 0;
             string ClientFullName = "";
             if (myClient != null) { ClientId = myClient.Id; ClientFullName = myClient.FullName; myPB.ClientId = ClientId; }
@@ -328,9 +328,17 @@ namespace KdajBi.API.Controllers
                 myPB.GCalId = gEvent.Id;
                 myPB.WorkplaceId = wpid;
             }
-            
-                //_context.SaveChanges();
-               
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "/api/publicbooking/Store");
+                throw;
+            }
+
             if (bool.Parse(SettingsHelper.getSetting(_context, myPB.Location.CompanyId, myPB.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
             {
                 //alert about new appointment
@@ -340,6 +348,7 @@ namespace KdajBi.API.Controllers
                     SmsCampaign newSmsCampaign = new SmsCampaign();
                     newSmsCampaign.Company.Id = myPB.Location.CompanyId;
                     newSmsCampaign.LocationId = myPB.LocationId;
+                    newSmsCampaign.PublicBookingId = myPB.Id;
                     var myUser = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
                     newSmsCampaign.AppUser.Id = myUser.Id;
                     newSmsCampaign.MsgTxt = @"Novo narocilo prek spleta! Poglej v https://KdajBi.si";
@@ -359,16 +368,17 @@ namespace KdajBi.API.Controllers
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "/api/publicbooking/ create PublicBookingAlert SmsCampaign");
                     throw;
                 }
             }
             try
             {
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "/api/publicbooking/ save PublicBookingAlert SmsCampaign");
                 throw;
             }
              
@@ -384,17 +394,17 @@ namespace KdajBi.API.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("/api/publicbooking/getservices/{pbid}/{wpid}")]
-        public ActionResult<List<Service>> getservices(long pbid, long wpid)
+        public async Task< ActionResult<List<Service>>> getservices(long pbid, long wpid)
         {
             //get public booking services
            
-            var myPB = _context.PublicBookings.Find(pbid);
-            var services = _context.Services.Include(g=>g.ServiceGroup).Where(s => s.UsedInClientBooking == true && s.LocationId == myPB.LocationId).OrderBy(s=>s.ServiceGroup.SortPosition).ToList();
+            var myPB = await _context.PublicBookings.FindAsync(pbid);
+            var services = await _context.Services.Include(g=>g.ServiceGroup).Where(s => s.UsedInClientBooking == true && s.LocationId == myPB.LocationId).OrderBy(s=>s.ServiceGroup.SortPosition).ToListAsync();
 
             //remove all services not done by specified workplace (if supplied)
             if (wpid > 0)
             {
-                var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wpid).ToList();
+                var wpExServices = await _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wpid).ToListAsync();
                 if (wpExServices.Count > 0)
                 {
                     var wpServices = services.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
@@ -404,8 +414,8 @@ namespace KdajBi.API.Controllers
             else
             {
                 //remove all services not done by any workplace 
-                var allWPIds = _context.Workplaces.Where(wp => wp.LocationId == myPB.LocationId).Select(wp=>wp.Id).ToList();
-                var wpExServices = _context.WorkplaceExcludedServices.Where(w => allWPIds.Contains(w.WorkplaceId)).ToList();
+                var allWPIds = await _context.Workplaces.Where(wp => wp.LocationId == myPB.LocationId).Select(wp=>wp.Id).ToListAsync();
+                var wpExServices = await _context.WorkplaceExcludedServices.Where(w => allWPIds.Contains(w.WorkplaceId)).ToListAsync();
                 if (wpExServices.Count > 0)
                 {
                     var neki = wpExServices.GroupBy(x => x.ServiceId).Where(n => n.Count() == allWPIds.Count()).ToList();
@@ -426,12 +436,12 @@ namespace KdajBi.API.Controllers
         public async Task<ActionResult<List<TimeSlot>>> Update(int id)
         {
             // validate timeslot
-            var myPB = _context.PublicBookings.Include(pb => pb.Workplace)
+            var myPB = await _context.PublicBookings.Include(pb => pb.Workplace)
                 .Include(pb => pb.Location)
                 .Include(pb => pb.Workplace)
                 .Include(pb => pb.Client)
                 .Include(pb => pb.Service)
-                .Where(pb => pb.Id == id).FirstOrDefault();
+                .Where(pb => pb.Id == id).FirstOrDefaultAsync();
             if (myPB == null) { return NotFound(); }
 
             myPB.Status = 1; //confirmed
@@ -459,6 +469,7 @@ namespace KdajBi.API.Controllers
             SmsCampaign newSmsCampaign = new SmsCampaign();
             newSmsCampaign.Company.Id = _CurrentUserCompanyID();
             newSmsCampaign.LocationId = myPB.LocationId;
+            newSmsCampaign.PublicBookingId = myPB.Id;
             newSmsCampaign.AppUser.Id = _CurrentUserID();
 
             newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + myPB.Start.Value.ToString("dd.MM.yyyy") + " ob " + myPB.Start.Value.ToString("HH:mm") + ". Lep pozdrav! "+myPB.Location.Name;
@@ -498,9 +509,9 @@ namespace KdajBi.API.Controllers
         [HttpDelete("/api/publicbooking-confirmation/{id}")]
         public async Task<ActionResult<List<TimeSlot>>> Destroy(int id)
         {
-            var myPB = _context.PublicBookings.Include(pb => pb.Workplace)
+            var myPB = await _context.PublicBookings.Include(pb => pb.Workplace)
                 .Include(pb => pb.Workplace)
-                .Where(pb => pb.Id == id).FirstOrDefault();
+                .Where(pb => pb.Id == id).FirstOrDefaultAsync();
             if (myPB == null) { return NotFound(); }
 
             myPB.Status = 2;

@@ -53,6 +53,12 @@ namespace KdajBi.Core.Models
         public long SentOk { get; set; }
         public long SentError { get; set; }
 
+        [ForeignKey("PublicBooking")]
+        public long? PublicBookingId { get; set; }
+
+        [ForeignKey("AppointmentToken")]
+        public long? AppointmentTokenId { get; set; }
+
         public SmsCampaign() {
             Company = new Company();
             AppUser = new AppUser();

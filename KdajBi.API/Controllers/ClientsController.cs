@@ -64,7 +64,7 @@ namespace KdajBi.API.Controllers
         [HttpGet("/api/Clients/{locationid}")]
         public async Task<ActionResult<Client>> GetClients(long locationid)
         {
-            if (LocationIsMine(locationid) == false) { return NotFound(); }
+            if (await LocationIsMine(locationid) == false) { return NotFound(); }
             var Clients =  await _context.Clients.Where(c => c.LocationId == locationid).Include(t => t.ClientTags).ThenInclude(t => t.Tag).ToListAsync();
 
             if (Clients == null) { return NotFound(); }
@@ -76,7 +76,7 @@ namespace KdajBi.API.Controllers
         [HttpGet("/api/Clients/getclientslist/{locationid}")]
         public async Task<ActionResult<Client>> GetClientsList(long locationid)
         {
-            if (LocationIsMine(locationid) == false) { return NotFound(); }
+            if (await LocationIsMine(locationid) == false) { return NotFound(); }
             var Clients = _context.Clients.Where(c => c.LocationId == locationid).OrderBy(o=>o.FirstName).ThenBy(o=>o.LastName).Select(p => new { value=p.Id, label=p.FullName }).ToList();
 
             if (Clients == null) { return NotFound(); }
@@ -100,7 +100,7 @@ namespace KdajBi.API.Controllers
         public async Task<IActionResult> PutClient(long id, Client Client)
         {
             if (id != Client.Id) { return BadRequest(); }
-            if (ClientIsMine(id) == false) { return NotFound(); }
+            if (await ClientIsMine(id) == false) { return NotFound(); }
             _context.Entry(Client).State = EntityState.Modified;
 
             try
@@ -109,7 +109,7 @@ namespace KdajBi.API.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ClientExists(id))
+                if (!await ClientExists(id))
                 {
                     return NotFound();
                 }
@@ -150,7 +150,7 @@ namespace KdajBi.API.Controllers
             }
             else
             {
-                if (ClientIsMine(p_Client.Id) == false) { return NotFound(); }
+                if (await ClientIsMine(p_Client.Id) == false) { return NotFound(); }
                 var Clientindb = _context.Clients.Include(ct=>ct.ClientTags).Single(c => c.Id == p_Client.Id);
 
                 Clientindb.UpdatedUserID = _CurrentUserID();
@@ -220,7 +220,7 @@ namespace KdajBi.API.Controllers
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    if (!ClientExists(p_Client.Id))
+                    if (!await ClientExists(p_Client.Id))
                     { return NotFound(); }
                     else
                     { throw; }
@@ -239,7 +239,7 @@ namespace KdajBi.API.Controllers
         [HttpDelete("/api/Client/{id}")]
         public async Task<ActionResult<Client>> DeleteClient(long id)
         {
-            if (ClientIsMine(id) == false) { return NotFound(); }
+            if (await ClientIsMine(id) == false) { return NotFound(); }
             var Client = await _context.Clients.FindAsync(id);
             if (Client == null) { return NotFound(); }
 
@@ -249,17 +249,17 @@ namespace KdajBi.API.Controllers
             return Json("OK");
         }
 
-        private bool ClientExists(long id)
+        private async Task<bool> ClientExists(long id)
         {
-            return _context.Clients.Any(e => e.Id == id);
+            return await _context.Clients.AnyAsync(e => e.Id == id);
         }
-        private bool ClientIsMine(long id)
+        private async Task<bool> ClientIsMine(long id)
         {
-            return (_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == id).Count() == 1);
+            return (await _context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == id).CountAsync() == 1);
         }
-        private bool LocationIsMine(long id)
+        private async Task<bool> LocationIsMine(long id)
         {
-            return (_context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == id).Count() == 1);
+            return (await _context.Locations.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == id).CountAsync() == 1);
         }
     }
 }

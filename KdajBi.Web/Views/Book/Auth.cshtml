@@ -70,8 +70,8 @@
                 <div class="form-group mt-3">
                     @if (Model.Mobile == null)
                     {
-                    <label for="" class="control-label pl-2 mb-0">Naročite se lahko v treh enostavnih korakih,</label>
-                    <label for="inputMobile" class="control-label pl-2">za začetek naročanja vpišite vašo številko:</label>
+                    <label for="" class="control-label pl-2 mb-0 col-12">Naročite se lahko v treh enostavnih korakih,</label>
+                                <label for="inputMobile" class="control-label pl-2 col-12">za začetek naročanja vpišite vašo številko:</label>
                     }
                     else
                     {
@@ -95,7 +95,7 @@
                     </div>
                     }
                 <div class="form-group">
-                    <label for="inputPIN" class="control-label pl-2">PIN (počakajte, prejeli boste sms sporočilo)</label>
+                                <label for="inputPIN" class="control-label pl-2">PIN </label><label id="pinCountdown">&nbsp(počakajte, prejeli boste sms sporočilo)</label>
                     <div class="col-sm-10">
                         <input type="number" class="form-control" id="inputPIN" name="inputPIN" placeholder="" value="" min="1000" max="9999"
                                required autocorrect="off" spellcheck="false" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
@@ -114,6 +114,8 @@
 </div>
 
 </div>
+
+
     <!-- jQuery -->
     <script src="~/plugins/jquery/jquery.min.js"></script>
     <!-- Bootstrap 4 -->
@@ -122,18 +124,40 @@
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
 
     <script type="text/javascript">
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+
         function CheckMobileNumber(el) {
                 var mobi = $(el).val();
                 mobi = mobi.replace(/[^\d\+]/g, '');
                 $(el).val(mobi);
             }
+        
+        var timerId;
+        var timeLeft = 30;
+        function countdown() {
+          if (timeLeft == -1) {
+            clearTimeout(timerId);
+                document.getElementById('pinCountdown').innerHTML ="";
+          } else {
+                        document.getElementById('pinCountdown').innerHTML = "&nbsp(počakajte, prejeli boste sms sporočilo)&nbsp"+timeLeft;
+            timeLeft--;
+          }
+        }
 
     $(document).ready(function () {
 
         @if (Model.Mobile == null)
             {@Html.Raw("document.getElementById('inputMobile').focus();"); }
         else
-            {@Html.Raw("document.getElementById('inputPIN').focus();"); }
+            {
+            @Html.Raw("document.getElementById('inputPIN').focus();");
+            @Html.Raw("timerId = setInterval(countdown, 1000);");
+            @Html.Raw("$('#inputPIN').keydown(function (e) {timeLeft=-1;});")
+            ;
+        }
 
         $('inputPIN').attr('autocomplete', 'off');
 

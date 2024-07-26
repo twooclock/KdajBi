@@ -26,17 +26,17 @@ namespace KdajBi.Web.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             try
             {
                 if (User.Identity.IsAuthenticated)
                 {
-                    if (LocationIsMine(DefaultLocationId()))
+                    if (await LocationIsMine(await DefaultLocationId()))
                     {
                         _BaseViewModel vmModel = new _BaseViewModel();
-                        vmModel.Token = _GetToken();
-                        vmModel.UserUIShow = _UserUIShow();
+                        vmModel.Token = await _GetToken();
+                        vmModel.UserUIShow = await _UserUIShow();
                         return View(vmModel);
                     }
                     else
@@ -70,25 +70,25 @@ namespace KdajBi.Web.Controllers
             //await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, new ClaimsPrincipal(identity), authProperties);
 
             _BaseViewModel vmModel = new _BaseViewModel();
-            vmModel.Token = _GetToken();
-            vmModel.UserUIShow = _UserUIShow();
+            vmModel.Token = await _GetToken();
+            vmModel.UserUIShow = await _UserUIShow();
             return View(vmModel);
 
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Privacy()
         {
 			_BaseViewModel vmModel = new _BaseViewModel();
-			vmModel.Token = _GetToken();
-			vmModel.UserUIShow = _UserUIShow();
+			vmModel.Token = await _GetToken();
+			vmModel.UserUIShow = await _UserUIShow();
 			return View(vmModel);
         }
 
-		public IActionResult Help()
+        public async Task<IActionResult> Help()
 		{
 			_BaseViewModel vmModel = new _BaseViewModel();
-			vmModel.Token = _GetToken();
-			vmModel.UserUIShow = _UserUIShow();
+			vmModel.Token = await _GetToken();
+			vmModel.UserUIShow = await _UserUIShow();
 			return View(vmModel);
 		}
 

@@ -97,8 +97,8 @@ namespace KdajBi.API.Controllers
                     availableAppointments = TimeSlotManager.removeOccupiedAppointments(
                         availableAppointments,
                         new TimeSlot(
-                            evt.Start.DateTime.Value,
-                            evt.End.DateTime.Value
+                            evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
+                            evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
                         )
                     );
                 }
@@ -272,6 +272,7 @@ namespace KdajBi.API.Controllers
                 SmsCampaign newSmsCampaign = new SmsCampaign();
                 newSmsCampaign.Company.Id = appointmentToken.Location.CompanyId;
                 newSmsCampaign.LocationId = appointmentToken.Location.Id;
+                newSmsCampaign.AppointmentTokenId = appointmentToken.Id;
                 var myUser = _context.Users.Where(c => c.CompanyId == appointmentToken.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
                 newSmsCampaign.AppUser.Id = myUser.Id;
 

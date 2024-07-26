@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
 {
@@ -26,7 +27,7 @@ namespace KdajBi.Web.Controllers
 
 
         [Route("/wps/{wpid}/{scheduletype}")]
-        public IActionResult wps(long wpid, long scheduletype)
+        public async Task<IActionResult> wps(long wpid, long scheduletype)
         {
             //edit schedule for a workplace wpid (default scheduleType=0 Alldays)
             bool alternateWeeks = (SettingsHelper.getSetting(_context, _CurrentUserCompanyID(), null, "cbEmployee_AlternatingWeeks", "false")) == "true";
@@ -116,8 +117,8 @@ namespace KdajBi.Web.Controllers
 
             
 
-            myVM.Token = _GetToken();
-            myVM.UserUIShow = _UserUIShow();
+            myVM.Token = await _GetToken();
+            myVM.UserUIShow = await _UserUIShow();
 
             return View(myVM);
         }

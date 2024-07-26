@@ -219,6 +219,8 @@
             modal.find('#selected-appointment-date').text(formatDate(date));
             modal.find('#selected-appointment-time').text(appointment);
             modal.find('#create-appointment').click(function () {
+                $(this).attr("disabled", true);
+                $(this).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Naročam...`);
                 $.ajax({
                     type: "POST",
                     url: apiURL + "/api/booking/" + token,
@@ -282,24 +284,26 @@
             return dayjs(p_date).format("YYYY-MM-DD") ;
         }
 
+        function EnablePrevNext(){
+            $("#previous-day").prop("disabled", false);
+            $("#next-day").prop("disabled", false);
+            @if (@Model.PublicBooking_AllowCurrentDay == false)
+            {
+                @Html.Raw("if (date <= (dayjs().add(1, 'day')).toDate()) { $('#previous-day').prop('disabled', true); }")
+
+            }
+            if ( date <= new Date() ) { $( "#previous-day" ).prop( "disabled", true ); }
+            @if (@Model.PublicBoooking_MaxDays > 0)
+            {
+                @Html.Raw("if (date >= (dayjs().add(pb_maxdays-1, 'day')).toDate()) { $('#next-day').prop('disabled', true); }")
+            }
+        }
   function loadFreeAppointments() {
     $( "#selected-date" ).text( formatDate( date ) );
 
-        $("#previous-day").prop("disabled", false);
-        $("#next-day").prop("disabled", false);
-        @if (@Model.PublicBooking_AllowCurrentDay==false)
-        {
-            @Html.Raw("if (date <= (dayjs().add(1, 'day')).toDate()) { $('#previous-day').prop('disabled', true); }")
+    $("#previous-day").prop("disabled", true);
+    $("#next-day").prop("disabled", true);
 
-        }
-        if ( date <= new Date() ) {
-          $( "#previous-day" ).prop( "disabled", true );
-        }
-        @if (@Model.PublicBoooking_MaxDays > 0)
-        {
-            @Html.Raw("if (date >= (dayjs().add(pb_maxdays-1, 'day')).toDate()) { $('#next-day').prop('disabled', true); }")
-
-        }
     $( ".appointment" ).remove();
     $( "#no-appointments" ).hide();
     $( "#appointments-loader" ).show();
@@ -313,6 +317,7 @@
         $( "#no-appointments" ).hide();
         if ( result.length === 0 ) {
           $( "#no-appointments" ).show();
+          EnablePrevNext();
           return;
         }
         result.forEach( appointment => {
@@ -329,11 +334,13 @@
           </div>
           `);
         } );
+              EnablePrevNext();
       },
       error: function ( xhr, status, error ) {
         $( "#appointments-loader" ).hide();
         $( "#no-appointments" ).show();
         // TODO: Show invalid token error
+        EnablePrevNext();
         return false;
       }
     } );

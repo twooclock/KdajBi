@@ -41,26 +41,26 @@ namespace KdajBi.API.Controllers
         }
 
         [HttpGet("/api/booking-confirmation")]
-        public ActionResult<List<TimeSlot>> Index()
+        public async Task<ActionResult<List<TimeSlot>>> Index()
         {
-            List<AppointmentToken> BookingConfirmation = _context.AppointmentTokens
+            List<AppointmentToken> BookingConfirmation = await _context.AppointmentTokens
                 .Where(b => b.CompanyId == _CurrentUserCompanyID() && b.GCalId !=null && b.Status==0)
-                .ToList();
+                .ToListAsync();
 
             return Ok(BookingConfirmation);
         }
 
         [HttpPut("/api/booking-confirmation/{id}")]
-        public ActionResult<List<TimeSlot>> Update(int id)
+        public async Task<ActionResult<List<TimeSlot>>> Update(int id)
         {
 
             // validate timeslot
-            AppointmentToken bookingConfirmation = _context.AppointmentTokens
+            AppointmentToken bookingConfirmation = await _context.AppointmentTokens
                 .Include(b => b.Client)
                 .Include(b => b.Location)
                 .Include(b => b.Workplace)
                 .Where(b => b.CompanyId == _CurrentUserCompanyID())
-                .FirstOrDefault(b => b.Id == id);
+                .FirstOrDefaultAsync(b => b.Id == id);
 
             bookingConfirmation.Status = 1;
             bookingConfirmation.UpdatedUserID = _CurrentUserID();
@@ -80,7 +80,8 @@ namespace KdajBi.API.Controllers
                 SmsCampaign newSmsCampaign = new SmsCampaign();
                 newSmsCampaign.Company.Id = bookingConfirmation.Location.CompanyId;
                 newSmsCampaign.LocationId = bookingConfirmation.LocationId;
-                var myUser = _context.Users.Where(c => c.CompanyId == bookingConfirmation.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
+                newSmsCampaign.AppointmentTokenId = bookingConfirmation.Id;
+                var myUser = await _context.Users.Where(c => c.CompanyId == bookingConfirmation.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().FirstAsync();
                 newSmsCampaign.AppUser.Id = myUser.Id;
 
                 newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + bookingConfirmation.Start.Value.ToString("dd.MM.yyyy") + " ob " + bookingConfirmation.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + bookingConfirmation.Location.Name;
@@ -104,7 +105,7 @@ namespace KdajBi.API.Controllers
             }
             try
             {
-                  _context.SaveChanges();
+                  await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -116,13 +117,13 @@ namespace KdajBi.API.Controllers
         }
 
         [HttpDelete("/api/booking-confirmation/{id}")]
-        public ActionResult<List<TimeSlot>> Destroy(int id)
+        public async Task<ActionResult<List<TimeSlot>>> Destroy(int id)
         {
-            AppointmentToken bookingConfirmation = _context.AppointmentTokens
+            AppointmentToken bookingConfirmation = await _context.AppointmentTokens
                 .Include(b => b.Client)
                 .Include(b => b.Workplace)
                 .Where(b => b.CompanyId == _CurrentUserCompanyID())
-                .FirstOrDefault(b => b.Id == id);
+                .FirstOrDefaultAsync(b => b.Id == id);
             if (bookingConfirmation == null) { return NotFound(); }
             
             bookingConfirmation.Status = 2;
@@ -138,7 +139,7 @@ namespace KdajBi.API.Controllers
             }
             try
             {
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {

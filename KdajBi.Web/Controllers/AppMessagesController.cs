@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
 {
@@ -24,20 +25,20 @@ namespace KdajBi.Web.Controllers
 
 
         [Route("/AppMessages")]
-        public IActionResult AppMessages()
+        public async Task<IActionResult> AppMessages()
         {
             _BaseViewModel vmModel = new _BaseViewModel();
-            vmModel.Token = _GetToken();
-            vmModel.UserUIShow = _UserUIShow();
+            vmModel.Token = await _GetToken();
+            vmModel.UserUIShow = await _UserUIShow();
             return View(vmModel);
         }
 
         [Route("/AppMessage/{id}")]
-        public IActionResult AppMessage(long Id)
+        public async Task<IActionResult> AppMessage(long Id)
         {
             _BaseViewModel vmModel = new _BaseViewModel();
-            vmModel.Token = _GetToken();
-            vmModel.UserUIShow = _UserUIShow();
+            vmModel.Token = await _GetToken();
+            vmModel.UserUIShow = await _UserUIShow();
             vmModel.Id = Id;
             return View(vmModel);
         }

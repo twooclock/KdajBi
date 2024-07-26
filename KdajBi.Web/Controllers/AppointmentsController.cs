@@ -17,6 +17,7 @@ using KdajBi.GoogleHelper;
 using Google.Apis.Calendar.v3.Data;
 using System.Globalization;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
 {
@@ -30,14 +31,14 @@ namespace KdajBi.Web.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Index(string? date)
+        public async Task<IActionResult> Index(string? date)
         {
             try
             {
                 if (User.Identity.IsAuthenticated)
                 {
-                    long defaultLocationID = DefaultLocationId();
-                    if (LocationIsMine(defaultLocationID))
+                    long defaultLocationID = await DefaultLocationId();
+                    if (await LocationIsMine(defaultLocationID))
                     {
                         long scheduletype = 0;
                         long currUserCompanyID = _CurrentUserCompanyID();
@@ -71,7 +72,7 @@ namespace KdajBi.Web.Controllers
                                     myVM.Settings.Add(item.Key,item.Value);
                                 }
                                 //load google calendars
-                                var gt = _CurrentUserGooToken();
+                                var gt = await _CurrentUserGooToken();
                                 if (gt != null)
                                 {
                                     //lets TRY
@@ -108,10 +109,10 @@ namespace KdajBi.Web.Controllers
                                                     foreach (var calEvent in calEvents)
                                                     {
                                                         //ignore all day events
-                                                        if (calEvent.Start.DateTime != null && calEvent.End.DateTime != null)
+                                                        if (calEvent.Start.DateTimeDateTimeOffset.HasValue == true && calEvent.End.DateTimeDateTimeOffset.HasValue == true)
                                                         {
-                                                            var start = calEvent.Start.DateTime.Value;
-                                                            var end = calEvent.End.DateTime.Value;
+                                                            var start = calEvent.Start.DateTimeDateTimeOffset.Value.LocalDateTime;
+                                                            var end = calEvent.End.DateTimeDateTimeOffset.Value.LocalDateTime;
                                                             var newEvent = new FullCalendar.Event()
                                                             {
                                                                 id = calEvent.Id,
@@ -193,8 +194,8 @@ namespace KdajBi.Web.Controllers
                                 else
                                 { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == currUserCompanyID).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + Convert.ToChar(160).ToString() + p.Mobile), mobile = p.Mobile, notes = p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }
 
-                                myVM.Token = _GetToken();
-                                myVM.UserUIShow = _UserUIShow();
+                                myVM.Token = await _GetToken();
+                                myVM.UserUIShow = await _UserUIShow();
 
                                 return View(myVM);
                             }

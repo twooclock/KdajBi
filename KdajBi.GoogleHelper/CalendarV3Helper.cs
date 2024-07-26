@@ -65,8 +65,8 @@ namespace KdajBi.GoogleHelper
             try
             {
                 EventsResource.ListRequest request = myCALservice.Events.List(calendarId);
-                if (startData != null) { request.TimeMin = startData.Value; }
-                if (endData != null) { request.TimeMax = endData.Value; }
+                if (startData != null) { request.TimeMinDateTimeOffset = startData.Value; }
+                if (endData != null) { request.TimeMaxDateTimeOffset = endData.Value; }
 
                 request.ShowDeleted = false;
                 request.OrderBy =OrderByEnum.StartTime;
@@ -114,11 +114,11 @@ namespace KdajBi.GoogleHelper
                 Summary = title,
                 Start = new EventDateTime()
                 {
-                    DateTime = startTime
+                    DateTimeDateTimeOffset = startTime
                 },
                 End = new EventDateTime()
                 {
-                    DateTime = endTime
+                    DateTimeDateTimeOffset = endTime
                 },
                 ExtendedProperties = myExtendedProperties
 
