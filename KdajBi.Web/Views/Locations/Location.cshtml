@@ -222,6 +222,24 @@
                                                             </label>
                                                         </div>
                                                     </div>
+                                                    <div class="form-group col-sm d-flex flex-column justify-content-end">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingAuthorizeAfterSlotSelection">
+                                                            <label class="form-check-label" for="chkPublicBookingAuthorizeAfterSlotSelection">
+                                                                Prijava stranke šele po izbiri termina
+                                                                <a href="#!" data-toggle="popover" data-content="Stranka se bo morala prijaviti (s pinom prejetim prek sms) šele po izbiri prostega termina. (Vsakdo bo lahko videl storitve in proste termine!)"><i class="fa fa-info-circle"></i></a>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-sm d-flex flex-column justify-content-end">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingClientDataIsMandatory">
+                                                            <label class="form-check-label" for="chkPublicBookingClientDataIsMandatory">
+                                                                Obvezen vnos podatkov o stranki 
+                                                                <a href="#!" data-toggle="popover" data-content="Stranka bo morala obvezno vnest svoje podatke (ime, priimek in naslov)"><i class="fa fa-info-circle"></i></a>
+                                                            </label>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="txtPublicBookingCSS" class="control-label">CSS za napredno oblikovanje strani
@@ -707,11 +725,20 @@
                         </label>
                         <input type="text" id="txtServiceName" name="txtServiceName" class="form-control" />
                     </div>
-                    <div class="form-group">
+                    <div class="row">
+                    <div class="form-group col-6 d-flex flex-column justify-content-end">
                         <label for="txtServiceMinutes">
                             Trajanje (v minutah):
                         </label>
                         <input id="txtServiceMinutes" type="number" pattern="[0-9.]+" name="txtServiceMinutes" class="form-control" />
+                    </div>
+                    <div class="form-group col-6 d-flex flex-column justify-content-end">
+                        <label for="txtServiceOffset">
+                            Zamik (v minutah):
+                            <a href="#!" data-toggle="popover" data-content="Za koliko zamakne pričetek vsakega prostega termina za to storitev. Če zamik ni določen, se prosti termini zamikajo na 30 minut."><i class="fa fa-info-circle"></i></a>
+                        </label>
+                        <input id="txtServiceOffset" type="number" pattern="[0-9.]+" name="txtServiceOffset" class="form-control" />
+                    </div>
                     </div>
                     <div class="form-group">
                         <label for="txtPriceDescription">
@@ -1465,8 +1492,11 @@
                 var settings = new Object();
                 settings["PublicBooking_Text"] = $("#txtPublicBookingText").val();
                 settings["PublicBooking_MaxDays"] = $("#txtPublicBookingMaxDays").val();
-                      settings["PublicBooking_AllowCurrentDay"] = $("#chkPublicBookingAllowCurrentDay").prop("checked");
-                      settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
+                settings["PublicBooking_AllowCurrentDay"] = $("#chkPublicBookingAllowCurrentDay").prop("checked");
+                settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
+                settings["PublicBooking_AuthorizeAfterSlotSelection"] = $("#chkPublicBookingAuthorizeAfterSlotSelection").prop("checked");
+                settings["PublicBooking_ClientDataIsMandatory"] = $("#chkPublicBookingClientDataIsMandatory").prop("checked");
+              
                 settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
 
                 getAPIToken().then((result) => {
@@ -1495,9 +1525,11 @@
             settings["PublicBooking_MaxDays"] = $("#txtPublicBookingMaxDays").val();
             settings["PublicBooking_AllowCurrentDay"] = 'true';
             settings["PublicBooking_AlertMeWithSMS"] = 'true';
+            settings["PublicBooking_AuthorizeAfterSlotSelection"] = 'false';
+            settings["PublicBooking_ClientDataIsMandatory"] = 'false';
             settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
 
-                  getAPIToken().then((result) => {
+            getAPIToken().then((result) => {
             $.ajax({
                 type: "post",
                 data: JSON.stringify(settings),
@@ -1513,6 +1545,12 @@
                      }
                     if (result["PublicBooking_AlertMeWithSMS"] != undefined) {
                         if (result["PublicBooking_AlertMeWithSMS"] == "true") { $('#chkPublicBookingAlertMeWithSMS').prop('checked', true);}
+                    }
+                    if (result["PublicBooking_AuthorizeAfterSlotSelection"] != undefined) {
+                        if (result["PublicBooking_AuthorizeAfterSlotSelection"] == "true") { $('#chkPublicBookingAuthorizeAfterSlotSelection').prop('checked', true); }
+                    }
+                    if (result["PublicBooking_ClientDataIsMandatory"] != undefined) {
+                            if (result["PublicBooking_ClientDataIsMandatory"] == "true") { $('#chkPublicBookingClientDataIsMandatory').prop('checked', true); }
                     }
                     $("#txtPublicBookingCSS").val(result["PublicBooking_CSS"]);
 
@@ -2355,6 +2393,7 @@
                 //clear form
                 $("#txtServiceName").val('');
                 $("#txtServiceMinutes").val('');
+                $("#txtServiceOffset").val('');
                 $("#txtPriceDescription").val('');
                 $("#cboServiceGroup").selectpicker('val', '0');
                 $("#cpServiceColor").colorpicker('setValue', null);
@@ -2374,6 +2413,7 @@
                     success: function (result) {
                         $("#txtServiceName").val(result.name);
                         $("#txtServiceMinutes").val(result.minutes);
+                              $("#txtServiceOffset").val(result.offset);
                         $("#txtPriceDescription").val(result.priceDescription);
                         $("#cboServiceGroup").selectpicker('val', result.serviceGroupId);
                         if (result.color != null) { $("#cpServiceColor").colorpicker('setValue', '#' + result.color); }
@@ -2442,6 +2482,7 @@
                 service.LocationId = parseInt($("#cboLocations").val());
                 service.Name = $('#txtServiceName').val();
                 service.Minutes = parseInt($("#txtServiceMinutes").val());
+                service.Offset = parseInt($("#txtServiceOffset").val());
                 service.PriceDescription = $("#txtPriceDescription").val();
                 if (isNaN(service.Minutes)) { service.Minutes = 0; }
                 service.serviceGroupId = Number($('#cboServiceGroup').val());

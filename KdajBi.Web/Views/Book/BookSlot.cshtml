@@ -1,0 +1,60 @@
+﻿@using Newtonsoft.Json;
+@using KdajBi.Web.ViewModels;
+@inject KdajBi.Web.Services.IApiTokenProvider apiTP
+@model vmPublicBooking
+@{
+    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+    ViewData["Title"] = "Rezervacija termina";
+}
+
+@section styles{
+
+
+}
+
+
+<!-- page content -->
+
+    <div id="appointments-loader" class="card card-outline p-1" >
+        <div class="card-body text-center">
+        <div>Počakajte trenutek, rezerviram termin...</div>
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Rezerviram termin...</span>
+            </div>
+        </div>
+    </div>
+
+
+
+
+<!-- /modal content-->
+@section scripts{
+    <script type="text/javascript">
+
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () { history.go(1); };
+
+        var apiURL = "@Html.Raw(apiTP.Settings().BaseAddress)"
+        
+        $(document).ready(function () {
+            $.ajax({
+                type: "POST",
+                url: apiURL + "/api/publicbooking/@Model.PublicBoookingId/@Model.wpid/@Model.sid/",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    "date": "@Model.date",
+                    "timeSlot": "@Model.timeslot"
+                }),
+                success: function (result) {
+                    window.location.href = "/booked/@Model.token";
+                },
+                error: function (error) {
+                    window.location.href = "/book-error?token=@Model.token";
+                }
+            });
+
+        });
+
+    </script>
+
+}

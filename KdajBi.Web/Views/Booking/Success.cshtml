@@ -13,20 +13,93 @@
 }
 
 
-<!-- page content -->
+<div class="card mt-5 card-book ">
+    <div class="card-body login-card-body card-body-book vh-100">
+        <h1 class="mb-2">KdajBi naročanje</h1>
+        <div>
+            Hvala, uspešno ste oddali naročilo na termin!
+            <br />Po sms-u boste v kratkem prejeli potrditev vašega izbranega termina.
+            <div class="pt-5"></div>
 
-<div class="card mt-5 card-book">
-    <div class="card-body login-card-body card-body-book">
-    <h1 class="mb-2">KdajBi naročanje</h1>
-    <div>
-      Hvala, uspešno ste oddali naročilo na termin!
-      <br />Po sms-u boste v kratkem prejeli potrditev vašega izbranega termina.
-            <br />
-            <h3><a class="btn btn-primary" href="https://kdajbi.si">KdajBi.si</a></h3>
+            <button onclick="shareSalon();" class="btn btn-success d-inline-flex align-items-center"><i class="fa fa-share-alt"></i><p class="pl-2">Če vam je storitev všeč, delite povezavo za naročanje v <b>Studio Noel</b> svojim prijateljem!</p></button>
+
+            <button onclick="shareKdajBi();" class="btn btn-success d-inline-flex align-items-center mt-3"><i class="fa fa-share-alt"></i><p class="pl-2">Če poznate koga, ki bi mu prišlo prav spletno naročanje, nas priporočite!</p></button>
+            <div class="row mt-4 align-items-center justify-content-center">
+                <i class="fas fa-heart fa-lg" style="color: #ff8080;"></i>
+                <span class="font-weight-bold ph-1 h3">Hvala!</span>
+                <i class="fas fa-heart fa-lg" style="color: #ff8080;"></i>
+            </div>
+
+        </div>
+
     </div>
-  </div>
+    <div class="card-footer px-auto fixed-bottom">
+        <div class="row">
+            <div class="w-25"></div>
+            <div class="w-25 d-flex justify-content-center"><a href="https://www.instagram.com/kdajbi.si/"><i class="fab fa-instagram" style="font-size: xxx-large"></i></a></div>
+            <div class="w-25 d-flex justify-content-center"><a href="https://www.facebook.com/kdajbi.si"><i class="fab fa-facebook-square" style="font-size: xxx-large"></i></a></div>
+            <div class="w-25"></div>
+        </div>
+    </div>
+
 </div>
-@section scripts{
-<script type="text/javascript">
-</script>
+@section scripts {
+    <script src="~/plugins/share-api-polyfill/share-min.js"></script>
+
+    <script type="text/javascript">
+
+
+        function shareSalon() {
+
+            navigator.share({
+                title: 'Spletno naročanje',
+                text: 'V salonu @Model.token.Location.Name se lahko naročite tudi prek spleta!',
+                url: 'https://kdajbi.si/narocanje/@Model.token.Location.PublicBookingToken',
+                hashtags: ['salon @Model.token.Location.Name', 'spletno naročanje', 'kdajbi.si',]
+            },
+                {
+                    copy: true,
+                    email: true,
+                    print: false,
+                    sms: true,
+                    messenger: true,
+                    facebook: true,
+                    whatsapp: true,
+                    twitter: true,
+                    linkedin: true,
+                    telegram: true,
+                    skype: true,
+                    language: 'sl'
+                });
+        }
+        function shareKdajBi() {
+
+            navigator.share({
+                title: 'Spletno naročanje',
+                text: 'KdajBi.si omogoča enostavno spletno naročanje!',
+                url: 'https://kdajbi.si/',
+                hashtags: ['spletno naročanje', 'kdajbi.si', 'salon @Model.token.Location.Name',]
+            },
+                {
+                    copy: true,
+                    email: true,
+                    print: false,
+                    sms: true,
+                    messenger: true,
+                    facebook: true,
+                    whatsapp: true,
+                    twitter: true,
+                    linkedin: true,
+                    telegram: true,
+                    skype: true,
+                    language: 'sl'
+                });
+        }
+        $(document).ready(function () {
+            //prevent back button
+            history.pushState(null, null, window.location.href);
+            history.back();
+            window.onpopstate = () => history.forward();
+        });
+    </script>
 }

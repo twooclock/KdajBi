@@ -21,6 +21,8 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using System.Globalization;
 using System.ComponentModel.Design;
+using Z.Expressions;
+using Google.Apis.Util;
 
 namespace KdajBi.API.Controllers
 {
@@ -42,56 +44,36 @@ namespace KdajBi.API.Controllers
             _calendarV3Provider = calendarV3Provider;
         }
 
-        /// <summary>
-        /// Get a list of available timeSlots for a specified date
-        /// For each workplace: get available schedule, divide it by service duration, get events for that day and remove busy slots
-        /// Finnaly return only distinct timeslots
-        /// </summary>
-        /// <param name="pbid">PublicBooking id (contains location)</param>
-        /// <param name="wpid">Workplace Id or 0 if not specified</param>
-        /// <param name="sid">Service id</param>
-        /// <param name="date"></param>
-        /// <returns></returns>
-        [AllowAnonymous]
-        [HttpGet("/api/publicbooking/{pbid}/{wpid}/{sid}")]
-        public async Task<ActionResult<List<TimeSlot>>> Get(
-            long pbid, long wpid, long sid,
-            [FromQuery] DateTime? date = null)
+        private async Task<List<TimeSlot>> GetFreeTimeSlots(long lid, long wpid, long sid, DateTime date, int move)
         {
-            List<BookingTimeslots> retval = new List<BookingTimeslots>();
-            if (date == null)
-            {
-                date = DateTime.Today;
-            }
-
-            DateTime dateEnd = date.Value.AddDays(1).AddTicks(-1);
-
-            var myPB = await _context.PublicBookings.FindAsync(pbid);
-            if (myPB == null) { return NotFound(); }
+            DateTime dateEnd = date.AddDays(1).AddTicks(-1);
 
             var myService = await _context.Services.FindAsync(sid);
-            if (myService == null) { return NotFound(); }
+            if (myService == null) { return new List<TimeSlot>(); }
+
+            List<BookingTimeslots> retval = new List<BookingTimeslots>();
 
             List<Workplace> myWP = new List<Workplace>();
-            if (wpid > 0) {
-                myWP.Add( await _context
+            if (wpid > 0)
+            {
+                myWP.Add(await _context
                 .Workplaces
                 .Include(s => s.WorkplaceSchedules)
                 .ThenInclude(x => x.Schedule)
                 .Include(e => e.WorkplaceScheduleExceptions)
-                .FirstOrDefaultAsync(x => x.Id == wpid && x.LocationId== myPB.LocationId));
+                .FirstOrDefaultAsync(x => x.Id == wpid && x.LocationId == lid));
             }
             else
             {
-                myWP.AddRange( _context
+                myWP.AddRange(_context
                .Workplaces
                .Include(s => s.WorkplaceSchedules)
                .ThenInclude(x => x.Schedule)
                .Include(e => e.WorkplaceScheduleExceptions)
-               .Where(x => x.LocationId == myPB.LocationId));
+               .Where(x => x.LocationId == lid));
             }
             //remove workplaces that do not provide service specified
-            for (int i = myWP.Count-1; i >= 0; i--)
+            for (int i = myWP.Count - 1; i >= 0; i--)
             {
                 if ((await _context.WorkplaceExcludedServices.Where(e => e.WorkplaceId == myWP[i].Id && e.ServiceId == myService.Id).CountAsync()) > 0)
                 { myWP.RemoveAt(i); }
@@ -102,15 +84,15 @@ namespace KdajBi.API.Controllers
                 foreach (var wp in myWP)
                 {
                     List<TimeSlot> availableworkhours = new List<TimeSlot>();
-                    availableworkhours = await getWorkplaceWorkhours(wp, date.Value);
+                    availableworkhours = await getWorkplaceWorkhours(wp, date);
 
                     List<TimeSlot> availableAppointments = new List<TimeSlot>();
                     if (availableworkhours.Count > 0)
                     {
-                        availableAppointments = TimeSlotManager.generateTimeSlots(availableworkhours, myService.Minutes);
-                        if (availableAppointments.Count>0)
-                        { 
-                            var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, date.Value, dateEnd);
+                        availableAppointments = TimeSlotManager.generateTimeSlots(availableworkhours, myService.Minutes, myService.Offset);
+                        if (availableAppointments.Count > 0)
+                        {
+                            var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, date, dateEnd);
                             if (events != null)
                             {
                                 foreach (var evt in events)
@@ -153,7 +135,49 @@ namespace KdajBi.API.Controllers
             //sort by Start
             allUnqTimeSlots.Sort((p, q) => p.start.CompareTo(q.start));
 
-            return Ok(allUnqTimeSlots);
+            return allUnqTimeSlots;
+        }
+
+        /// <summary>
+        /// Get a list of available timeSlots for a specified date
+        /// For each workplace: get available schedule, divide it by service duration, get events for that day and remove busy slots
+        /// Finnaly return only distinct timeslots
+        /// </summary>
+        /// <param name="lid">Location id</param>
+        /// <param name="wpid">Workplace Id or 0 if not specified</param>
+        /// <param name="sid">Service id</param>
+        /// <param name="date"></param>
+        /// <param name="move"></param>
+        /// <param name="mindate"></param>
+        /// <param name="maxdate"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpGet("/api/publicbooking/{lid}/{wpid}/{sid}")]
+        public async Task<ActionResult<List<TimeSlot>>> Get(
+            long lid, long wpid, long sid,
+            [FromQuery] DateTime? date = null,
+            [FromQuery] int? move = null,
+            [FromQuery] DateTime? mindate = null,
+            [FromQuery] DateTime? maxdate = null
+            )
+        {
+            if (date == null) { date = DateTime.Today; }
+            if (move == null) { move = 0; }
+            List<TimeSlot> retval = new List<TimeSlot>();
+            bool repeat = false;
+            do
+            {
+                repeat = false;
+                retval = await GetFreeTimeSlots(lid, wpid, sid, date.Value, move.Value);
+                if (retval.Count == 0 && move != 0)
+                {
+                    if (move == 1 && date < maxdate) { date = date.Value.AddDays(1); repeat = true; }
+                    if (move == -1 && date > mindate) { date = date.Value.AddDays(-1); repeat = true; }
+                }
+            }
+            while (repeat == true);
+            
+            return Ok(retval);
         }
 
         /// <summary>
@@ -389,17 +413,17 @@ namespace KdajBi.API.Controllers
         /// <summary>
         /// returns a list of services UsedInClientBooking
         /// </summary>
-        /// <param name="pbid">PublicBooking id (contains location)</param>
+        /// <param name="lid">Location id (contains location)</param>
         /// <param name="wpid">Workplace Id </param>
         /// <returns></returns>
         [AllowAnonymous]
-        [HttpPost("/api/publicbooking/getservices/{pbid}/{wpid}")]
-        public async Task< ActionResult<List<Service>>> getservices(long pbid, long wpid)
+        [HttpPost("/api/publicbooking/getservices/{lid}/{wpid}")]
+        public async Task< ActionResult<List<Service>>> getservices(long lid, long wpid)
         {
             //get public booking services
            
-            var myPB = await _context.PublicBookings.FindAsync(pbid);
-            var services = await _context.Services.Include(g=>g.ServiceGroup).Where(s => s.UsedInClientBooking == true && s.LocationId == myPB.LocationId).OrderBy(s=>s.ServiceGroup.SortPosition).ToListAsync();
+            //var myPB = await _context.PublicBookings.FindAsync(pbid);
+            var services = await _context.Services.Include(g=>g.ServiceGroup).Where(s => s.UsedInClientBooking == true && s.LocationId == lid).OrderBy(s=>s.ServiceGroup.SortPosition).ToListAsync();
 
             //remove all services not done by specified workplace (if supplied)
             if (wpid > 0)
@@ -414,7 +438,7 @@ namespace KdajBi.API.Controllers
             else
             {
                 //remove all services not done by any workplace 
-                var allWPIds = await _context.Workplaces.Where(wp => wp.LocationId == myPB.LocationId).Select(wp=>wp.Id).ToListAsync();
+                var allWPIds = await _context.Workplaces.Where(wp => wp.LocationId == lid).Select(wp=>wp.Id).ToListAsync();
                 var wpExServices = await _context.WorkplaceExcludedServices.Where(w => allWPIds.Contains(w.WorkplaceId)).ToListAsync();
                 if (wpExServices.Count > 0)
                 {
