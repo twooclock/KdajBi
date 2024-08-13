@@ -139,7 +139,8 @@ namespace KdajBi.API.Controllers
                 Serviceindb.LocationId = Service.LocationId;
                 Serviceindb.SortPosition = Service.SortPosition;
                 Serviceindb.Name = Service.Name;
-				Serviceindb.Minutes = Service.Minutes;
+                Serviceindb.Minutes = Service.Minutes;
+                Serviceindb.Offset = Service.Offset;
                 Serviceindb.ServiceGroupId = Service.ServiceGroupId;
 				Serviceindb.Color = Service.Color;
                 Serviceindb.UsedInClientBooking = Service.UsedInClientBooking;

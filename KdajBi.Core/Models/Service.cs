@@ -21,9 +21,9 @@ namespace KdajBi.Core.Models
 
         [MinLength(3), MaxLength(150), Required]
         public string Name { get; set; }
+        public int Minutes { get; set; } //service duration in minutes
+        public int Offset { get; set; } //service offset when crating free slots
 
-        //approximate service duration in minutes
-        public int Minutes { get; set; }
         [MinLength(6), MaxLength(6)]
         public string Color { get; set; }
         public int SortPosition { get; set; }

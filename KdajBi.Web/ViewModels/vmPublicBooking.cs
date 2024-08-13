@@ -20,6 +20,13 @@ namespace KdajBi.Web.ViewModels
         public int PublicBoooking_MaxDays;
         public bool PublicBooking_AllowCurrentDay;
         public bool PublicBooking_AlertMeWithSMS;
+        public bool PublicBooking_AuthorizeAfterSlotSelection;
+        public bool PublicBooking_ClientDataIsMandatory;
         public string PublicBoooking_CSS;
+
+        public long wpid;
+        public long sid;
+        public string date;
+        public string timeslot;
     }
 }

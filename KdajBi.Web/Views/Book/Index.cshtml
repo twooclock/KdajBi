@@ -134,6 +134,9 @@
                                 <div id="no-appointments" class="card card-outline card-primary p-1" style="display: none">
                                     <div class="card-body text-center">
                                         <h4>Ni prostih terminov</h4>
+                                        <button type="button" class="btn btn-primary" onclick="loadFreeAppointments(1);">Prikaži prvi prost termin</button>
+                                        <div class="pt-5">V primeru, da ne najdete ustreznega termina nas</div>
+                                        <a href="tel:@Html.Raw(@Model.Location.Tel)" class="btn btn-primary mt-3"><i class="fas fa-phone"></i>&nbsp;&nbsp;Pokličite</a>
                                     </div>
                                 </div>
                                 <div id="appointments-loader" class="card card-outline card-primary p-1" style="display: none">
@@ -226,6 +229,7 @@
         var apiURL = "@Html.Raw(apiTP.Settings().BaseAddress)"
 
         var pbid = "@Html.Raw(@Model.PublicBoookingId)";
+        var lid = "@Html.Raw(@Model.Location.Id)";
         var wpid = -1;
         var sid = 0;
         var date = new Date();
@@ -236,7 +240,10 @@
         }
         var stepper2;
         var pb_maxdays = @Html.Raw(@Model.PublicBoooking_MaxDays);
+        var minDate = date;
+        var maxDate = new Date().fp_incr(pb_maxdays)
 
+        var pb_AuthorizeAfterSlotSelection = @Html.Raw(@Model.PublicBooking_AuthorizeAfterSlotSelection.ToString().ToLower());
 
         function loadScript(src) {
             return new Promise(function (resolve, reject) {
@@ -335,7 +342,7 @@
             $("#services").empty();
             $.ajax({
                 type: "POST",
-                url: apiURL + "/api/publicbooking/getservices/" + pbid + "/" + wpid,
+                url: apiURL + "/api/publicbooking/getservices/" + lid + "/" + wpid,
                 contentType: "application/json; charset=utf-8",
                 data: "",
                 success: function (result) {
@@ -469,22 +476,30 @@
             modal.find('#create-appointment').off();
             modal.find('#create-appointment').on("click", function () {
                 $(this).attr("disabled", true);
-                $(this).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Naročam...`);
-                $.ajax({
-                    type: "POST",
-                    url: apiURL + "/api/publicbooking/" +pbid + "/"+appwpid+"/"+sid+"/",
-                    contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify({
-                        "date": onlyISODate(date),
-                        "timeSlot": appointment 
-                    }),
-                    success: function (result) {
-                        window.location.href = "/booked/@Model.token";
-                    },
-                    error: function (error) {
-                        window.location.href = "/book-error?token=@Model.token";
-                    }
-                });
+                
+                if (pb_AuthorizeAfterSlotSelection == false) {
+                    $(this).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Naročam...`);
+                    $.ajax({
+                        type: "POST",
+                        url: apiURL + "/api/publicbooking/" + pbid + "/" + appwpid + "/" + sid + "/",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            "date": onlyISODate(date),
+                            "timeSlot": appointment
+                        }),
+                        success: function (result) {
+                            window.location.href = "/booked/@Model.token";
+                        },
+                        error: function (error) {
+                            window.location.href = "/book-error?token=@Model.token";
+                        }
+                    });
+                }
+                else {
+                    //authorize
+                    window.location.href = "/bookauth/@Model.token/" + appwpid + "/" + sid + "?date=" + onlyISODate(date) + "&timeslot=" + appointment;
+                    
+                }
             });
         })
 
@@ -545,7 +560,7 @@
             }
         }
 
-        function loadFreeAppointments() {
+        function loadFreeAppointments(p_move) {
             $("#selected-date").text(formatDate(date));
 
             $("#previous-day").prop("disabled", true);
@@ -554,10 +569,10 @@
             $(".appointment").remove();
             $("#no-appointments").hide();
             $("#appointments-loader").show();
-
+            if (p_move == null) { p_move = '0'; }
             $.ajax({
                 type: "GET",
-                url: apiURL + "/api/publicbooking/" + pbid + "/"+wpid+"/"+sid+"/?date=" + onlyISODate(date),
+                url: apiURL + "/api/publicbooking/" + lid + "/" + wpid + "/" + sid + "/?date=" + onlyISODate(date) + '&move=' + p_move + '&mindate=' + onlyISODate(minDate) + '&maxdate=' + onlyISODate(maxDate),
                 contentType: "application/json; charset=utf-8",
                 success: function (result) {
                     $("#appointments-loader").hide();
@@ -567,6 +582,7 @@
                         EnablePrevNext();
                         return;
                     }
+                    if (result.length > 0) { if (onlyISODate(date) != onlyISODate(new Date(result[0].start))) { date = new Date(result[0].start); $("#selected-date").text(formatDate(date)); } }
                         result.forEach(appointment => {
                             $("#appointments").append(`
               <div
@@ -612,7 +628,7 @@
     url.searchParams.set( "date", onlyISODate( newDate) ); // setting your param
     window.history.pushState( { path: url.href }, '', url.href );
     date = newDate;
-    loadFreeAppointments();
+    loadFreeAppointments(0);
   }
 
   function getQueryParameter( name ) {

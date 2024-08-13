@@ -20,16 +20,19 @@
             <param name="bookingRequest"></param>
             <returns></returns>
         </member>
-        <member name="M:KdajBi.API.Controllers.PublicBookingController.Get(System.Int64,System.Int64,System.Int64,System.Nullable{System.DateTime})">
+        <member name="M:KdajBi.API.Controllers.PublicBookingController.Get(System.Int64,System.Int64,System.Int64,System.Nullable{System.DateTime},System.Nullable{System.Int32},System.Nullable{System.DateTime},System.Nullable{System.DateTime})">
             <summary>
             Get a list of available timeSlots for a specified date
             For each workplace: get available schedule, divide it by service duration, get events for that day and remove busy slots
             Finnaly return only distinct timeslots
             </summary>
-            <param name="pbid">PublicBooking id (contains location)</param>
+            <param name="lid">Location id</param>
             <param name="wpid">Workplace Id or 0 if not specified</param>
             <param name="sid">Service id</param>
             <param name="date"></param>
+            <param name="move"></param>
+            <param name="mindate"></param>
+            <param name="maxdate"></param>
             <returns></returns>
         </member>
         <member name="M:KdajBi.API.Controllers.PublicBookingController.getWorkplaceWorkhours(KdajBi.Core.Models.Workplace,System.DateTime)">
@@ -57,7 +60,7 @@
             <summary>
             returns a list of services UsedInClientBooking
             </summary>
-            <param name="pbid">PublicBooking id (contains location)</param>
+            <param name="lid">Location id (contains location)</param>
             <param name="wpid">Workplace Id </param>
             <returns></returns>
         </member>

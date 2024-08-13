@@ -66,13 +66,24 @@
         <div class="row">
             <form id="formMobile" name="formMobile" class="form-horizontal" action="@Html.Raw("/book/auth/mobile")" method="POST">
                 <input type="hidden" name="token" value="@Html.Raw(@Model.token)">
-                <input type="hidden" name="pbid" value="@Html.Raw(@Model.PublicBoookingId)">
-                <div class="form-group mt-3">
+                        <input type="hidden" name="pbid" value="@Html.Raw(@Model.PublicBoookingId)">
+                <input type="hidden" name="wpid" value="@Html.Raw(@Model.wpid)">
+                <input type="hidden" name="sid" value="@Html.Raw(@Model.sid)">
+                <input type="hidden" name="date" value="@Html.Raw(@Model.date)">
+                        <input type="hidden" name="timeslot" value="@Html.Raw(@Model.timeslot)">
+                        <div class="form-group mt-3">
                     @if (Model.Mobile == null)
                     {
+                                @if (Model.sid == 0)
+                                {
                     <label for="" class="control-label pl-2 mb-0 col-12">Naročite se lahko v treh enostavnih korakih,</label>
-                                <label for="inputMobile" class="control-label pl-2 col-12">za začetek naročanja vpišite vašo številko:</label>
-                    }
+                                    <label for="inputMobile" class="control-label pl-2 col-12">za začetek naročanja vpišite vašo številko:</label>
+                                }
+                                else
+                                {
+                                    <label for="inputMobile" class="control-label pl-2 col-12">Za potrditev naročila vpišite vašo številko:</label>
+                                }
+                            }
                     else
                     {
                     <label for="inputMobile" class="control-label pl-2">Mobilna številka:</label>
@@ -87,10 +98,15 @@
                     { 
                     <div class="form-group row">
                         <div class="col-sm-5">
-                            <input class="form-control ml-2" id="inputClientFirstName" name="inputClientFirstName" placeholder="Priimek" value="" maxlength="150">
+                            <input class="form-control ml-2" id="inputClientFirstName" name="inputClientFirstName" placeholder="Ime" value="" maxlength="150">
                         </div>
                         <div class="col-sm-5">
-                            <input class="form-control" id="inputClientLastName" name="inputClientLastName" placeholder="Ime" value="" maxlength="150">
+                                        <input class="form-control" id="inputClientLastName" name="inputClientLastName" placeholder="Priimek" value="" maxlength="150">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            <input class="form-control ml-2" id="inputClientAddress" name="inputClientAddress" placeholder="Naslov (ulica, pošta, kraj)" value="" maxlength="150">
                         </div>
                     </div>
                     }
@@ -162,8 +178,29 @@
         $('inputPIN').attr('autocomplete', 'off');
 
         $('#formMobile').validate({
-            rules: { inputMobile: { minlength: 9, required: true } },
-            messages: { inputMobile: "Neveljavna številka!" },
+            rules: { inputMobile: { minlength: 9, required: true }
+
+            @if (Model.PublicBooking_ClientDataIsMandatory == true)
+            {
+                @Html.Raw(", inputClientFirstName: { maxlength: 150, required: true }");
+                @Html.Raw(", inputClientLastName: { maxlength: 150, required: true }");
+                @Html.Raw(", inputClientAddress: { maxlength: 150, required: true }");
+            }
+
+            },
+            messages: { inputMobile: "Neveljavna številka!"
+
+            @if (Model.PublicBooking_ClientDataIsMandatory == true)
+            {
+                @Html.Raw(", inputClientFirstName: 'Neveljavno ime'")
+                ;
+                @Html.Raw(", inputClientLastName: 'Neveljaven priimek'")
+                ;
+                @Html.Raw(", inputClientAddress: 'Neveljaven naslov'")
+                ;
+            }
+
+            },
             highlight: function (element) {
                 $(element).closest('.form-control').addClass('is-invalid');
             },

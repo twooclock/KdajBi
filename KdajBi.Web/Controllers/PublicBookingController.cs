@@ -12,6 +12,9 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using Newtonsoft.Json;
 using System;
+using KdajBi.Core.dtoModels.Requests;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KdajBi.Web.Controllers
 {
@@ -31,7 +34,7 @@ namespace KdajBi.Web.Controllers
         [Route("/book/{token}")]
         public IActionResult Index(string token)
         {
-            var bookinglocation = _context.Locations.Where(l => l.PublicBookingToken == token).FirstOrDefault();
+            var bookinglocation = _context.Locations.Include(l => l.Workplaces).Where(l => l.PublicBookingToken == token).FirstOrDefault();
             vmPublicBooking vm = new vmPublicBooking();
             vm.token = token;
             vm.Location = bookinglocation;
@@ -47,19 +50,69 @@ namespace KdajBi.Web.Controllers
             vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
+            vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
             vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
+            if (vm.PublicBooking_AuthorizeAfterSlotSelection == true)
+            {
+                //remove any workplaces that have no services
+                var locationservices = _context.Services.Where(s => s.LocationId == bookinglocation.Id && s.Active == true).ToList();
+                for (int i = vm.Location.Workplaces.Count - 1; i >= 0; i--)
+                {
+                    var wp = vm.Location.Workplaces.ElementAt(i);
+                    var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wp.Id).ToList();
+                    if (wpExServices.Count > 0)
+                    {
+                        var wpServices = locationservices.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
+                        if (wpServices.Count == 0)
+                        { vm.Location.Workplaces.Remove(wp); }
+                    }
+                }
+                return View("~/Views/Book/Index.cshtml", vm); 
+            }
+            else
+            { return View("~/Views/Book/Auth.cshtml", vm); }
+        }
+
+        [AllowAnonymous]
+        [Route("/bookauth/{token}/{wpid}/{sid}")]
+        public IActionResult AuthorizeBooking(
+            string token, long wpid, long sid, [FromQuery] string date, [FromQuery] string timeslot)
+        {
+            var bookinglocation = _context.Locations.Include(l => l.Workplaces).Where(l => l.PublicBookingToken == token).FirstOrDefault();
+            vmPublicBooking vm = new vmPublicBooking();
+            vm.token = token;
+            vm.Location = bookinglocation;
+            if (bookinglocation != null)
+            { vm.CompanyName = _context.Companies.Find(bookinglocation.CompanyId).Name; }
+            else
+            {
+                vm.ErrorMsg = "Naslov ne obstaja";
+                return View("~/Views/Book/Error.cshtml", vm);
+            }
+            vm.Mobile = null;
+            vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
+            vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
+            vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
+            vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
+            vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
+            vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
+
+            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; //pass selected slot params
+
             return View("~/Views/Book/Auth.cshtml", vm);
         }
+
 
         [AllowAnonymous]
         [Route("/narocanje/auth/mobile")]
         [Route("/book/auth/mobile")]
         [HttpPost]
-        public IActionResult mobile(string token, string inputMobile, string inputClientFirstName, string inputClientLastName, string inputPIN, string pbid)
+        public IActionResult mobile(string token, string inputMobile, string inputClientFirstName, string inputClientLastName, string inputClientAddress, string inputPIN, string pbid, long wpid, long sid, string date, string timeslot)
         {
             var bookinglocation = _context.Locations.Include(l=>l.Workplaces).Where(l => l.PublicBookingToken == token).FirstOrDefault();
             
             vmPublicBooking vm = new vmPublicBooking();
+            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; //pass selected slot params
             vm.token = token;
             vm.Location = bookinglocation;
             if (bookinglocation != null)
@@ -78,6 +131,8 @@ namespace KdajBi.Web.Controllers
             vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
+            vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
+            vm.PublicBooking_ClientDataIsMandatory = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ClientDataIsMandatory", false);
             vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
 
 
@@ -119,7 +174,7 @@ namespace KdajBi.Web.Controllers
                             newSmsCampaign.PublicBookingId = newbooking.Id;
                             newSmsCampaign.AppUser.Id = _context.Users.AsNoTracking().Where(u => u.CompanyId == bookinglocation.CompanyId).First().Id;
 
-                            newSmsCampaign.MsgTxt = @"PIN za prijavo je " + myPIN.ToString() + ". Lep pozdrav! ";
+                            newSmsCampaign.MsgTxt = @"PIN za prijavo je " + myPIN.ToString() + ". Lep pozdrav! "+ bookinglocation.Name;
                             if (string.IsNullOrEmpty(bookinglocation.Tel) == false)
                             { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookinglocation.Tel; }
                             var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
@@ -184,6 +239,7 @@ namespace KdajBi.Web.Controllers
                                 Client myClient = new Client();
                                 myClient.LastName = (string.IsNullOrEmpty(inputClientLastName) ? "" : inputClientLastName);
                                 myClient.FirstName = (string.IsNullOrEmpty(inputClientFirstName) ? "" : inputClientFirstName);
+                                myClient.Address = (string.IsNullOrEmpty(inputClientAddress) ? "" : inputClientAddress);
                                 myClient.Mobile = inputMobile;
                                 myClient.CompanyId = bookinglocation.CompanyId;
                                 myClient.LocationId = bookinglocation.Id;
@@ -202,22 +258,27 @@ namespace KdajBi.Web.Controllers
                         _context.SaveChanges();
                         vm.PublicBoookingId = myPB.Id;
 
-                        //remove any workplaces that have no services
-                        var locationservices = _context.Services.Where(s => s.LocationId == bookinglocation.Id && s.Active == true).ToList();
-                        for (int i = vm.Location.Workplaces.Count-1; i >= 0; i--)
+                        if (vm.sid == 0)
                         {
-                            var wp = vm.Location.Workplaces.ElementAt(i);
-                            var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wp.Id).ToList();
-                            if (wpExServices.Count>0)
-                            { 
-                                var wpServices = locationservices.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
-                                if (wpServices.Count == 0)
-                                { vm.Location.Workplaces.Remove(wp); }
+                            //remove any workplaces that have no services
+                            var locationservices = _context.Services.Where(s => s.LocationId == bookinglocation.Id && s.Active == true).ToList();
+                            for (int i = vm.Location.Workplaces.Count - 1; i >= 0; i--)
+                            {
+                                var wp = vm.Location.Workplaces.ElementAt(i);
+                                var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wp.Id).ToList();
+                                if (wpExServices.Count > 0)
+                                {
+                                    var wpServices = locationservices.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
+                                    if (wpServices.Count == 0)
+                                    { vm.Location.Workplaces.Remove(wp); }
+                                }
                             }
+                            return View("~/Views/Book/index.cshtml", vm);
                         }
-                        
-
-                        return View("~/Views/Book/index.cshtml", vm);
+                        else
+                        {
+                            return View("~/Views/Book/BookSlot.cshtml", vm);
+                        }
                     }
                     else
                     {
@@ -241,7 +302,11 @@ namespace KdajBi.Web.Controllers
             vmBooking vm = new vmBooking();
             var myLocation = _context.Locations.Where(l => l.PublicBookingToken == token).FirstOrDefault();
             if (myLocation != null)
-            { vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, myLocation.CompanyId, myLocation.Id, "PublicBooking_CSS", ""); }
+            { 
+                vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, myLocation.CompanyId, myLocation.Id, "PublicBooking_CSS", "");
+                vm.token = new AppointmentToken();
+                vm.token.Location = myLocation;
+            }
             else
             { vm.PublicBoooking_CSS = ""; }
 

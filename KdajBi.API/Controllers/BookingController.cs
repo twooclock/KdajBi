@@ -83,7 +83,7 @@ namespace KdajBi.API.Controllers
                 return Ok(new List<TimeSlot>());
             }
 
-            List<TimeSlot> availableAppointments = TimeSlotManager.generateTimeSlots(workhours, appointmentToken.Minutes);
+            List<TimeSlot> availableAppointments = TimeSlotManager.generateTimeSlots(workhours, appointmentToken.Minutes, 0);
 
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {

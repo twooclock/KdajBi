@@ -200,10 +200,10 @@ namespace KdajBi.Core
         /// <param name="workhours"></param>
         /// <param name="serviceLength"></param>
         /// <returns></returns>
-        public static List<TimeSlot> generateTimeSlots(List<TimeSlot> workhours, long serviceLength)
+        public static List<TimeSlot> generateTimeSlots(List<TimeSlot> workhours, long serviceLength, long serviceOffset)
         {
             List<TimeSlot> timeSlots = new List<TimeSlot>();
-            const int minOffset = 30; // We can change this value to get interval from settings
+            long minOffset = (serviceOffset==0?30:serviceOffset); //default offset is 30 min
             foreach (TimeSlot slot in workhours)
             {
                 DateTime start = slot.start;
