@@ -47,11 +47,12 @@ namespace KdajBi.Web.Controllers
             }
             vm.Mobile = null;
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
-            vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
+            vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
-            vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
+            vm.PublicBooking_TOS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_TOS", "");
+            vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
             if (vm.PublicBooking_AuthorizeAfterSlotSelection == true)
             {
                 //remove any workplaces that have no services
@@ -91,11 +92,11 @@ namespace KdajBi.Web.Controllers
             }
             vm.Mobile = null;
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
-            vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
+            vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
-            vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
+            vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
 
             vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; //pass selected slot params
 
@@ -128,12 +129,13 @@ namespace KdajBi.Web.Controllers
             }
             vm.Mobile = inputMobile;
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
-            vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
+            vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
             vm.PublicBooking_ClientDataIsMandatory = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ClientDataIsMandatory", false);
-            vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
+            vm.PublicBooking_TOS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_TOS", "");
+            vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
 
 
             if (inputMobile != null && inputPIN == null)
@@ -213,7 +215,7 @@ namespace KdajBi.Web.Controllers
                     }
                 }
                 
-                vm.PublicBoookingId = newbooking.Id;
+                vm.PublicBookingId = newbooking.Id;
 
                 return View("~/Views/Book/Auth.cshtml", vm);
             }
@@ -256,7 +258,7 @@ namespace KdajBi.Web.Controllers
                         myPB.Authorized = DateTime.Now;
                         if (clientid > 0) { myPB.ClientId = clientid; }
                         _context.SaveChanges();
-                        vm.PublicBoookingId = myPB.Id;
+                        vm.PublicBookingId = myPB.Id;
 
                         if (vm.sid == 0)
                         {
@@ -303,12 +305,12 @@ namespace KdajBi.Web.Controllers
             var myLocation = _context.Locations.Where(l => l.PublicBookingToken == token).FirstOrDefault();
             if (myLocation != null)
             { 
-                vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, myLocation.CompanyId, myLocation.Id, "PublicBooking_CSS", "");
+                vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, myLocation.CompanyId, myLocation.Id, "PublicBooking_CSS", "");
                 vm.token = new AppointmentToken();
                 vm.token.Location = myLocation;
             }
             else
-            { vm.PublicBoooking_CSS = ""; }
+            { vm.PublicBooking_CSS = ""; }
 
             return View("~/Views/Book/Success.cshtml",vm);
         }

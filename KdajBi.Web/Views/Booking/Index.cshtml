@@ -15,7 +15,7 @@
         .appointment { cursor: pointer; }
         .appointment.card:hover { background: #007bff22; }
     </style>
-    @Html.Raw(@Model.PublicBoooking_CSS)
+    @Html.Raw(@Model.PublicBooking_CSS)
 }
 
 
@@ -126,7 +126,7 @@
             @Html.Raw("date.setDate(date.getDate() + 1);")
             ;
         }
-        var pb_maxdays = @Html.Raw(@Model.PublicBoooking_MaxDays);
+        var pb_maxdays = @Html.Raw(@Model.PublicBooking_MaxDays);
 
         function loadScript(src) {
             return new Promise(function (resolve, reject) {
@@ -171,7 +171,7 @@
                             else{
                                 @Html.Raw("minDate: \'today\', ");
                             }
-                            @if (@Model.PublicBoooking_MaxDays > 0)
+                            @if (@Model.PublicBooking_MaxDays > 0)
                             {
                                 @Html.Raw("maxDate: new Date().fp_incr(pb_maxdays), ")
                                 ;
@@ -293,7 +293,7 @@
 
             }
             if ( date <= new Date() ) { $( "#previous-day" ).prop( "disabled", true ); }
-            @if (@Model.PublicBoooking_MaxDays > 0)
+            @if (@Model.PublicBooking_MaxDays > 0)
             {
                 @Html.Raw("if (date >= (dayjs().add(pb_maxdays-1, 'day')).toDate()) { $('#next-day').prop('disabled', true); }")
             }
