@@ -8,7 +8,7 @@
 }
 
 @section styles{
-    @Html.Raw(@Model.PublicBoooking_CSS)
+    @Html.Raw(@Model.PublicBooking_CSS)
 }
 
 
@@ -22,7 +22,7 @@
             <br />Po sms-u boste v kratkem prejeli potrditev vašega izbranega termina.
             <div class="pt-5"></div>
 
-            <button onclick="shareSalon();" class="btn btn-success d-inline-flex align-items-center"><i class="fa fa-share-alt"></i><p class="pl-2">Če vam je storitev všeč, delite povezavo za naročanje v <b>Studio Noel</b> svojim prijateljem!</p></button>
+            <button onclick="shareSalon();" class="btn btn-success d-inline-flex align-items-center"><i class="fa fa-share-alt"></i><p class="pl-2">Če vam je storitev všeč, delite povezavo za naročanje v <b>@Model.token.Location.Name</b> svojim prijateljem!</p></button>
 
             <button onclick="shareKdajBi();" class="btn btn-success d-inline-flex align-items-center mt-3"><i class="fa fa-share-alt"></i><p class="pl-2">Če poznate koga, ki bi mu prišlo prav spletno naročanje, nas priporočite!</p></button>
             <div class="row mt-4 align-items-center justify-content-center">

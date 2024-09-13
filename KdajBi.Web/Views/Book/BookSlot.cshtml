@@ -39,7 +39,7 @@
         $(document).ready(function () {
             $.ajax({
                 type: "POST",
-                url: apiURL + "/api/publicbooking/@Model.PublicBoookingId/@Model.wpid/@Model.sid/",
+                url: apiURL + "/api/publicbooking/@Model.PublicBookingId/@Model.wpid/@Model.sid/",
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify({
                     "date": "@Model.date",

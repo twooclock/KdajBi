@@ -108,6 +108,23 @@
                                                     </label>
                                                     <input type="text" id="txtMinColWidth" name="txtMinColWidth" class="form-control" />
                                                 </div>
+                                                <div class="form-group">
+                                                    <label>
+                                                        Zapis naročila:
+                                                    </label>
+                                                    <div class="row">
+                                                        <div class="ml-2 mr-3 custom-control custom-radio">
+                                                            <input class="custom-control-input" type="radio" id="rbClientService" name="customRadio" checked="">
+                                                            <label for="rbClientService" class="custom-control-label">Stranka, storitev</label>
+                                                        </div>
+                                                        <div class="custom-control custom-radio">
+                                                            <input class="custom-control-input" type="radio" id="rbServiceClient" name="customRadio">
+                                                            <label for="rbServiceClient" class="custom-control-label">Storitev, stranka</label>
+                                                        </div>
+                                                    </div>
+
+
+                                                </div>
                                             </form>
                                             <div class="form-group">
                                                 <div class="col-sm-offset-2 col-sm-10">
@@ -424,7 +441,8 @@
             settings["AppointmentsShow3Calendars"] = $("#cbShow3Calendars").prop("checked");
             settings["AppointmentsRowHeight"] = $("#txtRowHeight").val(); 
             settings["AppointmentsMinColWidth"] = $("#txtMinColWidth").val();
-            
+            settings["AppointmentsServiceClient"] = $("#rbServiceClient").prop("checked");
+
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
@@ -450,6 +468,7 @@
             settings["AppointmentsShow3Calendars"] = 'false';
             settings["AppointmentsRowHeight"] = '';
             settings["AppointmentsMinColWidth"] = '';
+            settings["AppointmentsServiceClient"] ='true';
 
             getAPIToken().then((result) => {
                 $.ajax({
@@ -468,6 +487,13 @@
                          }
                          if (result["AppointmentsMinColWidth"] != undefined) {
                              if (result["AppointmentsMinColWidth"].length > 0) { $('#txtMinColWidth').val(result["AppointmentsMinColWidth"]); }
+                         }
+                         if (result["AppointmentsServiceClient"] != undefined) {
+                            if (result["AppointmentsServiceClient"] == "true")
+                            { $('#rbServiceClient').prop('checked', true);}
+                            else
+                            { $('#rbClientService').prop('checked', true);}
+
                          }
                     },
                     error: function (xhr, status, error) {

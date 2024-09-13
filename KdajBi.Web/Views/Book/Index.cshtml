@@ -55,7 +55,7 @@
     .makswidth { width:-moz-available; }
 }
     </style>
-    @Html.Raw(@Model.PublicBoooking_CSS)
+    @Html.Raw(@Model.PublicBooking_CSS)
 }
 
 
@@ -173,10 +173,27 @@
             </div>
             <div class="modal-body" style="font-size: 18px">
                 Ali ste prepričani, da se želite naročiti na termin <br /><b><span id="selected-appointment-date"></span> ob <span id="selected-appointment-time"></span></b>?
+                @if (Model.PublicBooking_TOS.Length > 0)
+                {
+                    <text>
+                        <div class="d-flex my-4 border border-primary rounded-sm" style="max-height: 40vh;">
+                            <div class="flex-grow-1 p-1 overflow-auto">
+                                @Html.Raw(@Model.PublicBooking_TOS)
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="chkAgreeToTOS" onchange="document.getElementById('create-appointment').disabled = !this.checked;">
+                            <label class="form-check-label" for="chkAgreeToTOS">
+                                Strinjam se z zgornjimi pogoji 
+                            </label>
+                        </div>
+                    </text>
+                }
+               
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Zapri</button>
-                <button type="button" id="create-appointment" class="btn btn-primary">Naroči se</button>
+                <button type="button" id="create-appointment" class="btn btn-primary" @if (Model.PublicBooking_TOS.Length > 0){@Html.Raw("disabled='disabled'") } >Naroči se</button>
             </div>
         </div>
     </div>
@@ -228,7 +245,7 @@
 
         var apiURL = "@Html.Raw(apiTP.Settings().BaseAddress)"
 
-        var pbid = "@Html.Raw(@Model.PublicBoookingId)";
+        var pbid = "@Html.Raw(@Model.PublicBookingId)";
         var lid = "@Html.Raw(@Model.Location.Id)";
         var wpid = -1;
         var sid = 0;
@@ -239,7 +256,7 @@
             ;
         }
         var stepper2;
-        var pb_maxdays = @Html.Raw(@Model.PublicBoooking_MaxDays);
+        var pb_maxdays = @Html.Raw(@Model.PublicBooking_MaxDays);
         var minDate = date;
         var maxDate = new Date().fp_incr(pb_maxdays)
 
@@ -426,7 +443,7 @@
             @Html.Raw("minDate: \'today\', ")
             ;
         }
-                            @if (@Model.PublicBoooking_MaxDays > 0)
+                            @if (@Model.PublicBooking_MaxDays > 0)
                             {
                                 @Html.Raw("maxDate: new Date().fp_incr(pb_maxdays), ");
                             }
@@ -553,7 +570,7 @@
                 @Html.Raw("if (date <= (dayjs().add(1, 'day')).toDate()) { $('#previous-day').prop('disabled', true); }")
             }
             if (date <= new Date()) { $("#previous-day").prop("disabled", true); }
-            @if (@Model.PublicBoooking_MaxDays > 0)
+            @if (@Model.PublicBooking_MaxDays > 0)
             {
                 @Html.Raw("if (date >= (dayjs().add(pb_maxdays-1, 'day')).toDate()) { $('#next-day').prop('disabled', true); }")
 

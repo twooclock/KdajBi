@@ -31,10 +31,10 @@ namespace KdajBi.Web.Controllers
             
             vmBooking vm = new vmBooking();
             vm.token = appointmentToken;
-            vm.PublicBoooking_MaxDays = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId, "PublicBooking_MaxDays", 0);
+            vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId, "PublicBooking_AllowCurrentDay", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId, "PublicBooking_AlertMeWithSMS", true);
-            vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId , "PublicBooking_CSS", "");
+            vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId , "PublicBooking_CSS", "");
 
             return View(vm);
         }
@@ -45,7 +45,7 @@ namespace KdajBi.Web.Controllers
         {
             AppointmentToken appointmentToken = _context.AppointmentTokens.FirstOrDefault(x => x.Token == token);
             vmBooking vm = new vmBooking();
-            vm.PublicBoooking_CSS = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId, "PublicBooking_CSS", "");
+            vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId, "PublicBooking_CSS", "");
 
             return View(vm);
         }

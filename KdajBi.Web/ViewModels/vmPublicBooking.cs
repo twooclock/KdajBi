@@ -14,15 +14,16 @@ namespace KdajBi.Web.ViewModels
         public string CompanyName;
         public string PublicBooking_Text;
         public string Mobile;
-        public long PublicBoookingId;
+        public long PublicBookingId;
         public string ErrorMsg;
         public bool EnterClientName;
-        public int PublicBoooking_MaxDays;
+        public int PublicBooking_MaxDays;
         public bool PublicBooking_AllowCurrentDay;
         public bool PublicBooking_AlertMeWithSMS;
         public bool PublicBooking_AuthorizeAfterSlotSelection;
         public bool PublicBooking_ClientDataIsMandatory;
-        public string PublicBoooking_CSS;
+        public string PublicBooking_TOS;
+        public string PublicBooking_CSS;
 
         public long wpid;
         public long sid;

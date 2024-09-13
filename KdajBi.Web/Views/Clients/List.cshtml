@@ -382,7 +382,7 @@
                         $("#cbClientEmail").prop('checked', result.allowsEmail);
                         $("#txtClientBirthday").val(result.birthday);
                         $("#txtClientAddress").val(result.address);
-                        $("#txtClientZip").val(result.zip);
+                        $("#txtClientZip").val(result.zipCode);
                         $("#txtClientNotes").val(result.notes);
                         $("#txtAppointmentNotes").val(result.appointmentNotes);
                         $("#cbActive").prop('checked', result.active);
@@ -453,7 +453,7 @@
                 client.AllowsEmail = $("#cbClientEmail").prop('checked');
                 client.Birthday =new Date($("#txtClientBirthday").val());
                 client.Address =$("#txtClientAddress").val();
-                client.Zip =$("#txtClientZip").val();
+                client.ZipCode =$("#txtClientZip").val();
                 client.Notes =$("#txtClientNotes").val();
                 client.AppointmentNotes =$("#txtAppointmentNotes").val();
                 client.Active = $("#cbActive").prop('checked');

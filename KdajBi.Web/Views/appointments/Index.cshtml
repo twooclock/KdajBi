@@ -24,9 +24,9 @@
     {
         if (String.IsNullOrEmpty(val) == false)
         {
-            @Html.Raw(".fc .fc-timegrid-slot {");
-            @Html.Raw("height:"+val);
-            @Html.Raw("border-bottom: 0}");
+                @Html.Raw(".fc .fc-timegrid-slot {");
+                @Html.Raw("height:"+val);
+                @Html.Raw("border-bottom: 0}");
         }
     }
 
@@ -153,21 +153,21 @@
         Show3Calendars = (bool.Parse(val) == true);
         if (bool.Parse(val) == true)
         { <text>
-                <div id="fs" class="right_col row" role="main">
-                    <div id="3calendars" class="col-3 d-none d-md-block" style="top: 3em; position: fixed; z-index: 10;">
-                        <div class="form-group">
-                            <input type="text" class="form-control" id="datepick1" style="display: none">
-                            <input type="text" class="form-control" id="datepick2" style="display: none">
-                            <input type="text" class="form-control" id="datepick3" style="display: none">
+                    <div id="fs" class="right_col row" role="main">
+                        <div id="3calendars" class="col-3 d-none d-md-block" style="top: 3em; position: fixed; z-index: 10;">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="datepick1" style="display: none">
+                                <input type="text" class="form-control" id="datepick2" style="display: none">
+                                <input type="text" class="form-control" id="datepick3" style="display: none">
+                            </div>
                         </div>
-                    </div>
-                    <div id="fs" class="col movefor3cals">
-        </text>}
+                        <div id="fs" class="col movefor3cals">
+            </text>}
     else
     { <text>
-            <div class="right_col" role="main">
-                <div id="fs">
-    </text>}
+                <div class="right_col" role="main">
+                    <div id="fs">
+        </text>}
 
 }
 
@@ -415,7 +415,13 @@
         var SelectedClientID = 0;
         var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
         var myServices;
-
+        @{ string val = "";
+            if (Model.Settings.TryGetValue("AppointmentsServiceClient", out val) == true) 
+            {@Html.Raw("const EventServiceCient ="+ (bool.Parse(val) == true).ToString().ToLower()+";"); }
+            else
+            {@Html.Raw("const EventServiceCient = true;"); }
+        }
+        
         //#region events
         @Html.Raw("var eventsMonths = []; eventsMonths.push(dayjs(Date()).format(\"YYYYMM\"));")
         async function FetchRenderEvents(p_calendar, p_date) {
@@ -528,14 +534,14 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
         @Html.Raw("var exMonths = [];")
 
         @{
-            string val = "";
+            val = "";
             bool nakaziUrnike = false;
             if (Model.Settings.TryGetValue("cbAppointments_ShowTimetables", out val) == true)
             {
                 if (val=="true"){
                     nakaziUrnike =true;
                     if (Model.calBGEvents != null) { val = Model.calBGEvents; } else { val = "[]"; }
-                    <text>calBGEvents=JSON.parse('</text> @Html.Raw(val.Replace(@"\",@"\\"))<text>');</text>
+                        <text>calBGEvents=JSON.parse('</text> @Html.Raw(val.Replace(@"\",@"\\"))<text>');</text>
                  }
              }
         }
@@ -830,7 +836,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
     {
         if (String.IsNullOrEmpty(val) == false)
         {
-            @Html.Raw("dayMinWidth: "+val+",")
+                @Html.Raw("dayMinWidth: "+val+",")
         }
     }
 }
@@ -1159,41 +1165,41 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                                 @{
                                     if (Show3Calendars==true)
                                     {
-                                    <text>
-                                const datum1 = new Date();
-                                const datum2 = (new Date()).setMonth(datum1.getMonth()+1);
-                                const datum3 = (new Date()).setMonth(datum1.getMonth()+2);
-                                dp1 = $("#datepick1").flatpickr({
-                                    dateFormat: "d.m.Y",
-                                    locale: dayjs.locale(),
-                                    defaultDate: datum1,
-                                    time_24hr: true, inline: true,
-                                    onChange: function(selectedDates, dateStr, instance) {
-                                        console.log(selectedDates);
-                                        calendar.gotoDate(selectedDates[0]);
-                                    }
-                                });
-                                dp2 = $("#datepick2").flatpickr({
-                                    dateFormat: "d.m.Y",
-                                    locale: dayjs.locale(),
-                                    defaultDate: datum2,
-                                    time_24hr: true, inline: true,
-                                    onChange: function(selectedDates, dateStr, instance) {
-                                        console.log(selectedDates);
-                                        calendar.gotoDate(selectedDates[0]);
-                                    }
-                                });
-                                dp3 = $("#datepick3").flatpickr({
-                                    dateFormat: "d.m.Y",
-                                    locale: dayjs.locale(),
-                                    defaultDate: datum3,
-                                    time_24hr: true, inline: true,
-                                    onChange: function(selectedDates, dateStr, instance) {
-                                        console.log(selectedDates);
-                                        calendar.gotoDate(selectedDates[0]);
-                                    }
-                                });
-                                    </text>
+                                        <text>
+                                    const datum1 = new Date();
+                                    const datum2 = (new Date()).setMonth(datum1.getMonth()+1);
+                                    const datum3 = (new Date()).setMonth(datum1.getMonth()+2);
+                                    dp1 = $("#datepick1").flatpickr({
+                                        dateFormat: "d.m.Y",
+                                        locale: dayjs.locale(),
+                                        defaultDate: datum1,
+                                        time_24hr: true, inline: true,
+                                        onChange: function(selectedDates, dateStr, instance) {
+                                            console.log(selectedDates);
+                                            calendar.gotoDate(selectedDates[0]);
+                                        }
+                                    });
+                                    dp2 = $("#datepick2").flatpickr({
+                                        dateFormat: "d.m.Y",
+                                        locale: dayjs.locale(),
+                                        defaultDate: datum2,
+                                        time_24hr: true, inline: true,
+                                        onChange: function(selectedDates, dateStr, instance) {
+                                            console.log(selectedDates);
+                                            calendar.gotoDate(selectedDates[0]);
+                                        }
+                                    });
+                                    dp3 = $("#datepick3").flatpickr({
+                                        dateFormat: "d.m.Y",
+                                        locale: dayjs.locale(),
+                                        defaultDate: datum3,
+                                        time_24hr: true, inline: true,
+                                        onChange: function(selectedDates, dateStr, instance) {
+                                            console.log(selectedDates);
+                                            calendar.gotoDate(selectedDates[0]);
+                                        }
+                                    });
+                                        </text>
                                     }
                                  }
 
@@ -1508,6 +1514,25 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                 else { resolve(SelectedClientID);}
             });
         }
+        function getEventSummary()
+        {
+            var eventSummary='';
+            var selServices = getSelectedServicesNames();
+            var clientinfo = $("#txtClientsearch").val();
+            if ($("#txtClientMobile").val().length != 0) { clientinfo = clientinfo + " (" + $("#txtClientMobile").val() + ")" }
+            
+            if (EventServiceCient==true)
+            {
+                if (selServices.length > 0) { eventSummary = eventSummary + selServices.join(' '); }
+                if (clientinfo.length > 0) { eventSummary = eventSummary +'\n'+ clientinfo;}
+            }
+            else
+            {
+                if (clientinfo.length > 0) { eventSummary = eventSummary + clientinfo;}
+                if (selServices.length > 0) { eventSummary = eventSummary +'\n'+ selServices.join(' '); }
+            }
+            return eventSummary;
+        }
 
         function SaveNewEvent() {
             if ($('#formEvent').valid()) {
@@ -1519,14 +1544,11 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                     var endDate = new Date(fp.selectedDates[0]);
                     if (cas[0] != undefined) { endDate.setHours(cas[0]); }
                     if (cas[1] != undefined) { endDate.setMinutes(cas[1]); }
-                    var eventSummary = $("#txtClientsearch").val();
-                    if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
-                    var selServices = getSelectedServicesNames();
-                    if (selServices.length > 0) { eventSummary = eventSummary + "\n" + selServices.join(' '); }
+
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
                         end: { 'dateTime': endDate },
-                        summary: eventSummary,
+                        summary: getEventSummary(),
                         "extendedProperties": {
                             "shared": {
                                 clientid:resultClientID,
@@ -1583,15 +1605,11 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                     var endDate = new Date(fp.selectedDates[0]);
                     if (cas[0] != undefined) { endDate.setHours(cas[0]); }
                     if (cas[1] != undefined) { endDate.setMinutes(cas[1]); }
-
-                    var eventSummary = $("#txtClientsearch").val();
-                    if ($("#txtClientMobile").val().length != 0) { eventSummary = eventSummary + "(" + $("#txtClientMobile").val() + ")" }
-                    var selServices = getSelectedServicesNames();
-                    if (selServices.length > 0) { eventSummary = eventSummary + "\n" + selServices.join(' '); }
+                    
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
                         end: { 'dateTime': endDate },
-                        summary: eventSummary,
+                        summary: getEventSummary(),
                         "extendedProperties": {
                             "shared": {
                                 clientid:resultClientID,
@@ -1974,7 +1992,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                 {
                     msgTemplate = "Pozdravljeni! Naročeni ste <DANESJUTRI> <DATUM> ob <URA>. Veselimo se vašega obiska!";
                 }
-                @Html.Raw("var msgTemplate=`"+msgTemplate+"`;");
+                    @Html.Raw("var msgTemplate=`"+msgTemplate+"`;");
             }
             const today = new Date();
             const tomorrow = new Date(today);

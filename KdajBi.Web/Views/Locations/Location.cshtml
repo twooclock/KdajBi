@@ -18,6 +18,7 @@
     <link href="~/plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" />
     <link href='~/lib/fullcalendar-scheduler-5.10.1/lib/main.min.css' rel='stylesheet' />
     <link href="~/plugins/shepherdjs/shepherd.css" rel="stylesheet" />"
+    <link href="~/plugins/summernote/summernote-bs4.min.css" rel="stylesheet" />"
 
     <style>
         .fc-fullscreen-button:before {
@@ -239,6 +240,14 @@
                                                                 <a href="#!" data-toggle="popover" data-content="Stranka bo morala obvezno vnest svoje podatke (ime, priimek in naslov)"><i class="fa fa-info-circle"></i></a>
                                                             </label>
                                                         </div>
+                                                    </div>
+                                                </div>
+                                                 <div class="form-group">
+                                                    <label for="txtPublicBookingTOS" class="control-label">Splošni pogoji naročanja:
+                                                    <a href="#!" data-toggle="popover" data-content="Vpišite svoje splošne pogoje za samostojno naročanje (Če pustite prazno, pogoji ne bodo prikazani!)"><i class="fa fa-info-circle"></i></a>
+                                                    </label>
+                                                    <div class="col-sm-10">
+                                                        <input class="form-control" id="txtPublicBookingTOS" placeholder="" value="">
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
@@ -560,7 +569,7 @@
                                                     <div class="row">
                                                         <div class="col-sm-10">
                                                             <textarea rows="2" id="SMS_RD_Msg" name="SMS_RD_Msg" class="form-control" placeholder="Voščilo..." oninput="showSMSInfo(this.value,'lblRD_MsgSMSinfo')"></textarea>
-                                                            < id="lblRD_MsgSMSinfo" class="form-check-label">
+                                                            <label id="lblRD_MsgSMSinfo" class="form-check-label">
                                                                 [Pri pošiljanju se sporočilo lahko razdeli na več delov!]
                                                                 <a href="#!" data-toggle="popover" data-content="Sporočilo se pri pošiljanju razdeli na dele dolge 160 znakov, če pa vsebuje šumnike ali posebne znake pa na dele dolge 67 znakov. Limit se porablja glede na število poslanih delov. Če želite prihraniti limit, naj bodo vaša sporočila kratka in brez šumnikov in posebnih znakov."><i class="fa fa-info-circle"></i></a>
                                                                 </label>
@@ -892,6 +901,7 @@
     <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/rrule.min.js'></script>
     <script src='~/lib/fullcalendar-scheduler-5.10.1/lib/main.global.min.js'></script>
     <script src="~/plugins/shepherdjs/shepherd.min.js"></script>
+    <script src="~/plugins/summernote/summernote-bs4.min.js"></script>
 
 
     <script type="text/javascript">
@@ -966,6 +976,7 @@
 
         $(document).ready(function () {
             loadGeneral();
+            $('#txtPublicBookingTOS').summernote();
             //swal inside modal!
             $.fn.modal.Constructor.prototype._enforceFocus = function() {};
             //gapi init
@@ -1496,7 +1507,12 @@
                 settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
                 settings["PublicBooking_AuthorizeAfterSlotSelection"] = $("#chkPublicBookingAuthorizeAfterSlotSelection").prop("checked");
                 settings["PublicBooking_ClientDataIsMandatory"] = $("#chkPublicBookingClientDataIsMandatory").prop("checked");
-              
+
+                if ($('#txtPublicBookingTOS').summernote('isEmpty'))
+                    { settings["PublicBooking_TOS"] = "";}
+                else 
+                    {settings["PublicBooking_TOS"] = $('#txtPublicBookingTOS').summernote('code'); }
+
                 settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
 
                 getAPIToken().then((result) => {
@@ -1527,6 +1543,7 @@
             settings["PublicBooking_AlertMeWithSMS"] = 'true';
             settings["PublicBooking_AuthorizeAfterSlotSelection"] = 'false';
             settings["PublicBooking_ClientDataIsMandatory"] = 'false';
+            settings["PublicBooking_TOS"] = $('#txtPublicBookingTOS').summernote('code');
             settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
 
             getAPIToken().then((result) => {
@@ -1552,6 +1569,7 @@
                     if (result["PublicBooking_ClientDataIsMandatory"] != undefined) {
                             if (result["PublicBooking_ClientDataIsMandatory"] == "true") { $('#chkPublicBookingClientDataIsMandatory').prop('checked', true); }
                     }
+                    $("#txtPublicBookingTOS").summernote('code', result["PublicBooking_TOS"]);
                     $("#txtPublicBookingCSS").val(result["PublicBooking_CSS"]);
 
                  },

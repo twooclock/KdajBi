@@ -701,7 +701,7 @@
                                 fp.setDate(new Date(result.birthday));
                             }
                             $("#txtClientAddress").val(result.address);
-                            $("#txtClientZip").val(result.zip);
+                            $("#txtClientZip").val(result.zipCode);
                             $("#txtClientNotes").val(result.notes);
                                $("#txtAppointmentNotes").val(result.appointmentNotes);
                              $("#txtTags").val(result.tags.map(a => a.id)).trigger('change');
@@ -785,7 +785,7 @@
 
                 client.Birthday =fp.selectedDates[0];
                 client.Address = $("#txtClientAddress").val();
-                client.Zip =$("#txtClientZip").val();
+                client.ZipCode =$("#txtClientZip").val();
                 client.Notes = $("#txtClientNotes").val();
                  client.AppointmentNotes = $("#txtAppointmentNotes").val();
                  client.Sex = "F";
