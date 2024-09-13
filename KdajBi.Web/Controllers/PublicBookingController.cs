@@ -60,13 +60,18 @@ namespace KdajBi.Web.Controllers
                 for (int i = vm.Location.Workplaces.Count - 1; i >= 0; i--)
                 {
                     var wp = vm.Location.Workplaces.ElementAt(i);
-                    var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wp.Id).ToList();
-                    if (wpExServices.Count > 0)
-                    {
-                        var wpServices = locationservices.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
-                        if (wpServices.Count == 0)
-                        { vm.Location.Workplaces.Remove(wp); }
+                    if (wp.Active==true)
+                    { 
+                        var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wp.Id).ToList();
+                        if (wpExServices.Count > 0)
+                        {
+                            var wpServices = locationservices.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
+                            if (wpServices.Count == 0)
+                            { vm.Location.Workplaces.Remove(wp); }
+                        }
                     }
+                    else
+                    { vm.Location.Workplaces.Remove(wp); }
                 }
                 return View("~/Views/Book/Index.cshtml", vm); 
             }

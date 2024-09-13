@@ -66,6 +66,7 @@ namespace KdajBi.Web.Controllers
                                 globalSettings.Add("AppointmentsRowHeight", "");
                                 globalSettings.Add("AppointmentsMinColWidth", "");
                                 globalSettings.Add("cbUseSingleListOfClients", "false");
+                                globalSettings.Add("AppointmentsServiceClient", "true");
                                 SettingsHelper.getSettings(_context, currUserCompanyID,null, globalSettings);
                                 foreach (var item in globalSettings)
                                 {
@@ -100,7 +101,7 @@ namespace KdajBi.Web.Controllers
                                                 {
                                                     if (cal.Id == item.GoogleCalendarID) { item.GoogleCalendarColor = cal.BackgroundColor; }
                                                 }
-                                                if (item.GoogleCalendarID != null)
+                                                if (item.GoogleCalendarID != null && item.Active==true)
                                                 {
                                                     myVM.GoogleCalendars.Add(new Tuple<string, string, long>(item.GoogleCalendarID, item.Name, item.Id));
                                                     //get calendar events
