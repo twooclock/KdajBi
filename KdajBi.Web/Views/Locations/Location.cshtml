@@ -2501,6 +2501,7 @@
                 service.Name = $('#txtServiceName').val();
                 service.Minutes = parseInt($("#txtServiceMinutes").val());
                 service.Offset = parseInt($("#txtServiceOffset").val());
+                if (isNaN(service.Offset)) { service.Offset = 0; }
                 service.PriceDescription = $("#txtPriceDescription").val();
                 if (isNaN(service.Minutes)) { service.Minutes = 0; }
                 service.serviceGroupId = Number($('#cboServiceGroup').val());

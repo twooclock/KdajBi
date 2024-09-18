@@ -18,6 +18,11 @@
     <link href='~/lib/fullcalendar-scheduler-5.10.1/lib/main.min.css' rel='stylesheet' />
 
     <style>
+        .fc-day-today {
+            background: #FFF !important;
+        }
+
+
         .fc-fullscreen-button:before {
             font-family: "Font Awesome 5 Free";
             content: "\f065";
@@ -274,9 +279,196 @@
 
         var wcalendar;
         var dcalendar;
+            var dcalCurrView='timeGridWeek';
+        var resEvents=[];
         
         var weekdays=@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.WeekDays));
         var exMonths = [];
+
+
+
+            //#region background events
+
+
+            var calBGEvents;
+
+
+            @Html.Raw("var resourceswd=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.resourcesWD));
+        
+            @Html.Raw("calBGEvents=JSON.parse('" + Model.calBGEvents.Replace(@"\", @"\\") + "');");
+
+
+            function dCalViewChanged()
+            {
+                console.info('The new view is ' + dcalCurrView);
+                    console.info('start resEvents.length: ' + resEvents.length);
+                if (dcalCurrView=='timeGridWeek')
+                {
+                    //hide resources
+                    var dcRes=dcalendar.getTopLevelResources();
+                    for (var i = 0; i < dcRes.length; i++) {
+                        if(dcRes[i].id!=@Html.Raw(Model.Workplace.Id)){
+                            var myResource = dcalendar.getResourceById(dcRes[i].id);
+                            var myEvents = myResource.getEvents();
+                            myEvents.forEach(function (event, idx) {
+                            
+                                    if (Object.hasOwn(event, '_def')){
+                                        var chek = resEvents.find(c => c.startStr === event.startStr && c.endStr === event.endStr && c._def.resourceIds[0]==dcRes[i].id);
+                                        if (chek===undefined) {resEvents.push(event);}
+                                    }
+                                    else
+                                        {resEvents.push(event);}
+                                    
+                                event.remove();
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    //show resources
+                    for (var i = 0; i < resEvents.length; i++) {
+                        dcalendar.addEvent(resEvents[i]);
+                    }
+                    resEvents=[];
+                }
+                console.info('end resEvents.length: ' + resEvents.length);
+            }
+
+            function CheckChangeView(dateInfo)
+            {
+                //if (dateInfo.view.type!=dcalCurrView)
+                //{
+                    dcalCurrView=dateInfo.view.type;
+                    dCalViewChanged();
+                //}
+            }
+
+            function isInArray(array, value) {
+                return (array.find(item => { return item == value }) || []).length > 0;
+            }
+
+            function getEventStart(p_rruleString) {
+                //parse start time from rrule
+                //rrule example: DTSTART:20210101T070000\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO
+                var retval = p_rruleString.split(':')[1];
+                retval = retval.split('\n')[0];
+                retval = retval.split('T')[1];
+                return "T" + retval;
+
+            }
+
+            function RenderBackgroundEvents(p_calendar) {
+                console.info("RenderBackgroundEvents");
+
+                calBGEvents=JSON.parse('[]');
+                resourceswd.forEach(function (rwd) {
+
+                    rwd.WeekDays.forEach(function (arrayItem, idx) {
+                        var reswd = rwd.WeekDays[idx];
+
+                        //re-set background events (rrule events for a given weekday with exceptions set)
+                        for (var k = 0; k < reswd.calEvents.length; k++) {
+                            var caleventbase = reswd.calEvents[k];
+                            var oldrrule = caleventbase.rrule;
+                            var eventstart = getEventStart(oldrrule);
+                            for (var j = 0; j < reswd.exDates.length; j++) {
+                                caleventbase.rrule = caleventbase.rrule + "\nEXDATE:" + dayjs(reswd.exDates[j]).format('YYYYMMDD') + eventstart;
+                            }
+                            //console.info("add:", caleventbase.rrule.replace(/(\r\n|\n|\r)/gm, " "));
+                            calBGEvents.push(JSON.parse(JSON.stringify(reswd.calEvents[k])));
+                            caleventbase.rrule = oldrrule;
+                        }
+                    });
+
+                });
+
+                p_calendar.getEventSourceById('bgevents').refetch();
+                dCalViewChanged();
+            }
+
+            async function FetchRenderExceptions(p_calendar, p_date) {
+                return new Promise(function (resolve, reject) {
+                    var myDate = new Date(p_date.getTime());
+                    console.info("FetchRenderExceptions:", myDate);
+                    if (isInArray(exMonths, dayjs(myDate).format("YYYYMM")) == false) {
+                        console.info("asking for exceptions for ", dayjs(myDate).format("YYYY-MM"));
+                        getAPIToken().then((result) => {
+                            $.ajax({
+                                type: "post",
+                                data: "",
+                                url: apiURL + "/api/GetLocationScheduleExceptions/@Html.Raw(Model.Location.Id)/" + dayjs(myDate).format("YYYYMMDD"),
+                                contentType: "application/json; charset=utf-8",
+                                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                                dataType: "json",
+                                success: function (result) {
+                                    console.log('got: ',result.length,"exceptions");
+                                    result.forEach(function (aWorkplaces) {
+                                        aWorkplaces.exceptions.forEach(function (aException) {
+                                            //add to exDates
+                                            var dantedna = new Date(aException.date).getDay();
+
+                                            resourceswd.forEach(function (rwd) {
+                                                if (rwd.resourceId == aWorkplaces.id) {
+                                                    rwd.WeekDays[dantedna].exDates.push(dayjs(aException.date).format("YYYYMMDD"));
+                                                    rwd.WeekDays[dantedna].changed = true;
+
+                                                    JSON.parse(aException.eventsJson).forEach(function (eventItem) {
+                                                        eventItem.resourceId = aWorkplaces.id;
+                                                        //eventItem.display = "background";
+
+                                                        if (eventItem.resourceId==@Html.Raw(Model.Workplace.Id))
+                                                        { p_calendar.addEvent(eventItem);}
+                                                        else
+                                                            {   eventItem.display = "background";
+                                                            if (dcalCurrView=='timeGridWeek' || dcalCurrView=='')
+                                                            { resEvents.push(eventItem);}
+                                                            else
+                                                            { p_calendar.addEvent(eventItem); }
+                                                        }
+                                                    });
+                                                }
+                                            });
+
+
+                                        });
+                                    });
+                                    RenderBackgroundEvents(p_calendar);
+
+                                    exMonths.push(dayjs(myDate).format("YYYYMM"));
+                                    resolve(true);
+                                },
+                                error: function (xhr, status, error) {
+                                    toastr.error("Napaka:" + error.toString());
+                                    reject(false);
+                                }
+                            });
+                        });
+
+                    }
+                    else { resolve(true); }
+                });
+
+            }
+
+
+        //#endregion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         var isFullScreen = false;
         function goFullScreen(p_ElementId) {
@@ -433,8 +625,10 @@
                         }
                     });
                     wcalendar.render();
-
-                    dcalendar = new FullCalendar.Calendar(document.getElementById('dcalendar'), {
+                        
+                   
+                    
+                        dcalendar = new FullCalendar.Calendar(document.getElementById('dcalendar'), {
                         locale: navigator.language.slice(0, 2), eventResizableFromStart: true,
                         eventDisplay: 'block',
                         eventOverlap: false,
@@ -442,9 +636,22 @@
                         headerToolbar: {
                             left: 'prev,next today',
                             center: 'title',
-                            right: 'timeGridWeek,dayGridMonth fullscreen'
+                            right: 'resourceTimeGridDay,timeGridWeek,dayGridMonth fullscreen'
                         },
                         views: {
+                                resourceTimeGridDay: {
+                                        titleFormat: function (date) { return dayjs(date.start.marker).format("dddd, ll"); },
+                                        resourceLabelDidMount: (args) => {
+                                            if (args.resource.id==@Html.Raw(Model.Workplace.Id))
+                                            {
+                                            var a2 = document.createElement('a');
+                                            a2.setAttribute('href','#');
+                                            a2.innerHTML = 'Ponastavi';
+                                            a2.onclick = function () { ResetDay(); };
+                                            return $(args.el)[0].children[0].append(a2);
+                                            }
+                                    }
+                                    },
                             timeGridWeek: { // name of view
                                 dayHeaderDidMount: (args) => {
                                     var a2 = document.createElement('a');
@@ -479,6 +686,7 @@
                         selectable: true,
                         dayMaxEvents: true, // allow "more" link when too many events
                         //dayMinWidth: 200,
+                        buttonText: { today: 'danes',  day: 'dan',  week:'teden',  month:'mesec'},
                         customButtons: {
                             fullscreen: {
                                 click: function () {
@@ -487,12 +695,35 @@
                             }
                         },
                         //events:@Html.Raw(Model.calBGEvents),
-                        eventSources: [
-                        {
-                            id:'bgevents',
-                            events: function(fetchInfo, successCallback, failureCallback) { successCallback(calBGEvents) }
-                        }
-                        ],
+                            resourceOrder:"order",
+                                resources: [
+        @foreach (var item in Model.Location.Workplaces)
+        {
+            FullCalendar.Resource myResource = new FullCalendar.Resource(@item.Id.ToString(), @item.SortPosition, @item.Name, item.GoogleCalendarColor);
+            myResource.extendedProps.Add("gid", item.GoogleCalendarID);
+            FullCalendar.businessHours myBH;
+            myBH = new FullCalendar.businessHours(Model.Location.Schedule.SundayStart.ToString("HH:mm"), Model.Location.Schedule.SundayEnd.ToString("HH:mm"), new int[] { 0 });
+            myResource.businessHours.Add(myBH);
+            myBH = new FullCalendar.businessHours(Model.Location.Schedule.MondayStart.ToString("HH:mm"), Model.Location.Schedule.MondayEnd.ToString("HH:mm"), new int[] { 1 });
+            myResource.businessHours.Add(myBH);
+            myBH = new FullCalendar.businessHours(Model.Location.Schedule.TuesdayStart.ToString("HH:mm"), Model.Location.Schedule.TuesdayEnd.ToString("HH:mm"), new int[] { 2 });
+            myResource.businessHours.Add(myBH);
+            myBH = new FullCalendar.businessHours(Model.Location.Schedule.WednesdayStart.ToString("HH:mm"), Model.Location.Schedule.WednesdayEnd.ToString("HH:mm"), new int[] { 3 });
+            myResource.businessHours.Add(myBH);
+            myBH = new FullCalendar.businessHours(Model.Location.Schedule.ThursdayStart.ToString("HH:mm"), Model.Location.Schedule.ThursdayEnd.ToString("HH:mm"), new int[] { 4 });
+            myResource.businessHours.Add(myBH);
+            myBH = new FullCalendar.businessHours(Model.Location.Schedule.FridayStart.ToString("HH:mm"), Model.Location.Schedule.FridayEnd.ToString("HH:mm"), new int[] { 5 });
+            myResource.businessHours.Add(myBH);
+            myBH = new FullCalendar.businessHours(Model.Location.Schedule.SaturdayStart.ToString("HH:mm"), Model.Location.Schedule.SaturdayEnd.ToString("HH:mm"), new int[] { 6 });
+            myResource.businessHours.Add(myBH);
+            @Html.Raw(myResource.ToJson() + ",")
+        }
+                                ],
+                            eventSources: [ {
+                                            id:'bgevents',
+                                            events: function(fetchInfo, successCallback, failureCallback) { successCallback(calBGEvents) },
+                                            display: 'background'
+                                        } ],
                         eventTimeFormat: {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -513,12 +744,13 @@
                             saveDaySchedule(event.event.start);
                         },
                         select: function (arg) {
-                            if (dcalendar.view.type!="timeGridWeek") {
+                                if (dcalendar.view.type=="timeGridWeek" || arg.resource.id == @Html.Raw(Model.Workplace.Id)) {
                                 //switch view
-                                dcalendar.changeView("timeGridWeek", arg.start);
+                                    newDayEvent(dcalendar, arg);
                             } else {
                                 //show new Event modal
-                                newDayEvent(dcalendar, arg);
+                                    dcalendar.changeView("timeGridWeek", arg.start);
+                                
                             }
                         },
                         dateClick: function(info) {
@@ -529,8 +761,15 @@
                         },
                         datesSet: function (dateInfo) {
                             console.info("date changes to:", dateInfo.start,"list of events:");
-                            FetchRenderExceptions(dcalendar, dateInfo.start).then(result => { FetchRenderExceptions(dcalendar, dateInfo.end) });
-
+                            //FetchRenderExceptions(dcalendar, dateInfo.start).then(result => { FetchRenderExceptions(dcalendar, dateInfo.end) });
+                            let dateE = dateInfo.end;
+                            var datum =dayjs(dateInfo.start).add(1, 'month').toDate()
+                            FetchRenderExceptions(dcalendar, dateInfo.start)
+                                    .then(result => { if (dateE.getMonth() > datum.getMonth()) { FetchRenderExceptions(dcalendar, datum ).then(result => { CheckChangeView(dateInfo); }); } })
+                                    .then(result => { FetchRenderExceptions(dcalendar, dateInfo.end) })
+                                        .then(result => { CheckChangeView(dateInfo); });
+                                    
+                               
                         }
                     });
 
@@ -724,14 +963,10 @@
         //#endregion
 
     //#region daily Events (dcalendar)
-        var calBGEvents=JSON.parse('@Html.Raw(Model.calBGEvents.Replace(@"\",@"\\"))');
-            
-
-        function isInArray(array, value) {
-            return (array.find(item => {return item == value}) || []).length > 0;
-        }
+        
 
         function ResetDay(p_date) {
+            if (p_date=== undefined) {p_date=dcalendar.view.activeStart;}
             let events = dcalendar.getEvents()
             //remove all events for a specified day
             for (let i = 0; i < events.length; i++) {
@@ -742,56 +977,31 @@
             }
 
             var idx = p_date.getDay();
-            weekdays[idx].exDates = weekdays[idx].exDates.filter(function (e) { return e !== dayjs(p_date).format("YYYYMMDD") })
-            weekdays[idx].changed = true;
+            resourceswd.forEach(function (rwd) {
+                    if (rwd.resourceId==@Html.Raw(Model.Workplace.Id)){
+                rwd.WeekDays[idx].exDates = rwd.WeekDays[idx].exDates.filter(function (e) { return e !== dayjs(p_date).format("YYYYMMDD") })
+                rwd.WeekDays[idx].changed = true;
+                    }
+            });
             RenderBackgroundEvents(dcalendar);
             
             resetDaySchedule(p_date);
 
         }
 
-        function getEventStart(p_rruleString) {
-            //parse start time from rrule
-            //rrule example: DTSTART:20210101T070000\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO
-            var retval = p_rruleString.split(':')[1];
-            retval = retval.split('\n')[0];
-            retval = retval.split('T')[1];
-            return "T"+retval;
-
-        }
+        
 
         function HideBackgroundEvents(p_date) {
-            weekdays[p_date.getDay()].exDates.push(dayjs(p_date).format("YYYYMMDD"));
-            weekdays[p_date.getDay()].changed = true;
+            resourceswd.forEach(function (rwd) {
+                if (rwd.resourceId==@Html.Raw(Model.Workplace.Id)){
+                    rwd.WeekDays[p_date.getDay()].exDates.push(dayjs(p_date).format("YYYYMMDD"));
+                    rwd.WeekDays[p_date.getDay()].changed = true;
+                }
+            });
             RenderBackgroundEvents(dcalendar);
         }
 
-        function RenderBackgroundEvents(p_calendar) {
-            console.info("RenderBackgroundEvents");
-
-            calBGEvents=JSON.parse('[]');
-                    
-                weekdays.forEach(function (arrayItem, idx) {
-                    var reswd = weekdays[idx];
-
-                    //re-set background events (rrule events for a given weekday with exceptions set)
-                    for (var k = 0; k < reswd.calEvents.length; k++) {
-                        var caleventbase = reswd.calEvents[k];
-                        var oldrrule = caleventbase.rrule;
-                        var eventstart = getEventStart(oldrrule);
-                        for (var j = 0; j < reswd.exDates.length; j++) {
-                            caleventbase.rrule = caleventbase.rrule + "\nEXDATE:" + dayjs(reswd.exDates[j]).format('YYYYMMDD') + eventstart;
-                        }
-                        //console.info("add:", caleventbase.rrule.replace(/(\r\n|\n|\r)/gm, " "));
-                        calBGEvents.push(JSON.parse(JSON.stringify(reswd.calEvents[k])));
-                        caleventbase.rrule = oldrrule;
-                    }
-                });
-                    
-
-            p_calendar.getEventSourceById('bgevents').refetch();
-
-        }
+        
 
         function newDayEvent(p_calendar, arg) {
             //clear form
@@ -813,7 +1023,6 @@
 
         function SaveDayEvent(p_event) {
             if ($('#formEvent').valid()) {
-                //save client (if changed)
                 var startElement = dayjs(p_event.event.start).format("l") + " " + $("#txtStartTime").val();
                 var endElement = dayjs(p_event.event.start).format("l") + " " + $("#txtEndTime").val();
                 p_event.event.setStart(dayjs(startElement).toDate());
@@ -853,7 +1062,8 @@
                 p_calendar.addEvent({
                     title: "",
                     start: startday,
-                    end: dayjs(endElement).toDate()
+                    end: dayjs(endElement).toDate(),
+                    resourceId: @Html.Raw(Model.Workplace.Id)
                 });
                 HideBackgroundEvents(startday);
                 saveDaySchedule(startday);
@@ -943,47 +1153,6 @@
             });
         }
         
-        async function FetchRenderExceptions(p_calendar, p_date) {
-            return new Promise(function (resolve, reject) {
-                console.info("FetchRenderExceptions:", p_date);
-                if (isInArray(exMonths, dayjs(p_date).format("YYYYMM")) == false) {
-                    console.info("asking for exceptions for ", dayjs(p_date).format("YYYY-MM"));
-                    getAPIToken().then((result) => {
-                        $.ajax({
-                            type: "post",
-                            data: "",
-                            url: apiURL + "/api/GetWorplaceScheduleExceptions/@Html.Raw(Model.Workplace.Id)/" + dayjs(p_date).format("YYYYMMDD"),
-                            contentType: "application/json; charset=utf-8",
-                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                            dataType: "json",
-                            success: function (result) {
-                                result.forEach(function (arrayItem) {
-                                    //add to exDates
-                                    var dantedna = new Date(arrayItem.date).getDay();
-                                    weekdays[dantedna].exDates.push(dayjs(arrayItem.date).format("YYYYMMDD"));
-                                    weekdays[dantedna].changed = true;
-                                    JSON.parse(arrayItem.eventsJson).forEach(function (eventItem) {
-                                        p_calendar.addEvent(eventItem);
-                                    });
-
-                                });
-                                RenderBackgroundEvents(dcalendar);
-
-                                exMonths.push(dayjs(p_date).format("YYYYMM"));
-                                resolve(true);
-                            },
-                            error: function (xhr, status, error) {
-                                toastr.error("Napaka:" + error.toString());
-                                reject(false);
-                            }
-                        });
-                    });
-
-                }
-                else { resolve(true); }
-            });
-
-        }
     //#endregion
 
 
