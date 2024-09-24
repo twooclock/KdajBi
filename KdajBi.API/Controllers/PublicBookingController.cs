@@ -46,95 +46,101 @@ namespace KdajBi.API.Controllers
 
         private async Task<List<TimeSlot>> GetFreeTimeSlots(long lid, long wpid, long sid, DateTime date, int move)
         {
-            DateTime dateEnd = date.AddDays(1).AddTicks(-1);
+            List<TimeSlot> allUnqTimeSlots = new List<TimeSlot>();
+            try { 
+                DateTime dateEnd = date.AddDays(1).AddTicks(-1);
 
-            var myService = await _context.Services.FindAsync(sid);
-            if (myService == null) { return new List<TimeSlot>(); }
+                var myService = await _context.Services.FindAsync(sid);
+                if (myService == null) { return new List<TimeSlot>(); }
 
-            List<BookingTimeslots> retval = new List<BookingTimeslots>();
+                List<BookingTimeslots> retval = new List<BookingTimeslots>();
 
-            List<Workplace> myWP = new List<Workplace>();
-            if (wpid > 0)
-            {
-                myWP.Add(await _context
-                .Workplaces
-                .Include(s => s.WorkplaceSchedules)
-                .ThenInclude(x => x.Schedule)
-                .Include(e => e.WorkplaceScheduleExceptions)
-                .FirstOrDefaultAsync(x => x.Id == wpid && x.LocationId == lid));
-            }
-            else
-            {
-                myWP.AddRange(_context
-               .Workplaces
-               .Include(s => s.WorkplaceSchedules)
-               .ThenInclude(x => x.Schedule)
-               .Include(e => e.WorkplaceScheduleExceptions)
-               .Where(x => x.LocationId == lid));
-            }
-            //remove workplaces that do not provide service specified
-            for (int i = myWP.Count - 1; i >= 0; i--)
-            {
-                if ((await _context.WorkplaceExcludedServices.Where(e => e.WorkplaceId == myWP[i].Id && e.ServiceId == myService.Id).CountAsync()) > 0)
-                { myWP.RemoveAt(i); }
-            }
-            //remove already booked timeslots
-            using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
-            {
-                foreach (var wp in myWP)
+                List<Workplace> myWP = new List<Workplace>();
+                if (wpid > 0)
                 {
-                    List<TimeSlot> availableworkhours = new List<TimeSlot>();
-                    availableworkhours = await getWorkplaceWorkhours(wp, date);
-
-                    List<TimeSlot> availableAppointments = new List<TimeSlot>();
-                    if (availableworkhours.Count > 0)
+                    myWP.Add(await _context
+                    .Workplaces
+                    .Include(s => s.WorkplaceSchedules)
+                    .ThenInclude(x => x.Schedule)
+                    .Include(e => e.WorkplaceScheduleExceptions)
+                    .FirstOrDefaultAsync(x => x.Id == wpid && x.LocationId == lid));
+                }
+                else
+                {
+                    myWP.AddRange(_context
+                   .Workplaces
+                   .Include(s => s.WorkplaceSchedules)
+                   .ThenInclude(x => x.Schedule)
+                   .Include(e => e.WorkplaceScheduleExceptions)
+                   .Where(x => x.LocationId == lid));
+                }
+                //remove workplaces that do not provide service specified
+                for (int i = myWP.Count - 1; i >= 0; i--)
+                {
+                    if ((await _context.WorkplaceExcludedServices.Where(e => e.WorkplaceId == myWP[i].Id && e.ServiceId == myService.Id).CountAsync()) > 0)
+                    { myWP.RemoveAt(i); }
+                }
+                //remove already booked timeslots
+                using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
+                {
+                    foreach (var wp in myWP)
                     {
-                        availableAppointments = TimeSlotManager.generateTimeSlots(availableworkhours, myService.Minutes, myService.Offset);
-                        if (availableAppointments.Count > 0)
+                        List<TimeSlot> availableworkhours = new List<TimeSlot>();
+                        availableworkhours = await getWorkplaceWorkhours(wp, date);
+
+                        List<TimeSlot> availableAppointments = new List<TimeSlot>();
+                        if (availableworkhours.Count > 0)
                         {
-                            var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, date, dateEnd);
-                            if (events != null)
+                            availableAppointments = TimeSlotManager.generateTimeSlots(availableworkhours, myService.Minutes, myService.Offset);
+                            if (availableAppointments.Count > 0)
                             {
-                                foreach (var evt in events)
+                                var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, date, dateEnd);
+                                if (events != null)
                                 {
-                                    availableAppointments = TimeSlotManager.removeOccupiedAppointments(
-                                        availableAppointments,
-                                        new TimeSlot(wp.Id,
-                                            evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
-                                            evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
-                                        )
-                                    );
+                                    foreach (var evt in events)
+                                    {
+                                        availableAppointments = TimeSlotManager.removeOccupiedAppointments(
+                                            availableAppointments,
+                                            new TimeSlot(wp.Id,
+                                                evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
+                                                evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
+                                            )
+                                        );
+                                    }
                                 }
                             }
                         }
+                        if (availableAppointments.Count > 0)
+                        { retval.Add(new BookingTimeslots(wp.Id, availableAppointments)); }
+
                     }
-                    if (availableAppointments.Count > 0)
-                    { retval.Add(new BookingTimeslots(wp.Id, availableAppointments)); }
 
                 }
+                //return only distinct timeslots
+                //the one with most empty timeslots gets appointment
+                retval.Sort((p, q) => p.TimeSlots.Count.CompareTo(q.TimeSlots.Count));
 
-            }
-            //return only distinct timeslots
-            //the one with most empty timeslots gets appointment
-            retval.Sort((p, q) => p.TimeSlots.Count.CompareTo(q.TimeSlots.Count));
-
-            List<TimeSlot> allUnqTimeSlots = new List<TimeSlot>();
-            for (int i = 0; i < retval.Count; i++)
-            {
-                if (i == 0)
-                { allUnqTimeSlots.AddRange(retval[i].TimeSlots); }
-                else
+            
+                for (int i = 0; i < retval.Count; i++)
                 {
-                    var unqSlots = retval[i].TimeSlots.Where(p => allUnqTimeSlots.All(p2 => p2.start != p.start && p2.end != p.end)).ToList();
-                    retval[i].TimeSlots.Clear();
-                    retval[i].TimeSlots.AddRange(unqSlots);
-                    allUnqTimeSlots.AddRange(unqSlots);
+                    if (i == 0)
+                    { allUnqTimeSlots.AddRange(retval[i].TimeSlots); }
+                    else
+                    {
+                        var unqSlots = retval[i].TimeSlots.Where(p => allUnqTimeSlots.All(p2 => p2.start != p.start && p2.end != p.end)).ToList();
+                        retval[i].TimeSlots.Clear();
+                        retval[i].TimeSlots.AddRange(unqSlots);
+                        allUnqTimeSlots.AddRange(unqSlots);
+                    }
+
                 }
-
+                //sort by Start
+                allUnqTimeSlots.Sort((p, q) => p.start.CompareTo(q.start));
             }
-            //sort by Start
-            allUnqTimeSlots.Sort((p, q) => p.start.CompareTo(q.start));
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetFreeTimeSlots");
+            }
             return allUnqTimeSlots;
         }
 

@@ -97,6 +97,8 @@
         .fc-header-toolbar {
             padding: 0px !important;
         }
+
+        
     </style>
 }
 
@@ -628,7 +630,7 @@
                         
                    
                     
-                        dcalendar = new FullCalendar.Calendar(document.getElementById('dcalendar'), {
+                    dcalendar = new FullCalendar.Calendar(document.getElementById('dcalendar'), {
                         locale: navigator.language.slice(0, 2), eventResizableFromStart: true,
                         eventDisplay: 'block',
                         eventOverlap: false,
@@ -640,24 +642,22 @@
                         },
                         views: {
                                 resourceTimeGridDay: {
-                                        titleFormat: function (date) { return dayjs(date.start.marker).format("dddd, ll"); },
-                                        resourceLabelDidMount: (args) => {
-                                            if (args.resource.id==@Html.Raw(Model.Workplace.Id))
-                                            {
+                                    titleFormat: function (date) { return dayjs(date.start.marker).format("dddd, ll"); },
+                                    resourceLabelDidMount: (args) => {
                                             var a2 = document.createElement('a');
                                             a2.setAttribute('href','#');
                                             a2.innerHTML = 'Ponastavi';
-                                            a2.onclick = function () { ResetDay(); };
+                                                a2.onclick = function () { ResetDay(args.resource.id); };
                                             return $(args.el)[0].children[0].append(a2);
-                                            }
-                                    }
+                                        }
                                     },
-                            timeGridWeek: { // name of view
+                            timeGridWeek: { 
                                 dayHeaderDidMount: (args) => {
                                     var a2 = document.createElement('a');
                                     a2.setAttribute('href','#');
                                     a2.innerHTML = 'Ponastavi';
-                                    a2.onclick = function () { ResetDay(args.date); };
+                                    a2.onclick = function () { ResetDay(@Html.Raw(Model.Workplace.Id), args.date); };
+                                    $(args.el).find(".fc-col-header-cell-cushion").css("cursor","pointer").click(function(){ dcalendar.changeView("resourceTimeGridDay", args.date); });
                                     return $(args.el)[0].children[0].append(a2);
                                 }
                             }
@@ -744,13 +744,12 @@
                             saveDaySchedule(event.event.start);
                         },
                         select: function (arg) {
-                                if (dcalendar.view.type=="timeGridWeek" || arg.resource.id == @Html.Raw(Model.Workplace.Id)) {
-                                //switch view
-                                    newDayEvent(dcalendar, arg);
-                            } else {
+                            if (dcalendar.view.type=="resourceTimeGridDay" || dcalendar.view.type=="timeGridWeek") {
                                 //show new Event modal
-                                    dcalendar.changeView("timeGridWeek", arg.start);
-                                
+                                newDayEvent(dcalendar, arg);
+                            } else {
+                                //switch view
+                                dcalendar.changeView("timeGridWeek", arg.start);
                             }
                         },
                         dateClick: function(info) {
@@ -884,7 +883,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     console.log("Deleted event: %s", info.event.id);
-                    if (info.event.display == "background") { HideBackgroundEvents(info.event.start); }
+                    if (info.event.display == "background") { HideBackgroundEvents(info.event.getResources()[0], info.event.start); }
                     else { info.event.remove();  }
                     return true;
                 } else { return false; }
@@ -965,9 +964,10 @@
     //#region daily Events (dcalendar)
         
 
-        function ResetDay(p_date) {
+        function ResetDay(p_resourceid, p_date) {
             if (p_date=== undefined) {p_date=dcalendar.view.activeStart;}
-            let events = dcalendar.getEvents()
+            var resource = dcalendar.getResourceById(p_resourceid);
+            let events = resource.getEvents();
             //remove all events for a specified day
             for (let i = 0; i < events.length; i++) {
                 let event = events[i]
@@ -978,22 +978,22 @@
 
             var idx = p_date.getDay();
             resourceswd.forEach(function (rwd) {
-                    if (rwd.resourceId==@Html.Raw(Model.Workplace.Id)){
-                rwd.WeekDays[idx].exDates = rwd.WeekDays[idx].exDates.filter(function (e) { return e !== dayjs(p_date).format("YYYYMMDD") })
-                rwd.WeekDays[idx].changed = true;
-                    }
+                if (rwd.resourceId==p_resourceid){
+                    rwd.WeekDays[idx].exDates = rwd.WeekDays[idx].exDates.filter(function (e) { return e !== dayjs(p_date).format("YYYYMMDD") })
+                    rwd.WeekDays[idx].changed = true;
+                }
             });
             RenderBackgroundEvents(dcalendar);
             
-            resetDaySchedule(p_date);
+            resetDaySchedule(p_resourceid, p_date);
 
         }
 
         
 
-        function HideBackgroundEvents(p_date) {
+            function HideBackgroundEvents(p_resourceid, p_date) {
             resourceswd.forEach(function (rwd) {
-                if (rwd.resourceId==@Html.Raw(Model.Workplace.Id)){
+                if (rwd.resourceId==p_resourceid){
                     rwd.WeekDays[p_date.getDay()].exDates.push(dayjs(p_date).format("YYYYMMDD"));
                     rwd.WeekDays[p_date.getDay()].changed = true;
                 }
@@ -1059,13 +1059,15 @@
                 var startElement = dayjs(arg.start).format("l") + " " + $("#txtStartTime").val();
                 var endElement = dayjs(arg.start).format("l") + " " + $("#txtEndTime").val();
                 var startday = dayjs(startElement).toDate();
+                var resourceId=@Html.Raw(Model.Workplace.Id);
+                if (arg.view.type!="timeGridWeek") {resourceId=arg.resource.id;}
                 p_calendar.addEvent({
                     title: "",
                     start: startday,
                     end: dayjs(endElement).toDate(),
-                    resourceId: @Html.Raw(Model.Workplace.Id)
+                    resourceId: resourceId
                 });
-                HideBackgroundEvents(startday);
+                HideBackgroundEvents(resourceId, startday);
                 saveDaySchedule(startday);
             } else { return false; }
         }
@@ -1079,7 +1081,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     console.log("Deleted event: %s", info.event.id);
-                    if (info.event.display == "background") { HideBackgroundEvents(info.event.start); }
+                    if (info.event.display == "background") { HideBackgroundEvents(info.event.getResources()[0], info.event.start); }
                     else { info.event.remove(); }
                     saveDaySchedule( info.event.start);
                     return true;
@@ -1131,13 +1133,13 @@
             });
         }
 
-        function resetDaySchedule(p_date) {
-            console.info("reset day exceptions:", p_date.toString());
+            function resetDaySchedule(p_resourceid, p_date) {
+            console.info("reset day exceptions:",p_resourceid, p_date.toString());
             getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",
                     data: "",
-                    url: apiURL + "/api/ResetWorplaceScheduleExceptions/@Html.Raw(Model.Workplace.Id)/"+dayjs(p_date).format("YYYYMMDD"),
+                    url: apiURL + "/api/ResetWorplaceScheduleExceptions/"+p_resourceid+"/"+dayjs(p_date).format("YYYYMMDD"),
                     contentType: "application/json; charset=utf-8",
                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                     dataType: "json",
