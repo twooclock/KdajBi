@@ -60,7 +60,15 @@
             font-weight: 900;
         }
 
-        .fc-mnuResources-button:before {
+        .fc-enabledelete-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f2ed";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 900;
+        }
+
+        .fc-showhideeventtime-button:before {
             font-family: "Font Awesome 5 Free";
             content: "\f017";
             display: inline-block;
@@ -410,6 +418,7 @@
 
 
         var calendar;
+        var deleteEnabled=false;
         var eventToMove = null;
         var fp; var dp; var tp;
         var SelectedClientID = 0;
@@ -870,23 +879,47 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                             headerToolbar: {
                                 left: 'datepicker prev,next today',
                                 center: 'title',
-                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth mnuResources,slotinterval,linkcreator,fullscreen'
+                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth showhideeventtime,slotinterval,enabledelete,linkcreator,fullscreen'
                             },
                             buttonText: { today: 'danes',  day: 'dan',  week:'teden',  month:'mesec'},
                             customButtons: {
                                 fullscreen: {
+                                    hint:"Celozaslonski prikaz",
                                     click: function () {
                                         if (isFullScreen) { exitFullScreen(); } else { goFullScreen('fs'); }
 
                                     }
                                 },
+                                enabledelete: {
+                                    hint:"Omogoči hitro brisanje naročil",
+                                    click: function () {
+
+                                        if (deleteEnabled==false)
+                                        {
+                                            Swal.fire({
+                                                title: 'Vklopim način hitrega brisanja? \n (Vsako tapnjeno/kliknjeno naročilo se takoj zbriše!)', showDenyButton: true, confirmButtonText: 'Da', denyButtonText: 'Ne',
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        deleteEnabled=true;
+                                                        $(".fc-enabledelete-button").removeClass("btn-primary").addClass("btn-danger");
+                                                    } else { deleteEnabled=false; }
+                                                    });
+                                            }
+                                        else
+                                        {
+                                            $(".fc-enabledelete-button").addClass("btn-primary").removeClass("btn-danger");
+                                            deleteEnabled=false;
+                                        }
+                                    }
+                                },
                                 linkcreator: {
+                                    hint:"Pošiljanje povezave za samodejno naročanje",
                                     click: function () {
                                         showSendLink();
                                     }
                                 },
                                 slotinterval: {
-                                    text:  "",
+                                    text:  "", hint:"Preklop med 15/30 minutnimi intervali",
                                     click: function (a) {
                                         if (mySlot == "00:30") { mySlot = "00:15"; this.innerText = "30'"; } else { mySlot = "00:30"; this.innerText="15'"; }
                                         localStorage.setItem("Slot", mySlot);
@@ -895,7 +928,8 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
 
                                     }
                                 },
-                                mnuResources: {
+                                showhideeventtime: {
+                                    hint:"Prikaži/skrij čas pri naročilih",
                                     click: function () {
                                         if (myDisplayEventTime == true) { myDisplayEventTime = false; $(this).attr("title", "Prikaži čas pri naročilih"); } else { myDisplayEventTime = true; $(this).attr("title", "Skrij čas pri naročilih");  }
                                         localStorage.setItem("displayEventTime", myDisplayEventTime);
@@ -904,6 +938,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                                     }
                                 },
                                 datepicker: {
+                                    hint:"Koledarček za lažji skok na poljuben datum",
                                     click: function () {
                                         $("#myDatePickModal").modal("show"); }
                                 },
@@ -964,8 +999,10 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                             },
                             eventClick: function (info) {
                                 console.info("eventClick: info:", info);
-
-                                showEvent(info);
+                                if (deleteEnabled==false)
+                                {showEvent(info);}
+                                else
+                                {DeleteEventWithoutConfirmation(info);}
                             },
                             eventDrop: function (info) {
                                 console.info("eventDrop: info:", info);
@@ -1436,28 +1473,33 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                 title: 'Zbrišem naročilo?', showDenyButton: true, confirmButtonText: 'Da', denyButtonText: 'Ne',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    var res = info.event.getResources();
-                    refreshGAPIToken().then(() => {
-                        gapi.client.calendar.events.delete({
-                            "calendarId": res[0].extendedProps.gid,
-                            "eventId": info.event.id
-                        }).execute(function (response) {
-                            if (response.error || response == false) {
-                                toastr.error("Napaka:gapi.client.calendar.events.delete");
-                                return false;
-                            }
-                            else {
-                                console.log("Deleted event: %s", info.event.id);
-                                info.event.remove();
-                                return true;
-                            }
-
-                        });
-                    });
+                    return DeleteEventWithoutConfirmation(info);
                 } else { return false; }
             });
         }
 
+        function DeleteEventWithoutConfirmation(info) {
+            
+            var res = info.event.getResources();
+            refreshGAPIToken().then(() => {
+                gapi.client.calendar.events.delete({
+                    "calendarId": res[0].extendedProps.gid,
+                    "eventId": info.event.id
+                }).execute(function (response) {
+                    if (response.error || response == false) {
+                        toastr.error("Napaka:gapi.client.calendar.events.delete");
+                        return false;
+                    }
+                    else {
+                        console.log("Deleted event: %s", info.event.id);
+                        info.event.remove();
+                        return true;
+                    }
+
+                });
+            });
+                
+        }
 
         async function getClientID() {
                 return new Promise(function (resolve, reject) {
@@ -2177,8 +2219,20 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
 			});
             gPageTour.addStep({
 				title: 'Kratek vodič po KajBi.si',
+				text: `Prikaži/skrij čas pri posameznem naročilu.`,
+				attachTo: {	element: '.fc-showhideeventtime-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
 				text: `Preklop med 15/30 minutnimi intervali.`,
 				attachTo: {	element: '.fc-slotinterval-button',on: 'bottom'	},
+				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
+			});
+            gPageTour.addStep({
+				title: 'Kratek vodič po KajBi.si',
+				text: `Omogoči hitro brisanje naročil.<br/>Ko je vključeno, naročilo zbrišete s klikom nanj. (Priročno, ko želite zbrisati več naročil)`,
+				attachTo: {	element: '.fc-enabledelete-button',on: 'bottom'	},
 				buttons: [{action() {return this.back();},text: 'Nazaj'},{action() {return this.next();},text: 'Naprej'}]
 			});
             gPageTour.addStep({
