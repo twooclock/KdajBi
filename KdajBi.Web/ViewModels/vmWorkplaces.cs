@@ -23,7 +23,26 @@ namespace KdajBi.Web.ViewModels
         public long ScheduleId; //id of the schedule that is shown/edited
         public string calWEvents;
         public string calBGEvents;
+        public void AddcalBGEvents(string p_events)
+        {
+            if (string.IsNullOrEmpty(calBGEvents) == true)
+            { calBGEvents = p_events; }
+            else
+            {
+                if (p_events.Substring(1, p_events.Length - 2).Trim().Length > 0)
+                {
+                    calBGEvents = calBGEvents.Substring(1, calBGEvents.Length - 2); //remove []
+                    if (calBGEvents != "") { calBGEvents += ","; }
+                    calBGEvents += p_events.Substring(1, p_events.Length - 2);
+                    calBGEvents = "[" + calBGEvents + "]"; //add [] back
+                }
+            }
+            calBGEvents = calBGEvents.Replace(",\"color\":null", "");
+
+        }
+
         private string _cboScheduleTypeHTML="";
+        public List<resourceWD> resourcesWD = new List<resourceWD>();
         public string cboScheduleTypeHTML(long p_scheduleType, bool p_altWeeks) {
             if (_cboScheduleTypeHTML == "")
             {
