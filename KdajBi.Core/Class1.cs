@@ -209,7 +209,7 @@ namespace KdajBi.Core
                 DateTime start = slot.start;
                 DateTime end = slot.end;
                 int i = 0;
-                while (slot.start.AddMinutes(i * minOffset + serviceLength) < end)
+                while (slot.start.AddMinutes(i * minOffset + serviceLength) <= end)
                 {
                     start = slot.start.AddMinutes(i * minOffset);
                     while (start.AddMinutes(serviceLength) <= end)

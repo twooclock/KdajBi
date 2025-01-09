@@ -270,12 +270,26 @@ namespace KdajBi.Web.Controllers
 
             Company company = new Company
             {
-                Davcna = p_davcna,
+                TaxVATNumber = p_davcna,
                 Name = p_naziv != null ? p_naziv.Split('|')[0] : "",
                 Active = true,
                 CreatedDate = DateTime.Now
             };
 
+            try
+            {
+                var part = p_naziv.Split("|");
+                var addr = part[1].Split(",");
+                company.Address=addr[0];
+                addr[1] = addr[1].Trim();
+                company.Zip=int.Parse(addr[1].Substring(0, addr[1].IndexOf(" ")));
+                company.ZipTown = addr[1].Substring(addr[1].IndexOf(" ") + 1);
+                company.TaxIDNumber=part[2];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "couldn't fill all company data from:"+p_naziv);
+            }
 
             try
             {

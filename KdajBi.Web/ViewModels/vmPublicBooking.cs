@@ -19,6 +19,7 @@ namespace KdajBi.Web.ViewModels
         public bool EnterClientName;
         public int PublicBooking_MaxDays;
         public bool PublicBooking_AllowCurrentDay;
+        public bool PublicBooking_ShowAnyone;
         public bool PublicBooking_AlertMeWithSMS;
         public bool PublicBooking_AuthorizeAfterSlotSelection;
         public bool PublicBooking_ClientDataIsMandatory;

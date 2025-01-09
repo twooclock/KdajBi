@@ -134,7 +134,15 @@ namespace KdajBi.API.Controllers
                 companyindb.UpdatedUserID = _CurrentUserID();
                 companyindb.UpdatedDate = DateTime.Now;
                 companyindb.Name = company.Name;
-                companyindb.Active = company.Active;
+                companyindb.Active = (company.Active==null?true:company.Active);
+
+                companyindb.Address = company.Address;
+                companyindb.IsTaxpayer = company.IsTaxpayer;
+                companyindb.Mobile = company.Mobile;
+                companyindb.TaxIDNumber = company.TaxIDNumber;
+                companyindb.TaxVATNumber = company.TaxVATNumber;
+                companyindb.Zip = company.Zip;
+                companyindb.ZipTown = company.ZipTown;
 
                 _context.Entry(companyindb).State = EntityState.Modified;
 

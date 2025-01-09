@@ -139,7 +139,7 @@ namespace KdajBi.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetFreeTimeSlots");
+                _logger.LogError(ex, "GetFreeTimeSlots napaka date:"+date);
             }
             return allUnqTimeSlots;
         }
@@ -167,6 +167,8 @@ namespace KdajBi.API.Controllers
             [FromQuery] DateTime? maxdate = null
             )
         {
+            if (mindate == null) { _logger.LogInformation("mindate was null"); }
+            if (maxdate == null) { _logger.LogInformation("maxdate was null"); }
             if (date == null) { date = DateTime.Today; }
             if (move == null) { move = 0; }
             List<TimeSlot> retval = new List<TimeSlot>();
@@ -174,7 +176,8 @@ namespace KdajBi.API.Controllers
             do
             {
                 repeat = false;
-                retval = await GetFreeTimeSlots(lid, wpid, sid, date.Value, move.Value);
+                _logger.LogInformation("GetFreeTimeSlots(date:"+date.Value+")");
+                retval = await GetFreeTimeSlots(lid, wpid, sid, date.Value, move.GetValueOrDefault());
                 if (retval.Count == 0 && move != 0)
                 {
                     if (move == 1 && date < maxdate) { date = date.Value.AddDays(1); repeat = true; }

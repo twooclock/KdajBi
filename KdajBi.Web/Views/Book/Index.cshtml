@@ -385,7 +385,7 @@
         }
 
         function loadWorkplaces() {
-            @if (Model.Location.Workplaces.Count > 1)
+        @if (Model.Location.Workplaces.Count > 1 && @Model.PublicBooking_ShowAnyone==true)
             { @Html.Raw("createWorkplace(0, 'Vseeno kdo');"); }
             @foreach (var item in Model.Location.Workplaces)
             {

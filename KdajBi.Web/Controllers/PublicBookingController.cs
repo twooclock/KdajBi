@@ -49,6 +49,7 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
             vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
+            vm.PublicBooking_ShowAnyone = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ShowAnyone", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
             vm.PublicBooking_TOS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_TOS", "");
@@ -99,6 +100,7 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
             vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
+            vm.PublicBooking_ShowAnyone = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ShowAnyone", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
             vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
@@ -136,6 +138,7 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
             vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
+            vm.PublicBooking_ShowAnyone = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ShowAnyone", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
             vm.PublicBooking_ClientDataIsMandatory = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ClientDataIsMandatory", false);

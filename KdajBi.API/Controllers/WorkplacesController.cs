@@ -188,7 +188,13 @@ namespace KdajBi.API.Controllers
             {
                 return NotFound();
             }
-
+            _context.WorkplaceScheduleExceptions.RemoveRange(_context.WorkplaceScheduleExceptions.Where(u => u.WorkplaceId == workplace.Id).ToList());
+            var wpschedules = _context.WorkplaceSchedules.Where(u => u.WorkplaceId == workplace.Id).ToList();
+            foreach (var schItem in wpschedules)
+            {
+                _context.Schedules.Remove(_context.Schedules.Find(schItem.ScheduleId));
+            }
+            _context.WorkplaceSchedules.RemoveRange(wpschedules);
             _context.Workplaces.Remove(workplace);
             await _context.SaveChangesAsync();
 
