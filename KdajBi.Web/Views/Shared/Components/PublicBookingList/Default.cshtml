@@ -11,7 +11,8 @@
             @Html.Raw("<a href='tel:" + item.Mobile + "'>" + item.Mobile + "</a>")
             @Html.Raw((item.Client != null ? "<div class=\"d-block text-warning\">" + item.Client.AppointmentNotes + "</div>" : ""))
             <div>@Html.Raw((item.Service!=null?item.Service.Name:""))</div>
-            <p class="mb-2"><a href="~/appointments/index?date=@Html.Raw(item.Start.Value.ToString("yyyy-MM-dd"))">@Html.Raw(item.Start.Value.ToString("dd.MM.yyyy")) @Html.Raw(item.Start.Value.ToString("H:mm"))-@Html.Raw(item.End.Value.ToString("H:mm"))</a></p>
+            <p class="mb-0"><a href="~/appointments/index?date=@Html.Raw(item.Start.Value.ToString("yyyy-MM-dd"))">@Html.Raw(item.Start.Value.ToString("dd.MM.yyyy")) @Html.Raw(item.Start.Value.ToString("H:mm"))-@Html.Raw(item.End.Value.ToString("H:mm"))</a></p>
+            <div>@Html.Raw((item.ClientNotes != null ? item.ClientNotes : ""))</div>
         </div>
         <div class="card-footer px-auto">
             <button type="button" class="btn btn-danger">Izbriši</button>

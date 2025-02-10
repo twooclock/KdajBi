@@ -43,7 +43,8 @@
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify({
                     "date": "@Model.date",
-                    "timeSlot": "@Model.timeslot"
+                    "timeSlot": "@Model.timeslot",
+                    "clientnotes": "@Model.PublicBooking_ClientNotes"
                 }),
                 success: function (result) {
                     window.location.href = "/booked/@Model.token";

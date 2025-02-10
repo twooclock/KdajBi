@@ -197,14 +197,14 @@
 												</div>
 											</div>
                                             <div class="row">
-											<div class="col-sm form-group">
-											    <label for="txtPublicBookingMaxDays" class="control-label">Koliko dni vnaprej si lahko stranka izbere prost termin
-											    <a href="#!" data-toggle="popover" data-content="Vpišite koliko dni vnaprej si stranka lahko izbere prost termin. Stranka se bo lahko naročila za največ toliko dni vnaprej. (S tem lahko omejite, da bi se vam stranke naročile npr. 6 mesecev vnaprej)"><i class="fa fa-info-circle"></i></a>
-                                                </label>
-                                                <div class="col-sm-10">
-												    <input class="form-control" id="txtPublicBookingMaxDays" type="number" pattern="[0-9.]+" placeholder="" value="">
-											    </div>
-										    </div>
+											    <div class="col-sm form-group">
+											        <label for="txtPublicBookingMaxDays" class="control-label">Koliko dni vnaprej si lahko stranka izbere prost termin
+											        <a href="#!" data-toggle="popover" data-content="Vpišite koliko dni vnaprej si stranka lahko izbere prost termin. Stranka se bo lahko naročila za največ toliko dni vnaprej. (S tem lahko omejite, da bi se vam stranke naročile npr. 6 mesecev vnaprej)"><i class="fa fa-info-circle"></i></a>
+                                                    </label>
+                                                    <div class="col-sm-10">
+												        <input class="form-control" id="txtPublicBookingMaxDays" type="number" pattern="[0-9.]+" placeholder="" value="">
+											        </div>
+										        </div>
                                                     <div class="form-group col-sm d-flex flex-column justify-content-end">
                                                         <div class="form-check">
                                                             <input type="checkbox" class="form-check-input" id="chkPublicBookingAllowCurrentDay">
@@ -223,15 +223,19 @@
                                                             </label>
                                                         </div>
                                                     </div>
+                                                    
                                                     <div class="form-group col-sm d-flex flex-column justify-content-end">
                                                         <div class="form-check">
-                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingAlertMeWithSMS">
-                                                            <label class="form-check-label" for="chkPublicBookingAlertMeWithSMS">
-                                                                Ko se stranka naroči, me obvesti prek SMS
-                                                                <a href="#!" data-toggle="popover" data-content="Ko si bo stranka izbrala termin, boste oveščeni prek SMS, da  boste termin lahko čimprej potrdili.(SMS bo poslan na telefon naveden zgoraj.)"><i class="fa fa-info-circle"></i></a>
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingClientDataIsMandatory">
+                                                            <label class="form-check-label" for="chkPublicBookingClientDataIsMandatory">
+                                                                Obvezen vnos podatkov o stranki 
+                                                                <a href="#!" data-toggle="popover" data-content="Stranka bo morala obvezno vnest svoje podatke (ime, priimek in naslov)"><i class="fa fa-info-circle"></i></a>
                                                             </label>
                                                         </div>
                                                     </div>
+                                                </div>
+                                                <div class="row">
+                                                    
                                                     <div class="form-group col-sm d-flex flex-column justify-content-end">
                                                         <div class="form-check">
                                                             <input type="checkbox" class="form-check-input" id="chkPublicBookingAuthorizeAfterSlotSelection">
@@ -243,10 +247,28 @@
                                                     </div>
                                                     <div class="form-group col-sm d-flex flex-column justify-content-end">
                                                         <div class="form-check">
-                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingClientDataIsMandatory">
-                                                            <label class="form-check-label" for="chkPublicBookingClientDataIsMandatory">
-                                                                Obvezen vnos podatkov o stranki 
-                                                                <a href="#!" data-toggle="popover" data-content="Stranka bo morala obvezno vnest svoje podatke (ime, priimek in naslov)"><i class="fa fa-info-circle"></i></a>
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingAllowClientNotes">
+                                                            <label class="form-check-label" for="chkPublicBookingAllowClientNotes">
+                                                                Dovoli stranki, da vnese opombe k naročilu
+                                                                <a href="#!" data-toggle="popover" data-content="Pred oddajo naročila, lahko stranka napiše še kratko sporočilo, ki bo prikazano pri potrjevanju naročila."><i class="fa fa-info-circle"></i></a>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-sm d-flex flex-column justify-content-end">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingAlertMeWithSMS">
+                                                            <label class="form-check-label" for="chkPublicBookingAlertMeWithSMS">
+                                                                Ko se stranka naroči, me obvesti prek SMS
+                                                                <a href="#!" data-toggle="popover" data-content="Ko si bo stranka izbrala termin, boste oveščeni prek SMS, da  boste termin lahko čimprej potrdili.(SMS bo poslan na telefon naveden zgoraj.)"><i class="fa fa-info-circle"></i></a>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-sm d-flex flex-column justify-content-end">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingAutoApprove">
+                                                            <label class="form-check-label" for="chkPublicBookingAutoApprove">
+                                                                Samodejno potrdi naročila
+                                                                <a href="#!" data-toggle="popover" data-content="Prejeta naročila bodo samodejno potrjena"><i class="fa fa-info-circle"></i></a>
                                                             </label>
                                                         </div>
                                                     </div>
@@ -1517,6 +1539,9 @@
                 settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
                 settings["PublicBooking_AuthorizeAfterSlotSelection"] = $("#chkPublicBookingAuthorizeAfterSlotSelection").prop("checked");
                 settings["PublicBooking_ClientDataIsMandatory"] = $("#chkPublicBookingClientDataIsMandatory").prop("checked");
+                settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
+                settings["PublicBooking_AllowClientNotes"] = $("#chkPublicBookingAllowClientNotes").prop("checked");
+                settings["PublicBooking_AutoApprove"] = $("#chkPublicBookingAutoApprove").prop("checked");
 
                 if ($('#txtPublicBookingTOS').summernote('isEmpty'))
                     { settings["PublicBooking_TOS"] = "";}
@@ -1556,6 +1581,8 @@
             settings["PublicBooking_ClientDataIsMandatory"] = 'false';
             settings["PublicBooking_TOS"] = $('#txtPublicBookingTOS').summernote('code');
             settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
+            settings["PublicBooking_AllowClientNotes"] = 'true';
+            settings["PublicBooking_AutoApprove"] = 'false';
 
             getAPIToken().then((result) => {
             $.ajax({
@@ -1581,11 +1608,16 @@
                         if (result["PublicBooking_AuthorizeAfterSlotSelection"] == "true") { $('#chkPublicBookingAuthorizeAfterSlotSelection').prop('checked', true); }
                     }
                     if (result["PublicBooking_ClientDataIsMandatory"] != undefined) {
-                            if (result["PublicBooking_ClientDataIsMandatory"] == "true") { $('#chkPublicBookingClientDataIsMandatory').prop('checked', true); }
+                        if (result["PublicBooking_ClientDataIsMandatory"] == "true") { $('#chkPublicBookingClientDataIsMandatory').prop('checked', true); }
                     }
                     $("#txtPublicBookingTOS").summernote('code', result["PublicBooking_TOS"]);
                     $("#txtPublicBookingCSS").val(result["PublicBooking_CSS"]);
-
+                    if (result["PublicBooking_AllowClientNotes"] != undefined) {
+                        if (result["PublicBooking_AllowClientNotes"] == "true") { $('#chkPublicBookingAllowClientNotes').prop('checked', true);}
+                    }
+                    if (result["PublicBooking_AutoApprove"] != undefined) {
+                        if (result["PublicBooking_AutoApprove"] == "true") { $('#chkPublicBookingAutoApprove').prop('checked', true);}
+                    }
                  },
                 error: function (xhr, status, error) {
                     toastr.error("Napaka:" + error.toString());

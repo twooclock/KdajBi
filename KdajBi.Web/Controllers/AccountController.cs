@@ -248,7 +248,7 @@ namespace KdajBi.Web.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> Register(string p_email, string p_firstname, string p_lastname, string p_davcna, string p_naziv, string p_nazivsalona)
+        public async Task<IActionResult> Register(string p_email, string p_firstname, string p_lastname, string p_mobile, string p_davcna, string p_naziv, string p_nazivsalona)
         {
 
             ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
@@ -272,6 +272,7 @@ namespace KdajBi.Web.Controllers
             {
                 TaxVATNumber = p_davcna,
                 Name = p_naziv != null ? p_naziv.Split('|')[0] : "",
+                Mobile=p_mobile, 
                 Active = true,
                 CreatedDate = DateTime.Now
             };

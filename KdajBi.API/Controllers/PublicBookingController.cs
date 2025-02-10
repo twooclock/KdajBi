@@ -348,12 +348,23 @@ namespace KdajBi.API.Controllers
             if (myClient != null) { ClientId = myClient.Id; ClientFullName = myClient.FullName; myPB.ClientId = ClientId; }
             myPB.Start = bookingRequest.TimeSlot.start;
             myPB.End = bookingRequest.TimeSlot.end;
+            myPB.ClientNotes = bookingRequest.ClientNotes;
+
+            string appointmentTitle = ClientFullName + " (" + myPB.Mobile + ") - " + myService.Name;
+            bool appointmentAutoApprove = bool.Parse(SettingsHelper.getSetting(_context, myPB.Location.CompanyId, myPB.Location.Id, "PublicBooking_AutoApprove", "false"));
+            if (appointmentAutoApprove == true)
+            {
+                myPB.Status = 1; //confirmed
+                myPB.UpdatedDate = DateTime.Now;
+            }
+            else
+            { appointmentTitle = "Čaka na potrditev: " +appointmentTitle; }
 
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {
                 var gEvent = myGoogleHelper.AddEvent(
                     myWP.GoogleCalendarID,
-                    "Čaka na potrditev: " + ClientFullName +  " ("+ myPB.Mobile + ") - " + myService.Name,
+                    appointmentTitle,
                     bookingRequest.TimeSlot.start, bookingRequest.TimeSlot.end,
                     ClientId, ClientFullName,
                     myPB.Mobile, myService.Name
@@ -372,18 +383,58 @@ namespace KdajBi.API.Controllers
                 throw;
             }
 
+            SmsCampaign newSmsCampaign;
+            int myUserId=0;
+            if (appointmentAutoApprove == true)
+            {
+                // obvesti stranko prek sms (TODO: naredi prek service)
+                newSmsCampaign = new SmsCampaign();
+                newSmsCampaign.Company.Id = myPB.Location.CompanyId;
+                newSmsCampaign.LocationId = myPB.LocationId;
+                newSmsCampaign.PublicBookingId = myPB.Id;
+                var myUser = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
+                myUserId= myUser.Id;
+                newSmsCampaign.AppUser.Id = myUserId;
+
+                newSmsCampaign.MsgTxt = @"Vaš termin je bil sprejet! Naročeni ste " + myPB.Start.Value.ToString("dd.MM.yyyy") + " ob " + myPB.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + myPB.Location.Name;
+                if (string.IsNullOrEmpty(myPB.Location.Tel) == false)
+                { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myPB.Location.Tel; }
+                var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+
+                newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+                newSmsCampaign.Name = "PublicBookingConfimation";
+                newSmsCampaign.Recipients.Add(new SmsMsg(myPB.Mobile, (myPB.Client != null ? myPB.Client.Id : 0)));
+
+                newSmsCampaign.SendAfter = DateTime.Now;
+                newSmsCampaign.ApprovedAt = DateTime.Now;
+
+
+                _context.Attach(newSmsCampaign.Company);
+                _context.Attach(newSmsCampaign.AppUser);
+                _context.SmsCampaigns.Add(newSmsCampaign);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "/api/publicbooking/ create PublicBookingAutoApprove SmsCampaign");
+                    throw;
+                }
+            }
             if (bool.Parse(SettingsHelper.getSetting(_context, myPB.Location.CompanyId, myPB.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
             {
                 //alert about new appointment
                 //(TODO: naredi prek service)
                 try
                 {
-                    SmsCampaign newSmsCampaign = new SmsCampaign();
+                    newSmsCampaign = new SmsCampaign();
                     newSmsCampaign.Company.Id = myPB.Location.CompanyId;
                     newSmsCampaign.LocationId = myPB.LocationId;
                     newSmsCampaign.PublicBookingId = myPB.Id;
-                    var myUser = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
-                    newSmsCampaign.AppUser.Id = myUser.Id;
+                    if (appointmentAutoApprove == false)
+                    { myUserId = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First().Id; }
+                    newSmsCampaign.AppUser.Id = myUserId;
                     newSmsCampaign.MsgTxt = @"Novo narocilo prek spleta! Poglej v https://KdajBi.si";
                     var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
 
@@ -394,9 +445,19 @@ namespace KdajBi.API.Controllers
                     newSmsCampaign.SendAfter = DateTime.Now;
                     newSmsCampaign.ApprovedAt = DateTime.Now;
 
+                    if (appointmentAutoApprove == false)
+                    {
+                        _context.Attach(newSmsCampaign.Company);
+                        _context.Attach(newSmsCampaign.AppUser);
+                    }
+                    else
+                    { _context.Entry(newSmsCampaign.AppUser).State = EntityState.Detached;
+                        _context.Entry(_context.Users.Find(myUserId)).State = EntityState.Detached;
+                        _context.Entry(_context.Companies.Find(myPB.Location.CompanyId)).State = EntityState.Detached;
+                        _context.Attach(newSmsCampaign.Company);
+                        _context.Attach(newSmsCampaign.AppUser);
+                    }
 
-                    _context.Attach(newSmsCampaign.Company);
-                    _context.Attach(newSmsCampaign.AppUser);
                     _context.SmsCampaigns.Add(newSmsCampaign);
                 }
                 catch (Exception ex)

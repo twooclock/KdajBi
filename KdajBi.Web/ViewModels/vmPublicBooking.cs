@@ -25,6 +25,10 @@ namespace KdajBi.Web.ViewModels
         public bool PublicBooking_ClientDataIsMandatory;
         public string PublicBooking_TOS;
         public string PublicBooking_CSS;
+        public bool PublicBooking_AllowClientNotes;
+        public string PublicBooking_ClientNotes;
+        public bool PublicBooking_AutoApprove;
+
 
         public long wpid;
         public long sid;
