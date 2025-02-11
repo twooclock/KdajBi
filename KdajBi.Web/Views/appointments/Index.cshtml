@@ -1,4 +1,5 @@
 ﻿@using Newtonsoft.Json;
+@using Newtonsoft.Json;
 @using KdajBi.Web;
 @using KdajBi.Web.ViewModels;
 @using System.Globalization;
@@ -24,9 +25,9 @@
     {
         if (String.IsNullOrEmpty(val) == false)
         {
-                @Html.Raw(".fc .fc-timegrid-slot {");
-                @Html.Raw("height:"+val);
-                @Html.Raw("border-bottom: 0}");
+            @Html.Raw(".fc .fc-timegrid-slot {");
+            @Html.Raw("height:"+val);
+            @Html.Raw("border-bottom: 0}");
         }
     }
 
@@ -1341,6 +1342,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                 });
                 $('#txtClientMobile').keyup(function(event) {
                     if (event.keyCode === 13) { 
+                        checkClientMobile();
                         document.getElementById("txtNotes").click();
                         setTimeout(() => { document.getElementById("txtNotes-tokenfield").focus(); }, 400);
                     }
@@ -1539,7 +1541,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                                     dataType: "json",
                                     success: function (retval) {
-                                        if (retval.result == "OK") { toastr.info("Shranil novo stranko (" + retval.id.toString() + ")"); myClients.push( {id:retval.id, label:name,mobile:client.Mobile}); resolve(retval.id); }
+                                        if (retval.result == "OK") { toastr.info("Shranil novo stranko (" + retval.id.toString() + ")"); myClients.push( {id:retval.id, label:name+String.fromCharCode(160)+client.Mobile,mobile:client.Mobile}); resolve(retval.id); }
                                         else { reject(retval.result); return false; }
                                     },
                                     error: function (xhr, status, error) {
@@ -1554,6 +1556,47 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                 else { resolve(SelectedClientID);}
             });
         }
+
+        async function EditClientMobile(p_id,p_Mobile)
+        {
+            return new Promise(function (resolve, reject) {
+                getAPIToken().then((result) => {
+                    $.ajax({
+                        type: "post",
+                        data: "",
+                        url: apiURL + "/api/ClientMobile/"+p_id+"/"+p_Mobile,
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "text",
+                        success: function (retval) {
+                            if (retval == "OK") { toastr.info("Popravil mobi stranke v "+p_Mobile);  resolve(true); }
+                            else { reject(retval); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            reject("Error saving client mobile:" + error.toString());
+                            return false;
+                        }
+                    });
+                });
+            });
+        }
+
+        async function checkClientMobile()
+        {
+            return new Promise(function (resolve, reject) {
+                if (SelectedClientID>0){
+                    stranka= myClients.find(item => item.value === SelectedClientID);
+                    let clientmobile=$("#txtClientMobile").val().trim();
+                    if (clientmobile !=stranka.mobile) { 
+                        stranka.label=stranka.label.replace(stranka.mobile,clientmobile);
+                        stranka.mobile=clientmobile;  
+                        resolve( EditClientMobile(SelectedClientID,clientmobile)); 
+                    }
+                }
+                resolve(true);
+            });
+        }
+
         function getEventSummary()
         {
             var eventSummary='';
@@ -1637,6 +1680,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
         function SaveEvent(p_event) {
             if ($('#formEvent').valid()) {
                 //save client (if changed)
+                checkClientMobile();
                 getClientID().catch((result) => { toastr.info(result); }).then((resultClientID) => {
                     //create new event
                     var res = p_event.event.getResources();

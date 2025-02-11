@@ -249,6 +249,35 @@ namespace KdajBi.API.Controllers
             return Json("OK");
         }
 
+        [HttpPost("/api/ClientMobile/{id}/{mobile}")]
+        public async Task<IActionResult> PostClientMobile(long id, string mobile)
+        {
+            var klient =  _context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.Id == id).FirstOrDefault() ;
+            if (klient == null) { return NotFound(); }
+            klient.Mobile = mobile;
+            klient.UpdatedDate = DateTime.Now;
+            klient.UpdatedUserID = _CurrentUserID();
+            _context.Entry(klient).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await ClientExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok("OK");
+        }
+
         private async Task<bool> ClientExists(long id)
         {
             return await _context.Clients.AnyAsync(e => e.Id == id);

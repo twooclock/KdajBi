@@ -85,6 +85,7 @@ namespace KdajBi.API.Controllers
             myWorkplace.Name = workplace.Name;
             myWorkplace.SortPosition = workplace.SortPosition;
             myWorkplace.Active = workplace.Active;
+            myWorkplace.SequentialBooking = workplace.SequentialBooking;
 
             return Json(myWorkplace);
         }
@@ -151,6 +152,7 @@ namespace KdajBi.API.Controllers
                 workplaceindb.UpdatedUserID = _CurrentUserID();
                 workplaceindb.UpdatedDate = DateTime.Now;
                 workplaceindb.Active = workplace.Active;
+                workplaceindb.SequentialBooking = workplace.SequentialBooking;
                 workplaceindb.GoogleCalendarID = workplace.GoogleCalendarID;
                 workplaceindb.Name = workplace.Name;
                 workplaceindb.SortPosition = workplace.SortPosition;

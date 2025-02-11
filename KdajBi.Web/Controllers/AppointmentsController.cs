@@ -188,7 +188,8 @@ namespace KdajBi.Web.Controllers
                                     myVM.AddcalEvents(Newtonsoft.Json.JsonConvert.SerializeObject(events.ToArray()));
 
                                 }
-
+                                else
+                                { return Redirect("~/LandingPage/index.html"); }
                                 
                                 if (globalSettings["cbUseSingleListOfClients"] == "false")
                                 { myVM.ClientsJson = Newtonsoft.Json.JsonConvert.SerializeObject(_context.Clients.Where(c => c.CompanyId == currUserCompanyID && c.LocationId == defaultLocationID).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + Convert.ToChar(160).ToString() + p.Mobile), mobile = p.Mobile, notes=p.AppointmentNotes }).ToList()).Replace(@"\", @"\\"); }

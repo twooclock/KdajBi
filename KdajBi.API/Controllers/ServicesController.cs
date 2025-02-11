@@ -145,6 +145,7 @@ namespace KdajBi.API.Controllers
 				Serviceindb.Color = Service.Color;
                 Serviceindb.UsedInClientBooking = Service.UsedInClientBooking;
                 Serviceindb.PriceDescription = Service.PriceDescription;
+                Serviceindb.Notes = Service.Notes;
                 Serviceindb.Active = Service.Active;
 
                 _context.Entry(Serviceindb).State = EntityState.Modified;

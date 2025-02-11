@@ -50,10 +50,25 @@
         .card-selected {
         }
 
-        @@media all and (max-width: 768px)
-        {
-        .makswidth { width:-moz-available; }
+        
+        .makswidth {
+            width: -moz-available;
+            max-width: 300px;
         }
+
+        .single-line {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 250px;
+            min-width: -moz-available;
+            /* border: 1px solid #000; */
+            cursor: help;
+            opacity: 0.5;
+        }
+
+            
+        
     </style>
     @Html.Raw(@Model.PublicBooking_CSS)
 }
@@ -227,6 +242,26 @@
         </div>
     </div>
 </div>
+<!-- ServiceInfo modal content-->
+<div id="myServiceInfoModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog modal-dialog-centered" >
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="ServiceInfoTitle" class="modal-title">Storitev</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div id="ServicePriceContent" class="">
+                Opis storitve
+            </div>
+            <div id="ServiceInfoContent" class="modal-body ui-front">
+                Opis storitve
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
 <!-- /modal content-->
 @section scripts{
     <script src="~/plugins/flatpickr/flatpickr.min.js"></script>
@@ -292,7 +327,7 @@
 
         function selectService(item)
         {
-            $("#step-2-selected").text(item.textContent);
+            $("#step-2-selected").text(item.getAttribute('data-info'));
             $('#services .card').each(function () {
                 $(this).removeClass('text-success');
                 $(this).removeClass('border-success');
@@ -332,13 +367,23 @@
                 {
                     if ( newGroupDiv==null) { newGroupDiv = $('<div/>').addClass("row");}
                 }
-                      let newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1 makswidth").attr({ id: 's_' + element.id }).attr({ style: "min-width: 18rem; border-width: 3px;" });
-                let lbl = $('<div/>').addClass("card-body");
-                let input = $('<h5/>').text(element.name).addClass("card-title");
-                let br = $('<br/>');
+                let newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1 makswidth").attr({ id: 's_' + element.id }).attr({ 'data-info': element.name+' '+element.priceDescription }).attr({ style: "min-width: 18rem; border-width: 3px;" });
+                let lbl = $('<div/>').addClass("card-body").attr({ style: "padding: 1rem;" });
+                let row1 = $('<div/>').addClass("row");
+                let row2 = $('<div/>').addClass("row");
+                let row3 = $('<div/>').addClass("row");
+                let input = $('<div/>').text(element.name).addClass("card-title");
                 let desc = $('<div/>').text(element.priceDescription).attr({ style: "font-size: smaller;" });
-                input.append(br).append(desc);
-                lbl.append(input);
+                row1.append(input);
+                row2.append(desc);
+                let notes = $('<div/>').text(element.notes).addClass("single-line").attr({ style: "font-size: smaller;" });
+                notes.click(function (event) { event.stopPropagation();
+                        $("#ServiceInfoTitle").text(element.name);
+                        $("#ServicePriceContent").text('');
+                        $("#ServiceInfoContent").html((element.priceDescription.length>0 ? element.priceDescription+'<br/>'+element.notes : element.notes));
+                        $("#myServiceInfoModal").modal("show");  });
+                row3.append(notes);
+                lbl.append(row1).append(row2).append(row3);
                 newDiv.append(lbl);
                 newDiv.click(function () { selectService(this); });
                 newGroupDiv.append(newDiv);

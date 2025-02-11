@@ -25,6 +25,8 @@ namespace KdajBi.Core.Models
         [MaxLength(150)]
         public string GoogleCalendarID { get; set; }
 
+        public bool SequentialBooking { get; set; } //when offering available timeslots for public booking, it offers only timeslots that are adjacent to exsisting bookings
+
         [NotMapped]
         public string GoogleCalendarSummary { get; set; }
         [NotMapped]

@@ -85,33 +85,94 @@ namespace KdajBi.API.Controllers
                 {
                     foreach (var wp in myWP)
                     {
+                        List<TimeSlot> availableAppointments = new List<TimeSlot>();
                         List<TimeSlot> availableworkhours = new List<TimeSlot>();
                         availableworkhours = await getWorkplaceWorkhours(wp, date);
+                        if (wp.SequentialBooking == true)
+                        {   //omogoči le zaporedna naročila (prosti termini so le pred ali po obstoječem naročilu)
+                            availableAppointments = new List<TimeSlot>();
 
-                        List<TimeSlot> availableAppointments = new List<TimeSlot>();
-                        if (availableworkhours.Count > 0)
-                        {
-                            availableAppointments = TimeSlotManager.generateTimeSlots(availableworkhours, myService.Minutes, myService.Offset);
-                            if (availableAppointments.Count > 0)
+                            foreach (var timeslot in availableworkhours)
                             {
-                                var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, date, dateEnd);
+                                //za vsako naročilo, generiraj dva prosta termina (prej in po)
+                                var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, timeslot.start, timeslot.end);
                                 if (events != null)
                                 {
-                                    foreach (var evt in events)
+                                    if (events.Count()>0 ) { 
+                                        foreach (var evt in events)
+                                        {
+                                            //dodaj prej
+                                            if (evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(-myService.Minutes)>= timeslot.start) {
+                                                availableAppointments.Add(
+                                                    new TimeSlot(wp.Id,
+                                                        evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(-myService.Minutes),
+                                                        evt.End.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(-myService.Minutes)
+                                                    )
+                                                );
+                                            }
+                                            //dodaj po
+                                            if (evt.End.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(myService.Minutes) <= timeslot.end) {
+                                                availableAppointments.Add(
+                                                    new TimeSlot(wp.Id,
+                                                        evt.End.DateTimeDateTimeOffset.Value.LocalDateTime,
+                                                        evt.End.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(myService.Minutes)
+                                                    )
+                                                );
+                                            }
+                                        }
+                                        //odstrani tiste, ki se prekrivajo z naročili
+                                        foreach (var evt in events)
+                                        {
+                                            availableAppointments = TimeSlotManager.removeOccupiedAppointments(
+                                                availableAppointments,
+                                                new TimeSlot(wp.Id,
+                                                    evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
+                                                    evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
+                                                )
+                                            );
+                                        }
+                                    } 
+                                    else
                                     {
-                                        availableAppointments = TimeSlotManager.removeOccupiedAppointments(
-                                            availableAppointments,
-                                            new TimeSlot(wp.Id,
-                                                evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
-                                                evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
-                                            )
-                                        );
+                                        //v tem obdobju ni še nobenega naročila -> ponudi vse timeslote
+                                        var myTSlist = new List<TimeSlot>();
+                                        myTSlist.Add(timeslot);
+                                        availableAppointments.AddRange(TimeSlotManager.generateTimeSlots(myTSlist, myService.Minutes, myService.Offset));
+                                    }
+
+                                }
+                            }
+                            if (availableAppointments.Count > 0)
+                            { retval.Add(new BookingTimeslots(wp.Id, availableAppointments)); }
+                        }
+                        else
+                        { //po starem (ponudi vse termine, glede na urnik in vpisana naročila)
+                            availableAppointments = new List<TimeSlot>();
+                            if (availableworkhours.Count > 0)
+                            {
+                                availableAppointments = TimeSlotManager.generateTimeSlots(availableworkhours, myService.Minutes, myService.Offset);
+                                if (availableAppointments.Count > 0)
+                                {
+                                    var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, date, dateEnd);
+                                    if (events != null)
+                                    {
+                                        foreach (var evt in events)
+                                        {
+                                            availableAppointments = TimeSlotManager.removeOccupiedAppointments(
+                                                availableAppointments,
+                                                new TimeSlot(wp.Id,
+                                                    evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
+                                                    evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
+                                                )
+                                            );
+                                        }
                                     }
                                 }
                             }
+                            if (availableAppointments.Count > 0)
+                            { retval.Add(new BookingTimeslots(wp.Id, availableAppointments)); }
                         }
-                        if (availableAppointments.Count > 0)
-                        { retval.Add(new BookingTimeslots(wp.Id, availableAppointments)); }
+                        
 
                     }
 
