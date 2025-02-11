@@ -45,5 +45,8 @@ namespace KdajBi.Core.Models
         public string GCalId { get; set; }
 
         public long Status { get; set; } //0-needs confirmation 1-confirmed 2-rejected
+
+        [MaxLength(200)]
+        public string ClientNotes { get; set; }
     }
 }

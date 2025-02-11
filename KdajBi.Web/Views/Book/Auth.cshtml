@@ -66,12 +66,13 @@
         <div class="row">
             <form id="formMobile" name="formMobile" class="form-horizontal" action="@Html.Raw("/book/auth/mobile")" method="POST">
                 <input type="hidden" name="token" value="@Html.Raw(@Model.token)">
-                        <input type="hidden" name="pbid" value="@Html.Raw(@Model.PublicBookingId)">
+                <input type="hidden" name="pbid" value="@Html.Raw(@Model.PublicBookingId)">
                 <input type="hidden" name="wpid" value="@Html.Raw(@Model.wpid)">
                 <input type="hidden" name="sid" value="@Html.Raw(@Model.sid)">
                 <input type="hidden" name="date" value="@Html.Raw(@Model.date)">
-                        <input type="hidden" name="timeslot" value="@Html.Raw(@Model.timeslot)">
-                        <div class="form-group mt-3">
+                <input type="hidden" name="timeslot" value="@Html.Raw(@Model.timeslot)">
+                <input type="hidden" name="clientnotes" value="@Html.Raw(@Model.PublicBooking_ClientNotes)">
+                <div class="form-group mt-3">
                     @if (Model.Mobile == null)
                     {
                                 @if (Model.sid == 0)

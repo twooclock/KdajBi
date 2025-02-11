@@ -49,10 +49,14 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
             vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
+            vm.PublicBooking_ShowAnyone = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ShowAnyone", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
             vm.PublicBooking_TOS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_TOS", "");
             vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
+            vm.PublicBooking_AllowClientNotes = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowClientNotes", true);
+            vm.PublicBooking_AutoApprove = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AutoApprove", false);
+
             if (vm.PublicBooking_AuthorizeAfterSlotSelection == true)
             {
                 //remove any workplaces that have no services
@@ -82,7 +86,7 @@ namespace KdajBi.Web.Controllers
         [AllowAnonymous]
         [Route("/bookauth/{token}/{wpid}/{sid}")]
         public IActionResult AuthorizeBooking(
-            string token, long wpid, long sid, [FromQuery] string date, [FromQuery] string timeslot)
+            string token, long wpid, long sid, [FromQuery] string date, [FromQuery] string timeslot, [FromQuery] string clientnotes)
         {
             var bookinglocation = _context.Locations.Include(l => l.Workplaces).Where(l => l.PublicBookingToken == token).FirstOrDefault();
             vmPublicBooking vm = new vmPublicBooking();
@@ -99,11 +103,14 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
             vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
+            vm.PublicBooking_ShowAnyone = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ShowAnyone", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
             vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
+            vm.PublicBooking_AllowClientNotes = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowClientNotes", true);
+            vm.PublicBooking_AutoApprove = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AutoApprove", false);
 
-            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; //pass selected slot params
+            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; vm.PublicBooking_ClientNotes = clientnotes; //pass selected slot params
 
             return View("~/Views/Book/Auth.cshtml", vm);
         }
@@ -113,12 +120,12 @@ namespace KdajBi.Web.Controllers
         [Route("/narocanje/auth/mobile")]
         [Route("/book/auth/mobile")]
         [HttpPost]
-        public IActionResult mobile(string token, string inputMobile, string inputClientFirstName, string inputClientLastName, string inputClientAddress, string inputPIN, string pbid, long wpid, long sid, string date, string timeslot)
+        public IActionResult mobile(string token, string inputMobile, string inputClientFirstName, string inputClientLastName, string inputClientAddress, string inputPIN, string pbid, long wpid, long sid, string date, string timeslot, string clientnotes)
         {
             var bookinglocation = _context.Locations.Include(l=>l.Workplaces).Where(l => l.PublicBookingToken == token).FirstOrDefault();
             
             vmPublicBooking vm = new vmPublicBooking();
-            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; //pass selected slot params
+            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; vm.PublicBooking_ClientNotes = clientnotes; //pass selected slot params
             vm.token = token;
             vm.Location = bookinglocation;
             if (bookinglocation != null)
@@ -136,11 +143,14 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_Text = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_Text", "");
             vm.PublicBooking_MaxDays = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_MaxDays", 0);
             vm.PublicBooking_AllowCurrentDay = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowCurrentDay", true);
+            vm.PublicBooking_ShowAnyone = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ShowAnyone", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
             vm.PublicBooking_ClientDataIsMandatory = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ClientDataIsMandatory", false);
             vm.PublicBooking_TOS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_TOS", "");
             vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
+            vm.PublicBooking_AllowClientNotes = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowClientNotes", true);
+            vm.PublicBooking_AutoApprove = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AutoApprove", false);
 
 
             if (inputMobile != null && inputPIN == null)
@@ -162,6 +172,7 @@ namespace KdajBi.Web.Controllers
                             int myPIN = _rdm.Next(1000, 9999);
                             newbooking.PIN = myPIN;
                             newbooking.LocationId = bookinglocation.Id;
+                            newbooking.ClientNotes = vm.PublicBooking_ClientNotes;
 
                             var myClient = _context.Clients.Where(c => c.CompanyId == bookinglocation.CompanyId && c.Mobile.EndsWith(inputMobile.Substring(1))).FirstOrDefault();
                             if (myClient != null)

@@ -6,16 +6,13 @@
 @foreach (var item in Model)
 {
     <div class="card bg-secondary" id="publicbooking-confirmation" data-id="@Html.Raw(item.Id)">
-        <div class="card-header">
-            <h3 class="card-title">
-                @Html.Raw((item.Client!=null?item.Client.FullName:""))
-                @Html.Raw("<a href='tel:"+item.Mobile+"'>"+item.Mobile+"</a>")
-            </h3>
-        </div>
         <div class="card-body pt-2 pb-0">
-            <p>@Html.Raw((item.Service!=null?item.Service.Name:""))</p>
-            <p><a href="~/appointments/index?date=@Html.Raw(item.Start.Value.ToString("yyyy-MM-dd"))">@Html.Raw(item.Start.Value.ToString("dd.MM.yyyy"))</a></p>
-            <p>@Html.Raw(item.Start.Value.ToString("HH:mm")) - @Html.Raw(item.End.Value.ToString("HH:mm"))</p>
+            @Html.Raw((item.Client != null ? item.Client.FullName : ""))
+            @Html.Raw("<a href='tel:" + item.Mobile + "'>" + item.Mobile + "</a>")
+            @Html.Raw((item.Client != null ? "<div class=\"d-block text-warning\">" + item.Client.AppointmentNotes + "</div>" : ""))
+            <div>@Html.Raw((item.Service!=null?item.Service.Name:""))</div>
+            <p class="mb-0"><a href="~/appointments/index?date=@Html.Raw(item.Start.Value.ToString("yyyy-MM-dd"))">@Html.Raw(item.Start.Value.ToString("dd.MM.yyyy")) @Html.Raw(item.Start.Value.ToString("H:mm"))-@Html.Raw(item.End.Value.ToString("H:mm"))</a></p>
+            <div>@Html.Raw((item.ClientNotes != null ? item.ClientNotes : ""))</div>
         </div>
         <div class="card-footer px-auto">
             <button type="button" class="btn btn-danger">Izbriši</button>

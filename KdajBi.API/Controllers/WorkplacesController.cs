@@ -85,6 +85,7 @@ namespace KdajBi.API.Controllers
             myWorkplace.Name = workplace.Name;
             myWorkplace.SortPosition = workplace.SortPosition;
             myWorkplace.Active = workplace.Active;
+            myWorkplace.SequentialBooking = workplace.SequentialBooking;
 
             return Json(myWorkplace);
         }
@@ -151,6 +152,7 @@ namespace KdajBi.API.Controllers
                 workplaceindb.UpdatedUserID = _CurrentUserID();
                 workplaceindb.UpdatedDate = DateTime.Now;
                 workplaceindb.Active = workplace.Active;
+                workplaceindb.SequentialBooking = workplace.SequentialBooking;
                 workplaceindb.GoogleCalendarID = workplace.GoogleCalendarID;
                 workplaceindb.Name = workplace.Name;
                 workplaceindb.SortPosition = workplace.SortPosition;
@@ -188,7 +190,13 @@ namespace KdajBi.API.Controllers
             {
                 return NotFound();
             }
-
+            _context.WorkplaceScheduleExceptions.RemoveRange(_context.WorkplaceScheduleExceptions.Where(u => u.WorkplaceId == workplace.Id).ToList());
+            var wpschedules = _context.WorkplaceSchedules.Where(u => u.WorkplaceId == workplace.Id).ToList();
+            foreach (var schItem in wpschedules)
+            {
+                _context.Schedules.Remove(_context.Schedules.Find(schItem.ScheduleId));
+            }
+            _context.WorkplaceSchedules.RemoveRange(wpschedules);
             _context.Workplaces.Remove(workplace);
             await _context.SaveChangesAsync();
 

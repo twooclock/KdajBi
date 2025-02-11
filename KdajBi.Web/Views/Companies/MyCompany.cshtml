@@ -47,51 +47,65 @@
                                     <li class="nav-item" role="presentation">
                                         <a class="nav-link" href="/settings" role="tab" >Nastavitve</a>
                                     </li>
-                                   
+
                                 </ul>
                             </div>
                             <div class="card-body">
                                 <div class="tab-content" id="custom-tabs-four-tabContent">
                                     <div id="general" class="tab-pane fade active show" role="tabpanel" aria-labelledby="general-tab">
-                                        <form class="form-horizontal">
+                                        <form id="dfCompany" name="dfCompany" class="dataform">
+                                            <div class="form-row">
+
+                                                <div class="form-group col-sm-3">
+                                                    <label for="inputName" class="control-label">Davčna številka</label>
+                                                    <div class="input-group">
+                                                        <input class="form-control col-sm-10" id="txtCTaxID" name="txtCTaxID" placeholder="12345678" value="@Html.Raw(@Model.Company.TaxVATNumber)">
+                                                        <div class="input-group-append">
+                                                            <button id="cmdCheckVAT" value="Preveri" type="button" class="btn btn-default" onclick="return cmdCheckVAT_click(); return false;"
+                                                            data-loading-text="Počakajte...">
+                                                                Poišči
+                                                            </button>
+                                                            <span class="glyphicon glyphicon-user form-control-feedback"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col-sm-2 d-flex flex-column justify-content-end">
+                                                    <div class="form-check" style="margin-bottom: 1rem;">
+                                                        <input type="checkbox" class="form-check-input" id="cbIsVAT" @if (@Model.Company.IsTaxpayer) {@Html.Raw("checked"); } >
+                                                        <label class="form-check-label" for="cbIsVAT">Davčni zavezanec</label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col-sm-3">
+                                                    <label for="txtCIdNum" class="control-label">Matična številka</label>
+                                                    <input class="form-control col-sm-10" id="txtCIdNum" name="txtCIdNum" placeholder="1234567890" value="@Html.Raw(@Model.Company.TaxIDNumber)">
+                                                </div>
+                                            </div>
                                             <div class="form-group">
                                                 <label for="inputName" class="control-label">Naziv</label>
-                                                <input type="text" class="form-control col-sm-10" id="txtCName" placeholder="Naziv podjetja" value="@Html.Raw(@Model.Company.Name)">
+                                                <input type="text" class="form-control col-sm-10" id="txtCName" name="txtCName" placeholder="Naziv podjetja" value="@Html.Raw(@Model.Company.Name)">
                                             </div>
                                             <div class="form-group">
-                                                <label for="inputName" class="control-label">Ulica</label>
-                                                <input class="form-control col-sm-10" id="txtCStreet" placeholder="Ulica">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="inputName" class="control-label">Kraj</label>
-                                                <input class="form-control col-sm-10" id="txtCTown" placeholder="Kraj">
+                                                <label for="inputName" class="control-label">Naslov</label>
+                                                <input class="form-control col-sm-10" id="txtCAddress" name="txtCAddress" placeholder="Naslov" value="@Html.Raw(@Model.Company.Address)">
                                             </div>
                                             <div class="form-row">
                                                 <div class="form-group col-sm-3">
                                                     <label for="inputName" class="control-label">Pošta</label>
-                                                    <input class="form-control" id="txtCZip" placeholder="Pošta">
+                                                    <input class="form-control" id="txtCZip" placeholder="Poštna številka" value="@Html.Raw(@Model.Company.Zip)">
                                                 </div>
                                                 <div class="form-group col-sm-5">
                                                     <label for="inputName" class="control-label">Kraj</label>
-                                                    <input class="form-control" id="txtCZipTown" placeholder="Kraj">
-                                                </div>
-                                            </div>
-                                            <div class="form-row">
-                                                <div class="form-group col-sm-3">
-                                                    <label for="inputName" class="control-label">Davčna številka</label>
-                                                    <input class="form-control col-sm-10" id="txtCTaxID" placeholder="SI12345678">
-                                                </div>
-                                                <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
-                                                    <div class="form-check" style="margin-bottom: 1rem;">
-                                                        <input type="checkbox" class="form-check-input" id="cbIsVAT">
-                                                        <label class="form-check-label" for="cbIsVAT">Davčni zavezanec</label>
-                                                    </div>
+                                                    <input class="form-control" id="txtCZipTown" placeholder="Kraj" value="@Html.Raw(@Model.Company.ZipTown)">
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                               @* <button class="btn btn-default" onclick="saveGeneral()">Shrani</button>*@
+                                                <label for="inputName" class="control-label">Mobi</label>
+                                                <input class="form-control col-sm-3" id="txtCMobile" name="txtCMobile" placeholder="041000000" value="@Html.Raw(@Model.Company.Mobile)">
                                             </div>
                                         </form>
+                                        <div class="form-group">
+                                            <button class="btn btn-default" onclick="saveCompany()">Shrani</button>
+                                        </div>
                                     </div>
 
                                     <div id="location" class="tab-pane fade" role="tabpanel" aria-labelledby="location-tab">
@@ -333,7 +347,32 @@
                 
 
             });
-                
+            $('#dfCompany').validate({
+                rules: {
+                    txtCName: { maxlength: 150, required: true },
+                    txtCTaxID: { minlength: 3, maxlength: 15, required: true },
+                    txtCIdNum: { minlength: 10, maxlength: 15, required: true },
+                    txtCAddress: { maxlength: 150, required: true },
+                    txtCZip: { min: 0, max: 9999, required: true },
+                    txtCZipTown: { maxlength: 150, required: true },
+                    txtCMobile: { maxlength: 20, required: true }
+                },
+                messages: {},
+                highlight: function (element) {
+                    $(element).closest('.form-control').addClass('is-invalid');
+                },
+                unhighlight: function (element) {
+                    $(element).closest('.form-control').removeClass('is-invalid');
+                },
+                errorElement: 'span',
+                errorClass: 'invalid-feedback',
+                errorPlacement: function (error, element) {
+                    if (element.parent('.input-group').length) {
+                        error.insertAfter(element.parent());
+                    } else { error.insertAfter(element); }
+                }
+            });
+            
             $('#dfEmployee').validate({
                 rules: {
                     txtFirstName: {
@@ -344,8 +383,8 @@
                     txtEmail: {required: true, maxlength: 255}
                 },
                 messages: {
-                    txtFirstName: "Invalid name!",
-                    txtEmail: "Invalid email!"
+                    txtFirstName: "Neveljavno ime!",
+                    txtEmail: "Neveljaven naslov el. pošte!"
                 },
                 highlight: function (element) {
                     $(element).closest('.form-control').addClass('is-invalid');
@@ -405,6 +444,82 @@
             //load settings
             loadSettings();
         });
+
+        //#region Company
+        function cmdCheckVAT_click() {
+            $('#cmdCheckVAT').button('loading');
+
+            var davcna = $('input[id=txtCTaxID]').val().trim();
+            if (davcna.substring(0, 2).toUpperCase() == "SI") { davcna = davcna.substring(2); }
+            $('input[id=txtCTaxID]').val(davcna);
+
+            var date = new Date();
+
+            var RequestID = new Date().toISOString().replace(/[^0-9]/gm, "").substr(0, 14);
+            var xmlPodatki = "   <ServiceData ServiceName=\"vrniPodjetje\">" + davcna + "</ServiceData>"
+            var myXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            myXML = myXML + "<ServiceRequest Sender=\"KDAJBI\" RequestID=\" + RequestID + \">"
+            myXML = myXML + xmlPodatki
+            myXML = myXML + "</ServiceRequest>"
+            $.ajax({
+                type: "post",
+                data: myXML,
+                url: "https://colorhit.si/webColorhit/CHHandler.ashx",
+                contentType: "application/json; charset=utf-8",
+                dataType: "text",
+                async: false,
+                success: function (result) {
+                    let part=result.split("|");
+                    $("#txtCName").val(part[0]);
+                    let addr=part[1].split(",");
+                    $("#txtCAddress").val(addr[0]);
+                    addr[1]=addr[1].trim();
+                    $("#txtCZip").val(addr[1].substring(0, addr[1].indexOf(' ')));
+                    $("#txtCZipTown").val(addr[1].substring(addr[1].indexOf(' ') + 1));
+                    $("#txtCIdNum").val(part[2]);
+                    
+                }
+            });
+
+        };
+
+         function saveCompany() {
+             if ($('#dfCompany').valid()) {
+                var Company = new Object();
+                Company.Id = @Html.Raw(@Model.Company.Id);
+                Company.Name = $("#txtCName").val();
+                Company.TaxVatNumber = $("#txtCTaxID").val();
+                Company.TaxIDNumber = $("#txtCIdNum").val();
+                Company.IsTaxpayer = $("#cbIsVAT").prop("checked");
+                Company.Address  = $("#txtCAddress").val();
+                Company.Zip  = $("#txtCZip").val();
+                Company.ZipTown  = $("#txtCZipTown").val();
+                Company.Mobile  = $("#txtCMobile").val();
+
+
+                getAPIToken().then((result) => {
+                    $.ajax({
+                        type: "post",
+                        data: JSON.stringify(Company),
+                        url: apiURL + "/api/company/",
+                        contentType: "application/json; charset=utf-8",
+                        headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result == "OK") { toastr.success("Shranjeno"); return true; }
+                            else { toastr.error("Napaka:" + result); return false; }
+                        },
+                        error: function (xhr, status, error) {
+                            toastr.error("Napaka:" + error.toString());
+                            return false;
+                        }
+                    });
+                });
+            }
+        }
+
+
+        //#endregion
 
         //#region Employee
          var GetEmployeesTable = function () {

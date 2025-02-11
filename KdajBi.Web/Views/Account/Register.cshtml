@@ -21,6 +21,10 @@
         <input name="p_lastname" type="text" class="form-control" placeholder="Priimek"  value="@Model.LastName">
         <span class="glyphicon glyphicon-user form-control-feedback"></span>
     </div>
+    <div class="form-group has-feedback">
+        <input name="p_mobile" type="text" class="form-control" placeholder="Mobi" value="">
+        <span class="glyphicon glyphicon-user form-control-feedback"></span>
+    </div>
     Podjetje:
     <div class="form-group input-group has-feedback">
         <input id="p_davcna" name="p_davcna" type="text" class="form-control" placeholder="Davčna številka">
@@ -326,6 +330,11 @@ posredno ali neposredno škodo nastalo zaradi napak v samem delovanju portala. P
                         maxlength: 20,
                         required: true
                     },
+                    p_mobile: {
+                        minlength: 9,
+                        maxlength: 20,
+                        required: true
+                    },
                     p_davcna: {
                         minlength: 8,
                         maxlength: 8,
@@ -348,6 +357,7 @@ posredno ali neposredno škodo nastalo zaradi napak v samem delovanju portala. P
                     p_firstname: "Neveljavno ime",
                     p_lastname: "Neveljaven priimek",
                     p_davcna: "Vnesite veljavno davčno številko",
+                    p_mobile: "Vnesite veljavno mobilno številko",
                     p_naziv: "Kliknite \"Poišči\", da naložite podatke o podjetju",
                     p_nazivsalona: "Neveljavno ime"
                 },

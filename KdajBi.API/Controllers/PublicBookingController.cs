@@ -85,33 +85,94 @@ namespace KdajBi.API.Controllers
                 {
                     foreach (var wp in myWP)
                     {
+                        List<TimeSlot> availableAppointments = new List<TimeSlot>();
                         List<TimeSlot> availableworkhours = new List<TimeSlot>();
                         availableworkhours = await getWorkplaceWorkhours(wp, date);
+                        if (wp.SequentialBooking == true)
+                        {   //omogoči le zaporedna naročila (prosti termini so le pred ali po obstoječem naročilu)
+                            availableAppointments = new List<TimeSlot>();
 
-                        List<TimeSlot> availableAppointments = new List<TimeSlot>();
-                        if (availableworkhours.Count > 0)
-                        {
-                            availableAppointments = TimeSlotManager.generateTimeSlots(availableworkhours, myService.Minutes, myService.Offset);
-                            if (availableAppointments.Count > 0)
+                            foreach (var timeslot in availableworkhours)
                             {
-                                var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, date, dateEnd);
+                                //za vsako naročilo, generiraj dva prosta termina (prej in po)
+                                var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, timeslot.start, timeslot.end);
                                 if (events != null)
                                 {
-                                    foreach (var evt in events)
+                                    if (events.Count()>0 ) { 
+                                        foreach (var evt in events)
+                                        {
+                                            //dodaj prej
+                                            if (evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(-myService.Minutes)>= timeslot.start) {
+                                                availableAppointments.Add(
+                                                    new TimeSlot(wp.Id,
+                                                        evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(-myService.Minutes),
+                                                        evt.End.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(-myService.Minutes)
+                                                    )
+                                                );
+                                            }
+                                            //dodaj po
+                                            if (evt.End.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(myService.Minutes) <= timeslot.end) {
+                                                availableAppointments.Add(
+                                                    new TimeSlot(wp.Id,
+                                                        evt.End.DateTimeDateTimeOffset.Value.LocalDateTime,
+                                                        evt.End.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(myService.Minutes)
+                                                    )
+                                                );
+                                            }
+                                        }
+                                        //odstrani tiste, ki se prekrivajo z naročili
+                                        foreach (var evt in events)
+                                        {
+                                            availableAppointments = TimeSlotManager.removeOccupiedAppointments(
+                                                availableAppointments,
+                                                new TimeSlot(wp.Id,
+                                                    evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
+                                                    evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
+                                                )
+                                            );
+                                        }
+                                    } 
+                                    else
                                     {
-                                        availableAppointments = TimeSlotManager.removeOccupiedAppointments(
-                                            availableAppointments,
-                                            new TimeSlot(wp.Id,
-                                                evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
-                                                evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
-                                            )
-                                        );
+                                        //v tem obdobju ni še nobenega naročila -> ponudi vse timeslote
+                                        var myTSlist = new List<TimeSlot>();
+                                        myTSlist.Add(timeslot);
+                                        availableAppointments.AddRange(TimeSlotManager.generateTimeSlots(myTSlist, myService.Minutes, myService.Offset));
+                                    }
+
+                                }
+                            }
+                            if (availableAppointments.Count > 0)
+                            { retval.Add(new BookingTimeslots(wp.Id, availableAppointments)); }
+                        }
+                        else
+                        { //po starem (ponudi vse termine, glede na urnik in vpisana naročila)
+                            availableAppointments = new List<TimeSlot>();
+                            if (availableworkhours.Count > 0)
+                            {
+                                availableAppointments = TimeSlotManager.generateTimeSlots(availableworkhours, myService.Minutes, myService.Offset);
+                                if (availableAppointments.Count > 0)
+                                {
+                                    var events = myGoogleHelper.GetAllEvents(wp.GoogleCalendarID, date, dateEnd);
+                                    if (events != null)
+                                    {
+                                        foreach (var evt in events)
+                                        {
+                                            availableAppointments = TimeSlotManager.removeOccupiedAppointments(
+                                                availableAppointments,
+                                                new TimeSlot(wp.Id,
+                                                    evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
+                                                    evt.End.DateTimeDateTimeOffset.Value.LocalDateTime
+                                                )
+                                            );
+                                        }
                                     }
                                 }
                             }
+                            if (availableAppointments.Count > 0)
+                            { retval.Add(new BookingTimeslots(wp.Id, availableAppointments)); }
                         }
-                        if (availableAppointments.Count > 0)
-                        { retval.Add(new BookingTimeslots(wp.Id, availableAppointments)); }
+                        
 
                     }
 
@@ -139,7 +200,7 @@ namespace KdajBi.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetFreeTimeSlots");
+                _logger.LogError(ex, "GetFreeTimeSlots napaka date:"+date);
             }
             return allUnqTimeSlots;
         }
@@ -167,6 +228,8 @@ namespace KdajBi.API.Controllers
             [FromQuery] DateTime? maxdate = null
             )
         {
+            if (mindate == null) { _logger.LogInformation("mindate was null"); }
+            if (maxdate == null) { _logger.LogInformation("maxdate was null"); }
             if (date == null) { date = DateTime.Today; }
             if (move == null) { move = 0; }
             List<TimeSlot> retval = new List<TimeSlot>();
@@ -174,7 +237,8 @@ namespace KdajBi.API.Controllers
             do
             {
                 repeat = false;
-                retval = await GetFreeTimeSlots(lid, wpid, sid, date.Value, move.Value);
+                _logger.LogInformation("GetFreeTimeSlots(date:"+date.Value+")");
+                retval = await GetFreeTimeSlots(lid, wpid, sid, date.Value, move.GetValueOrDefault());
                 if (retval.Count == 0 && move != 0)
                 {
                     if (move == 1 && date < maxdate) { date = date.Value.AddDays(1); repeat = true; }
@@ -345,12 +409,23 @@ namespace KdajBi.API.Controllers
             if (myClient != null) { ClientId = myClient.Id; ClientFullName = myClient.FullName; myPB.ClientId = ClientId; }
             myPB.Start = bookingRequest.TimeSlot.start;
             myPB.End = bookingRequest.TimeSlot.end;
+            myPB.ClientNotes = bookingRequest.ClientNotes;
+
+            string appointmentTitle = ClientFullName + " (" + myPB.Mobile + ") - " + myService.Name;
+            bool appointmentAutoApprove = bool.Parse(SettingsHelper.getSetting(_context, myPB.Location.CompanyId, myPB.Location.Id, "PublicBooking_AutoApprove", "false"));
+            if (appointmentAutoApprove == true)
+            {
+                myPB.Status = 1; //confirmed
+                myPB.UpdatedDate = DateTime.Now;
+            }
+            else
+            { appointmentTitle = "Čaka na potrditev: " +appointmentTitle; }
 
             using (CalendarV3Helper myGoogleHelper = _calendarV3Provider.GetHelper())
             {
                 var gEvent = myGoogleHelper.AddEvent(
                     myWP.GoogleCalendarID,
-                    "Čaka na potrditev: " + ClientFullName +  " ("+ myPB.Mobile + ") - " + myService.Name,
+                    appointmentTitle,
                     bookingRequest.TimeSlot.start, bookingRequest.TimeSlot.end,
                     ClientId, ClientFullName,
                     myPB.Mobile, myService.Name
@@ -369,18 +444,58 @@ namespace KdajBi.API.Controllers
                 throw;
             }
 
+            SmsCampaign newSmsCampaign;
+            int myUserId=0;
+            if (appointmentAutoApprove == true)
+            {
+                // obvesti stranko prek sms (TODO: naredi prek service)
+                newSmsCampaign = new SmsCampaign();
+                newSmsCampaign.Company.Id = myPB.Location.CompanyId;
+                newSmsCampaign.LocationId = myPB.LocationId;
+                newSmsCampaign.PublicBookingId = myPB.Id;
+                var myUser = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
+                myUserId= myUser.Id;
+                newSmsCampaign.AppUser.Id = myUserId;
+
+                newSmsCampaign.MsgTxt = @"Vaš termin je bil sprejet! Naročeni ste " + myPB.Start.Value.ToString("dd.MM.yyyy") + " ob " + myPB.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + myPB.Location.Name;
+                if (string.IsNullOrEmpty(myPB.Location.Tel) == false)
+                { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myPB.Location.Tel; }
+                var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+
+                newSmsCampaign.MsgSegments = mySmsInfo.Messages;
+                newSmsCampaign.Name = "PublicBookingConfimation";
+                newSmsCampaign.Recipients.Add(new SmsMsg(myPB.Mobile, (myPB.Client != null ? myPB.Client.Id : 0)));
+
+                newSmsCampaign.SendAfter = DateTime.Now;
+                newSmsCampaign.ApprovedAt = DateTime.Now;
+
+
+                _context.Attach(newSmsCampaign.Company);
+                _context.Attach(newSmsCampaign.AppUser);
+                _context.SmsCampaigns.Add(newSmsCampaign);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "/api/publicbooking/ create PublicBookingAutoApprove SmsCampaign");
+                    throw;
+                }
+            }
             if (bool.Parse(SettingsHelper.getSetting(_context, myPB.Location.CompanyId, myPB.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
             {
                 //alert about new appointment
                 //(TODO: naredi prek service)
                 try
                 {
-                    SmsCampaign newSmsCampaign = new SmsCampaign();
+                    newSmsCampaign = new SmsCampaign();
                     newSmsCampaign.Company.Id = myPB.Location.CompanyId;
                     newSmsCampaign.LocationId = myPB.LocationId;
                     newSmsCampaign.PublicBookingId = myPB.Id;
-                    var myUser = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
-                    newSmsCampaign.AppUser.Id = myUser.Id;
+                    if (appointmentAutoApprove == false)
+                    { myUserId = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First().Id; }
+                    newSmsCampaign.AppUser.Id = myUserId;
                     newSmsCampaign.MsgTxt = @"Novo narocilo prek spleta! Poglej v https://KdajBi.si";
                     var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
 
@@ -391,9 +506,19 @@ namespace KdajBi.API.Controllers
                     newSmsCampaign.SendAfter = DateTime.Now;
                     newSmsCampaign.ApprovedAt = DateTime.Now;
 
+                    if (appointmentAutoApprove == false)
+                    {
+                        _context.Attach(newSmsCampaign.Company);
+                        _context.Attach(newSmsCampaign.AppUser);
+                    }
+                    else
+                    { _context.Entry(newSmsCampaign.AppUser).State = EntityState.Detached;
+                        _context.Entry(_context.Users.Find(myUserId)).State = EntityState.Detached;
+                        _context.Entry(_context.Companies.Find(myPB.Location.CompanyId)).State = EntityState.Detached;
+                        _context.Attach(newSmsCampaign.Company);
+                        _context.Attach(newSmsCampaign.AppUser);
+                    }
 
-                    _context.Attach(newSmsCampaign.Company);
-                    _context.Attach(newSmsCampaign.AppUser);
                     _context.SmsCampaigns.Add(newSmsCampaign);
                 }
                 catch (Exception ex)

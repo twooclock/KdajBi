@@ -248,7 +248,7 @@ namespace KdajBi.Web.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> Register(string p_email, string p_firstname, string p_lastname, string p_davcna, string p_naziv, string p_nazivsalona)
+        public async Task<IActionResult> Register(string p_email, string p_firstname, string p_lastname, string p_mobile, string p_davcna, string p_naziv, string p_nazivsalona)
         {
 
             ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
@@ -270,12 +270,27 @@ namespace KdajBi.Web.Controllers
 
             Company company = new Company
             {
-                Davcna = p_davcna,
+                TaxVATNumber = p_davcna,
                 Name = p_naziv != null ? p_naziv.Split('|')[0] : "",
+                Mobile=p_mobile, 
                 Active = true,
                 CreatedDate = DateTime.Now
             };
 
+            try
+            {
+                var part = p_naziv.Split("|");
+                var addr = part[1].Split(",");
+                company.Address=addr[0];
+                addr[1] = addr[1].Trim();
+                company.Zip=int.Parse(addr[1].Substring(0, addr[1].IndexOf(" ")));
+                company.ZipTown = addr[1].Substring(addr[1].IndexOf(" ") + 1);
+                company.TaxIDNumber=part[2];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "couldn't fill all company data from:"+p_naziv);
+            }
 
             try
             {

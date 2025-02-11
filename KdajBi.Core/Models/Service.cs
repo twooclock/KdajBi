@@ -37,5 +37,8 @@ namespace KdajBi.Core.Models
         [DefaultValue("")]
         public string PriceDescription { get; set; }
 
+        [MaxLength(250)]
+        [DefaultValue("")]
+        public string Notes { get; set; }
     }
 }

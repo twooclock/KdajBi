@@ -11,49 +11,64 @@
     <link href="~/plugins/flatpickr/flatpickr.min.css" rel="stylesheet" />
     <link href="~/plugins/flatpickr/plugins/confirmDate/confirmDate.css" rel="stylesheet" />
     <link href="~/plugins/bs-stepper/css/bs-stepper.min.css" rel="stylesheet" />
- <link rel="preconnect" href="https://rsms.me/">
-<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <style>
         /* CSS */
         :root {
-            font-family: 'Inter', sans-serif;
+        font-family: 'Inter', sans-serif;
         }
 
         @@supports (font-variation-settings: thin) {
-            :root {
-                font-family: 'Inter var', sans-serif;
-            }
+        :root {
+        font-family: 'Inter var', sans-serif;
+        }
         }
 
         body, #images, #images a {
-            font-family: 'Inter var', sans-serif;
+        font-family: 'Inter var', sans-serif;
         }
 
 
         .appointment {
-            cursor: pointer;
+        cursor: pointer;
         }
 
-            .appointment.card:hover {
-                background: #007bff22;
-            }
+        .appointment.card:hover {
+        background: #007bff22;
+        }
 
         .selektor {
-            cursor: pointer;
+        cursor: pointer;
         }
 
-            .selektor.card:hover {
-                color: #28a745;
-                border-color: #28a745;
-            }
+        .selektor.card:hover {
+        color: #28a745;
+        border-color: #28a745;
+        }
 
         .card-selected {
         }
 
-        @@media all and (max-width: 768px)
-{
-    .makswidth { width:-moz-available; }
-}
+        
+        .makswidth {
+            width: -moz-available;
+            max-width: 300px;
+        }
+
+        .single-line {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 250px;
+            min-width: -moz-available;
+            /* border: 1px solid #000; */
+            cursor: help;
+            opacity: 0.5;
+        }
+
+            
+        
     </style>
     @Html.Raw(@Model.PublicBooking_CSS)
 }
@@ -117,12 +132,12 @@
 
                             </div>
                             <div id="services-loader" class="card card-outline card-primary p-1" style="display: none">
-                                    <div class="card-body text-center">
-                                        <div class="spinner-border" role="status">
-                                            <span class="sr-only">Nalagam storitve...</span>
-                                        </div>
+                                <div class="card-body text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="sr-only">Nalagam storitve...</span>
                                     </div>
                                 </div>
+                            </div>
                         </div>
                         <div id="step-3" class="content" role="tabpanel" aria-labelledby="step-3-trigger">
                             <div class="col" id="appointments">
@@ -189,7 +204,13 @@
                         </div>
                     </text>
                 }
-               
+                @if (Model.PublicBooking_AllowClientNotes ==true)
+                {
+                    <label for="txtClientNotes">
+                        Opombe:
+                    </label>
+                    <textarea rows="2" id="txtClientNotes" name="txtClientNotes" class="form-control" maxlength="200"></textarea>
+                }
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Zapri</button>
@@ -217,6 +238,26 @@
             </div>
             <div class="modal-footer">
 
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ServiceInfo modal content-->
+<div id="myServiceInfoModal" class="modal fade" data-keyboard="true" tabindex='-1' role="dialog">
+    <div class="modal-dialog modal-dialog-centered" >
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="ServiceInfoTitle" class="modal-title">Storitev</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div id="ServicePriceContent" class="">
+                Opis storitve
+            </div>
+            <div id="ServiceInfoContent" class="modal-body ui-front">
+                Opis storitve
+            </div>
+            <div class="modal-footer">
             </div>
         </div>
     </div>
@@ -286,7 +327,7 @@
 
         function selectService(item)
         {
-            $("#step-2-selected").text(item.textContent);
+            $("#step-2-selected").text(item.getAttribute('data-info'));
             $('#services .card').each(function () {
                 $(this).removeClass('text-success');
                 $(this).removeClass('border-success');
@@ -326,13 +367,23 @@
                 {
                     if ( newGroupDiv==null) { newGroupDiv = $('<div/>').addClass("row");}
                 }
-                      let newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1 makswidth").attr({ id: 's_' + element.id }).attr({ style: "min-width: 18rem; border-width: 3px;" });
-                let lbl = $('<div/>').addClass("card-body");
-                let input = $('<h5/>').text(element.name).addClass("card-title");
-                let br = $('<br/>');
+                let newDiv = $('<div/>').addClass("card selektor rounded mb-3 m-1 makswidth").attr({ id: 's_' + element.id }).attr({ 'data-info': element.name+' '+element.priceDescription }).attr({ style: "min-width: 18rem; border-width: 3px;" });
+                let lbl = $('<div/>').addClass("card-body").attr({ style: "padding: 1rem;" });
+                let row1 = $('<div/>').addClass("row");
+                let row2 = $('<div/>').addClass("row");
+                let row3 = $('<div/>').addClass("row");
+                let input = $('<div/>').text(element.name).addClass("card-title");
                 let desc = $('<div/>').text(element.priceDescription).attr({ style: "font-size: smaller;" });
-                input.append(br).append(desc);
-                lbl.append(input);
+                row1.append(input);
+                row2.append(desc);
+                let notes = $('<div/>').text(element.notes).addClass("single-line").attr({ style: "font-size: smaller;" });
+                notes.click(function (event) { event.stopPropagation();
+                        $("#ServiceInfoTitle").text(element.name);
+                        $("#ServicePriceContent").text('');
+                        $("#ServiceInfoContent").html((element.priceDescription.length>0 ? element.priceDescription+'<br/>'+element.notes : element.notes));
+                        $("#myServiceInfoModal").modal("show");  });
+                row3.append(notes);
+                lbl.append(row1).append(row2).append(row3);
                 newDiv.append(lbl);
                 newDiv.click(function () { selectService(this); });
                 newGroupDiv.append(newDiv);
@@ -385,7 +436,7 @@
         }
 
         function loadWorkplaces() {
-            @if (Model.Location.Workplaces.Count > 1)
+        @if (Model.Location.Workplaces.Count > 1 && @Model.PublicBooking_ShowAnyone==true)
             { @Html.Raw("createWorkplace(0, 'Vseeno kdo');"); }
             @foreach (var item in Model.Location.Workplaces)
             {
@@ -492,8 +543,17 @@
             modal.find('#selected-appointment-time').text(appointment);
             modal.find('#create-appointment').off();
             modal.find('#create-appointment').on("click", function () {
-                $(this).attr("disabled", true);
+            $(this).attr("disabled", true);
+            @if (Model.PublicBooking_AllowClientNotes == true)
+            {
+                <text>var clientNotes=$("#txtClientNotes").val();</text>
+            }
+            else
+            {
+                <text>var clientNotes='';</text>
+            }
                 
+
                 if (pb_AuthorizeAfterSlotSelection == false) {
                     $(this).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Naročam...`);
                     $.ajax({
@@ -502,7 +562,8 @@
                         contentType: "application/json; charset=utf-8",
                         data: JSON.stringify({
                             "date": onlyISODate(date),
-                            "timeSlot": appointment
+                            "timeSlot": appointment,
+                            "clientNotes":clientNotes
                         }),
                         success: function (result) {
                             window.location.href = "/booked/@Model.token";
@@ -514,8 +575,7 @@
                 }
                 else {
                     //authorize
-                    window.location.href = "/bookauth/@Model.token/" + appwpid + "/" + sid + "?date=" + onlyISODate(date) + "&timeslot=" + appointment;
-                    
+                    window.location.href = "/bookauth/@Model.token/" + appwpid + "/" + sid + "?date=" + onlyISODate(date) + "&timeslot=" + appointment+ "&clientnotes=" + clientNotes;
                 }
             });
         })
