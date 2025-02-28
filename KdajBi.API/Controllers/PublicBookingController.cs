@@ -63,7 +63,7 @@ namespace KdajBi.API.Controllers
                     .Include(s => s.WorkplaceSchedules)
                     .ThenInclude(x => x.Schedule)
                     .Include(e => e.WorkplaceScheduleExceptions)
-                    .FirstOrDefaultAsync(x => x.Id == wpid && x.LocationId == lid));
+                    .FirstOrDefaultAsync(x => x.Id == wpid && x.Active==true && x.LocationId == lid));
                 }
                 else
                 {
@@ -72,7 +72,7 @@ namespace KdajBi.API.Controllers
                    .Include(s => s.WorkplaceSchedules)
                    .ThenInclude(x => x.Schedule)
                    .Include(e => e.WorkplaceScheduleExceptions)
-                   .Where(x => x.LocationId == lid));
+                   .Where(x => x.Active == true && x.LocationId == lid));
                 }
                 //remove workplaces that do not provide service specified
                 for (int i = myWP.Count - 1; i >= 0; i--)
@@ -410,8 +410,10 @@ namespace KdajBi.API.Controllers
             myPB.Start = bookingRequest.TimeSlot.start;
             myPB.End = bookingRequest.TimeSlot.end;
             myPB.ClientNotes = bookingRequest.ClientNotes;
+            myPB.ClientWorkplaceId = (bookingRequest.ClientWPID==0?null: bookingRequest.ClientWPID);
 
             string appointmentTitle = ClientFullName + " (" + myPB.Mobile + ") - " + myService.Name;
+            
             bool appointmentAutoApprove = bool.Parse(SettingsHelper.getSetting(_context, myPB.Location.CompanyId, myPB.Location.Id, "PublicBooking_AutoApprove", "false"));
             if (appointmentAutoApprove == true)
             {
@@ -443,7 +445,6 @@ namespace KdajBi.API.Controllers
                 _logger.LogError(ex, "/api/publicbooking/Store");
                 throw;
             }
-
             SmsCampaign newSmsCampaign;
             int myUserId=0;
             if (appointmentAutoApprove == true)
@@ -485,6 +486,8 @@ namespace KdajBi.API.Controllers
             }
             if (bool.Parse(SettingsHelper.getSetting(_context, myPB.Location.CompanyId, myPB.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
             {
+                string newAppointmentSmsText = myPB.Start.Value.ToString("dd.MM.yyyy") + " " + myPB.Start.Value.ToString("HH:mm")+" "+appointmentTitle;
+
                 //alert about new appointment
                 //(TODO: naredi prek service)
                 try
@@ -496,7 +499,7 @@ namespace KdajBi.API.Controllers
                     if (appointmentAutoApprove == false)
                     { myUserId = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First().Id; }
                     newSmsCampaign.AppUser.Id = myUserId;
-                    newSmsCampaign.MsgTxt = @"Novo narocilo prek spleta! Poglej v https://KdajBi.si";
+                    newSmsCampaign.MsgTxt = @"Novo narocilo prek spleta! "+ newAppointmentSmsText + "\nPoglej v https://KdajBi.si/appointments/index?date="+ myPB.Start.Value.ToString("yyyy-MM-dd");
                     var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
 
                     newSmsCampaign.MsgSegments = mySmsInfo.Messages;
@@ -554,7 +557,7 @@ namespace KdajBi.API.Controllers
             //get public booking services
            
             //var myPB = await _context.PublicBookings.FindAsync(pbid);
-            var services = await _context.Services.Include(g=>g.ServiceGroup).Where(s => s.UsedInClientBooking == true && s.LocationId == lid).OrderBy(s=>s.ServiceGroup.SortPosition).ToListAsync();
+            var services = await _context.Services.Include(g=>g.ServiceGroup).Where(s => s.UsedInClientBooking == true && s.LocationId == lid).OrderBy(s => s.ServiceGroupId).ThenBy(s=>s.ServiceGroup.SortPosition).ToListAsync();
 
             //remove all services not done by specified workplace (if supplied)
             if (wpid > 0)
@@ -569,7 +572,7 @@ namespace KdajBi.API.Controllers
             else
             {
                 //remove all services not done by any workplace 
-                var allWPIds = await _context.Workplaces.Where(wp => wp.LocationId == lid).Select(wp=>wp.Id).ToListAsync();
+                var allWPIds = await _context.Workplaces.Where(wp => wp.Active==true && wp.LocationId == lid).Select(wp=>wp.Id).ToListAsync();
                 var wpExServices = await _context.WorkplaceExcludedServices.Where(w => allWPIds.Contains(w.WorkplaceId)).ToListAsync();
                 if (wpExServices.Count > 0)
                 {

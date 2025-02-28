@@ -48,5 +48,9 @@ namespace KdajBi.Core.Models
 
         [MaxLength(200)]
         public string ClientNotes { get; set; }
+
+        [ForeignKey("ClientWorkplace")]
+        public long? ClientWorkplaceId { get; set; }
+        public virtual Workplace ClientWorkplace { get; set; }
     }
 }

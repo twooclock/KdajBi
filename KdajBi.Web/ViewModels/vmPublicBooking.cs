@@ -27,6 +27,7 @@ namespace KdajBi.Web.ViewModels
         public string PublicBooking_CSS;
         public bool PublicBooking_AllowClientNotes;
         public string PublicBooking_ClientNotes;
+        public long PublicBooking_ClientWPID;
         public bool PublicBooking_AutoApprove;
 
 
