@@ -67,16 +67,22 @@
             opacity: 0.5;
         }
 
-            
-        
-    </style>
+        .bs-stepper-label {
+            white-space: normal;
+            overflow-wrap: break-word;
+        }
+
+        @@media (max-width: 768px) {
+            .bs-stepper-label{ max-width:100px;}
+        }
+        </style>
     @Html.Raw(@Model.PublicBooking_CSS)
 }
 
 
 <!-- page content -->
 
-<div class="card mt-5 card-book">
+<div class="card mt-1 card-book">
     <div class="card-body login-card-body card-body-book">
         @*<h3 class="mb-2 font-weight-bold">Naročanje</h3>*@
         <div class="row">
@@ -95,28 +101,25 @@
         <div class="row">
             <div class="col-md-12 mt-1">
                 <div id="stepper2" class="bs-stepper">
-                    <div class="bs-stepper-header" role="tablist">
-                        <div class="step" data-target="#step-1">
+                    <div class="bs-stepper-header" role="tablist" style="display:flex;justify-content:space-between;align-items:center;">
+                        <div class="step" data-target="#step-1" style="max-width: 33.33%">
                             <button type="button" class="step-trigger" role="tab" aria-controls="step-1" id="step-1-trigger">
                                 <span class="bs-stepper-circle">1</span>
-                                <span class="bs-stepper-label">Zaposleni</span>
-                                <span id="step-1-selected" class="bs-stepper-label">&nbsp;</span>
+                                <span id="step-1-selected" class="bs-stepper-label" >Zaposleni</span>
                             </button>
                         </div>
                         <div class="line"></div>
-                        <div class="step" data-target="#step-2">
+                        <div class="step" data-target="#step-2" style="max-width: 33.33%;margin: auto;">
                             <button type="button" class="step-trigger" role="tab" aria-controls="step-2" id="step-2-trigger">
                                 <span class="bs-stepper-circle">2</span>
-                                <span class="bs-stepper-label">Storitev</span>
-                                <span id="step-2-selected" class="bs-stepper-label">&nbsp;</span>
+                                <span id="step-2-selected" class="bs-stepper-label" >Storitev</span>
                             </button>
                         </div>
                         <div class="line"></div>
-                        <div class="step" data-target="#step-3">
+                        <div class="step" data-target="#step-3" style="max-width: 33.33%">
                             <button type="button" class="step-trigger" role="tab" aria-controls="step-3" id="step-3-trigger">
                                 <span class="bs-stepper-circle">3</span>
-                                <span class="bs-stepper-label">Termin</span>
-                                <span id="step-3-selected" class="bs-stepper-label">&nbsp;</span>
+                                <span id="step-3-selected" class="bs-stepper-label">Termin</span>
                             </button>
                         </div>
                     </div>
@@ -186,7 +189,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body" style="font-size: 18px">
+            <div class="modal-body" >
                 Ali ste prepričani, da se želite naročiti na termin <br /><b><span id="selected-appointment-date"></span> ob <span id="selected-appointment-time"></span></b>?
                 @if (Model.PublicBooking_TOS.Length > 0)
                 {
@@ -397,7 +400,7 @@
             $("#services-loader").show();
             stepper2.next();
             $("#step-1-selected").text(item.textContent);
-            $("#step-2-selected").text("");
+            $("#step-2-selected").text("Storitev");
             $('#workplaces .card').each(function () {
                 $(this).removeClass('text-success');
                 $(this).removeClass('border-success');
@@ -563,7 +566,8 @@
                         data: JSON.stringify({
                             "date": onlyISODate(date),
                             "timeSlot": appointment,
-                            "clientNotes":clientNotes
+                            "clientNotes":clientNotes,
+                            "clientWPID":wpid
                         }),
                         success: function (result) {
                             window.location.href = "/booked/@Model.token";
@@ -575,7 +579,7 @@
                 }
                 else {
                     //authorize
-                    window.location.href = "/bookauth/@Model.token/" + appwpid + "/" + sid + "?date=" + onlyISODate(date) + "&timeslot=" + appointment+ "&clientnotes=" + clientNotes;
+                    window.location.href = "/bookauth/@Model.token/" + appwpid + "/" + sid + "?date=" + onlyISODate(date) + "&timeslot=" + appointment+ "&clientwpid=" + wpid+ "&clientnotes=" + clientNotes;
                 }
             });
         })

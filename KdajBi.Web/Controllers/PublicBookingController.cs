@@ -15,6 +15,7 @@ using System;
 using KdajBi.Core.dtoModels.Requests;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MailKit.Net.Imap;
 
 namespace KdajBi.Web.Controllers
 {
@@ -86,7 +87,7 @@ namespace KdajBi.Web.Controllers
         [AllowAnonymous]
         [Route("/bookauth/{token}/{wpid}/{sid}")]
         public IActionResult AuthorizeBooking(
-            string token, long wpid, long sid, [FromQuery] string date, [FromQuery] string timeslot, [FromQuery] string clientnotes)
+            string token, long wpid, long sid, [FromQuery] string date, [FromQuery] string timeslot, [FromQuery] string clientnotes, [FromQuery] long clientwpid)
         {
             var bookinglocation = _context.Locations.Include(l => l.Workplaces).Where(l => l.PublicBookingToken == token).FirstOrDefault();
             vmPublicBooking vm = new vmPublicBooking();
@@ -109,8 +110,8 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
             vm.PublicBooking_AllowClientNotes = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowClientNotes", true);
             vm.PublicBooking_AutoApprove = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AutoApprove", false);
-
-            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; vm.PublicBooking_ClientNotes = clientnotes; //pass selected slot params
+            //pass selected slot params
+            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; vm.PublicBooking_ClientNotes = clientnotes; vm.PublicBooking_ClientWPID = clientwpid; 
 
             return View("~/Views/Book/Auth.cshtml", vm);
         }
@@ -120,12 +121,13 @@ namespace KdajBi.Web.Controllers
         [Route("/narocanje/auth/mobile")]
         [Route("/book/auth/mobile")]
         [HttpPost]
-        public IActionResult mobile(string token, string inputMobile, string inputClientFirstName, string inputClientLastName, string inputClientAddress, string inputPIN, string pbid, long wpid, long sid, string date, string timeslot, string clientnotes)
+        public IActionResult mobile(string token, string inputMobile, string inputClientFirstName, string inputClientLastName, string inputClientAddress, string inputPIN, string pbid, long wpid, long sid, string date, string timeslot, string clientnotes, long clientwpid)
         {
             var bookinglocation = _context.Locations.Include(l=>l.Workplaces).Where(l => l.PublicBookingToken == token).FirstOrDefault();
             
             vmPublicBooking vm = new vmPublicBooking();
-            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; vm.PublicBooking_ClientNotes = clientnotes; //pass selected slot params
+            //pass selected slot params
+            vm.wpid = wpid; vm.sid = sid; vm.date = date; vm.timeslot = timeslot; vm.PublicBooking_ClientNotes = clientnotes; vm.PublicBooking_ClientWPID = clientwpid;
             vm.token = token;
             vm.Location = bookinglocation;
             if (bookinglocation != null)
@@ -173,8 +175,10 @@ namespace KdajBi.Web.Controllers
                             newbooking.PIN = myPIN;
                             newbooking.LocationId = bookinglocation.Id;
                             newbooking.ClientNotes = vm.PublicBooking_ClientNotes;
+                            newbooking.ClientWorkplaceId = (vm.PublicBooking_ClientWPID==0?null: vm.PublicBooking_ClientWPID);
 
-                            var myClient = _context.Clients.Where(c => c.CompanyId == bookinglocation.CompanyId && c.Mobile.EndsWith(inputMobile.Substring(1))).FirstOrDefault();
+                            string mobileroot = ((inputMobile.Length - 8) >= 0 ? inputMobile.Substring(inputMobile.Length - 8) : inputMobile);
+                            var myClient = _context.Clients.Where(c => c.CompanyId == bookinglocation.CompanyId && c.Mobile.EndsWith(mobileroot)).FirstOrDefault();
                             if (myClient != null)
                             {
                                 newbooking.ClientId = myClient.Id;

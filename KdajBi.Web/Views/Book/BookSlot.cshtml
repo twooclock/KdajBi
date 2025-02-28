@@ -44,7 +44,8 @@
                 data: JSON.stringify({
                     "date": "@Model.date",
                     "timeSlot": "@Model.timeslot",
-                    "clientnotes": "@Model.PublicBooking_ClientNotes"
+                    "clientnotes": "@Model.PublicBooking_ClientNotes",
+                    "clientwpid": "@Model.PublicBooking_ClientWPID"
                 }),
                 success: function (result) {
                     window.location.href = "/booked/@Model.token";
