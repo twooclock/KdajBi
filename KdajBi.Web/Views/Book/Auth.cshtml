@@ -103,12 +103,17 @@
                             <input class="form-control ml-2" id="inputClientFirstName" name="inputClientFirstName" placeholder="Ime" value="" maxlength="150">
                         </div>
                         <div class="col-sm-5">
-                                        <input class="form-control" id="inputClientLastName" name="inputClientLastName" placeholder="Priimek" value="" maxlength="150">
+                            <input class="form-control" id="inputClientLastName" name="inputClientLastName" placeholder="Priimek" value="" maxlength="150">
                         </div>
                     </div>
                     <div class="form-group row">
                         <div class="col-sm-10">
                             <input class="form-control ml-2" id="inputClientAddress" name="inputClientAddress" placeholder="Naslov (ulica, pošta, kraj)" value="" maxlength="150">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            <input class="form-control ml-2" id="inputClientEmail" name="inputClientEmail" placeholder="eNaslov (ime.priimek@gmail.com)" value="" maxlength="150">
                         </div>
                     </div>
                     }
@@ -187,7 +192,9 @@
                 @Html.Raw(", inputClientFirstName: { maxlength: 150, required: true }");
                 @Html.Raw(", inputClientLastName: { maxlength: 150, required: true }");
                 @Html.Raw(", inputClientAddress: { maxlength: 150, required: true }");
-            }
+                @Html.Raw(", inputClientEmail: { maxlength: 150, required: true }")
+            ;
+        }
 
             },
             messages: { inputMobile: "Neveljavna številka!"
@@ -199,6 +206,8 @@
                 @Html.Raw(", inputClientLastName: 'Neveljaven priimek'")
                 ;
                 @Html.Raw(", inputClientAddress: 'Neveljaven naslov'")
+                ;
+                @Html.Raw(", inputClientEmail: 'Neveljaven naslov'")
                 ;
             }
 
