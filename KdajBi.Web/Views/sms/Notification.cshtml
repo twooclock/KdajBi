@@ -313,7 +313,7 @@
         var notifyType;
 
         var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
-
+         let lastChecked = null;
 
         @await Html.PartialAsync("_ApiAccess")
 
@@ -707,18 +707,20 @@
 
             let myLIDiv = document.createElement("div");
 
-            if (myClients.length < maxListItems) { myLIDiv.className = "form-control custom-control custom-checkbox cCB"; }
-            else { myLIDiv.className = "cCB2"; }
+            //if (myClients.length < maxListItems) { myLIDiv.className = "form-control custom-control custom-checkbox cCB"; }
+            //else { myLIDiv.className = "cCB2"; }
+             myLIDiv.className = "cCB2";
             let myLIDivInput = document.createElement("input");
-            if (myClients.length < maxListItems) { myLIDivInput.className = "icb custom-control-input"; }
-            else { myLIDivInput.className = "icb"; }
+            //if (myClients.length < maxListItems) { myLIDivInput.className = "icb custom-control-input"; }
+            //else { myLIDivInput.className = "icb"; }
+             myLIDivInput.className = "icb";
             myLIDivInput.type = "checkbox";
 
             let myLIDivLabel = document.createElement("label");
-            if (myClients.length < maxListItems) { myLIDivLabel.className = "custom-control-label"; }
-            else { myLIDivLabel.className = "ccl"; }
-
-            myClients.forEach(function (item) {
+            //if (myClients.length < maxListItems) { myLIDivLabel.className = "custom-control-label"; }
+            //else { myLIDivLabel.className = "ccl"; }
+             myLIDivLabel.className = "ccl";
+             myClients.forEach(function (item) {
                 let myLIClone = myLI.cloneNode(false);
                 myLIClone.id = item.Id;
                 let myLIspanClone = myLIspan.cloneNode(false);
@@ -789,6 +791,35 @@
                 case 0:
                     CreateSelectClientsUI();
                     $("#cblClients").show();
+
+
+                    const checkboxes = document.querySelectorAll('#cblClients input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                      checkbox.addEventListener('click', (event) => {
+                        // Check if the Shift key is pressed
+                        if (event.shiftKey && lastChecked !== null) {
+                          let start = checkboxes.length; // Start index for range
+                          let end = checkboxes.length; // End index for range
+
+                          // Loop through all checkboxes to define range
+                          checkboxes.forEach((cb, index) => {
+                            if (cb === checkbox) start = index;
+                            if (cb === lastChecked) end = index;
+                          });
+
+                          // Check all checkboxes in the range
+                          checkboxes.forEach((cb, index) => {
+                            if (index >= Math.min(start, end) && index <= Math.max(start, end)) {
+                              cb.checked = true;
+                            }
+                          });
+                        }
+                        lastChecked = checkbox; // Update last clicked checkbox
+                      });
+                    });
+
+
+
                     break;
                 case 1:
                     $("#cblLocations").show();

@@ -63,6 +63,7 @@ namespace KdajBi.Web.Controllers
                                 globalSettings.Add("cbEmployee_AlternatingWeeks", "false");
                                 globalSettings.Add("AppointmentsSumServicesLength", "false");
                                 globalSettings.Add("AppointmentsShow3Calendars", "false");
+                                globalSettings.Add("AppointmentsCheckEventOverlap", "false");
                                 globalSettings.Add("AppointmentsRowHeight", "");
                                 globalSettings.Add("AppointmentsMinColWidth", "");
                                 globalSettings.Add("cbUseSingleListOfClients", "false");
@@ -112,15 +113,13 @@ namespace KdajBi.Web.Controllers
                                                         //ignore all day events
                                                         if (calEvent.Start.DateTimeDateTimeOffset.HasValue == true && calEvent.End.DateTimeDateTimeOffset.HasValue == true)
                                                         {
-                                                            var start = calEvent.Start.DateTimeDateTimeOffset.Value.LocalDateTime;
-                                                            var end = calEvent.End.DateTimeDateTimeOffset.Value.LocalDateTime;
                                                             var newEvent = new FullCalendar.Event()
                                                             {
                                                                 id = calEvent.Id,
                                                                 resourceId = item.Id.ToString(),
                                                                 title = calEvent.Summary,
-                                                                start = start.ToString("yyyy-MM-ddTHH:mm:ss"),
-                                                                end = end.ToString("yyyy-MM-ddTHH:mm:ss"),
+                                                                start = calEvent.Start.DateTimeDateTimeOffset.Value.ToString("yyyy-MM-ddTHH:mm:sszzz"), 
+                                                                end = calEvent.End.DateTimeDateTimeOffset.Value.ToString("yyyy-MM-ddTHH:mm:sszzz"),
                                                                 allDay = false
 
                                                             };

@@ -95,7 +95,12 @@
                                                     <label for="cbShow3Calendars" class="custom-control-label">Prikaži 3 koledarčke pri naročanju</label>
                                                     </div>
                                                 </div>
-
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input class="custom-control-input" type="checkbox" id="cbCheckEventOverlap" value="true">
+                                                        <label for="cbCheckEventOverlap" class="custom-control-label">Opozori pri prekrivanju terminov</label>
+                                                    </div>
+                                                </div>
                                                 <div class="form-group">
                                                     <label for="txtRowHeight">
                                                         Višna vrstice:
@@ -439,6 +444,8 @@
         function SaveAppointmentSettings() {
             var settings = new Object();
             settings["AppointmentsShow3Calendars"] = $("#cbShow3Calendars").prop("checked");
+            settings["AppointmentsCheckEventOverlap"] = $("#cbCheckEventOverlap").prop("checked");
+
             settings["AppointmentsRowHeight"] = $("#txtRowHeight").val(); 
             settings["AppointmentsMinColWidth"] = $("#txtMinColWidth").val();
             settings["AppointmentsServiceClient"] = $("#rbServiceClient").prop("checked");
@@ -466,6 +473,7 @@
         async function LoadAppointmentsSettings() {
             var settings = new Object();
             settings["AppointmentsShow3Calendars"] = 'false';
+            settings["AppointmentsCheckEventOverlap"] = 'false';
             settings["AppointmentsRowHeight"] = '';
             settings["AppointmentsMinColWidth"] = '';
             settings["AppointmentsServiceClient"] ='true';
@@ -481,6 +489,9 @@
                      success: function (result) {
                          if (result["AppointmentsShow3Calendars"] != undefined) {
                              if (result["AppointmentsShow3Calendars"] == "true") { $('#cbShow3Calendars').prop('checked', true);}
+                         }
+                         if (result["AppointmentsCheckEventOverlap"] != undefined) {
+                             if (result["AppointmentsCheckEventOverlap"] == "true") { $('#cbCheckEventOverlap').prop('checked', true);}
                          }
                          if (result["AppointmentsRowHeight"] != undefined) {
                              if (result["AppointmentsRowHeight"].length > 0) { $('#txtRowHeight').val(result["AppointmentsRowHeight"]); }
