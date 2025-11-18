@@ -12,6 +12,16 @@
     <link href="~/plugins/datatables-scroller/css/scroller.bootstrap4.css" rel="stylesheet" />
     <link href="~/plugins/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
     <link href="~/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+
+    <style>
+        .fc-enabledelete-button:before {
+            font-family: "Font Awesome 5 Free";
+            content: "\f2ed";
+            display: inline-block;
+            padding-right: 3px;
+            font-weight: 900;
+        }
+    </style>
 }
 
 
@@ -31,7 +41,7 @@
                                     <span class="fas fa-user"></span>
                                 </div>
                             </div><input id="clientsearch" type="text" class="form-control" placeholder="Stranka...">
-
+                            <button id="cmdEnableDelete" type="button" title="Omogoči hitro brisanje strank" onclick="cmdEnableDelete_Click();" class="fc-enabledelete-button btn btn-primary"></button>
                         </div>
                     </div>
 
@@ -44,11 +54,10 @@
                             <thead>
                                 <tr>
                                     <th>
-                                        Name
+                                        Priimek in ime
                                     </th>
-
                                     <th>
-                                        Active
+                                        Telefon
                                     </th>
                                     <th></th>
                                 </tr>
@@ -57,7 +66,7 @@
                             </tbody>
                         </table>
                         <button type="button" id="cmdClientAdd" onclick="cmdClientAdd_Click();" class="btn btn-primary btn-lg">
-                            Add new
+                            Nova stranka
                         </button>
                     </div>
                 </div>
@@ -183,6 +192,7 @@
 
         var SelectedClientID;
         var myTable;
+        var deleteEnabled=false;
         @await Html.PartialAsync("_ApiAccess")
 
         $(document).ready(function () {
@@ -253,6 +263,7 @@
 
             myTable = $('#dataTable').DataTable({
                 destroy: true,
+                stateSave: true,
                 responsive: true,
                 'order': [[0, 'desc']],
                 dom: '<"row"lr><"row"<"col-12"t>><"row"<"col-sm-6"i><"col-sm-6"p>>',
@@ -263,7 +274,6 @@
                     'url': apiURL + "/api/clientstable/" + $("#cboLocations").val(),
                     type: 'POST', dataType: 'json',
                     data: function (dtParms) {
-                        // I send it as a string to reduce the chance of an error before it reaches the server.
                         return JSON.stringify(dtParms);
                     },
                     'contentType': 'application/json; charset=utf-8',
@@ -281,19 +291,13 @@
                 },
                 'columns': [
                     { 'data': 'firstName', render: function (data, type, row, meta) { return row.fullName; } },
-                    {
-                        'data': 'active', className: 'text-center',
-                        render: function (data, type, row, meta) {
-                            if (row.active == true)
-                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" checked="checked"><label class="custom-control-label"></label></div>'; }
-                            else
-                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" ><label class="custom-control-label"></label></div>'; }
-                        }
-                    },
+                    { 'data': 'mobile' },
                     {
                         data: null, 'orderable': false,
                         render: function (data, type, row, meta) {
-                            return '<a class="btn btn-default" onclick="showClientDetail(' + row.id + ');">Urejanje</a>';
+                            var retval='<a class="btn btn-default" onclick="showClientDetail(' + row.id + ');">Urejanje</a>';
+                            if (deleteEnabled==true) {retval+='<button type="button" title="Zbriši stranko" onclick="DeleteClientWithoutConfirmation(' + row.id + ',\''+ row.fullName+'\');" class="fc-enabledelete-button btn btn-default deleteclient"></button>';}
+                            return retval;
                         }
                     }
                 ]
@@ -343,6 +347,31 @@
                     GetClientsTable();
                 }
             });
+
+
+        }
+
+        function cmdEnableDelete_Click(){
+            if (deleteEnabled==false)
+            {
+                Swal.fire({
+                    title: 'Vklopim način hitrega brisanja?', showDenyButton: true, confirmButtonText: 'Da', denyButtonText: 'Ne',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            deleteEnabled=true;
+                            GetClientsTable();
+                            $(".fc-enabledelete-button").removeClass("btn-primary").addClass("btn-danger");
+                        } else { deleteEnabled=false; }
+                        });
+                }
+            else
+            {
+                $(".fc-enabledelete-button").removeClass("btn-danger").addClass("btn-primary");
+                $(".deleteclient").hide();
+                deleteEnabled=false;
+                GetClientsTable();
+            }
+            
 
 
         }
@@ -437,6 +466,26 @@
                     });
 
                 } else { return false; }
+            });
+        }
+
+        function DeleteClientWithoutConfirmation(p_ID, p_fullName) {
+            getAPIToken().then((result) => {
+                $.ajax({
+                    type: "DELETE",
+                    url: apiURL + "/api/client/" + p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") { toastr.success("Zbrisal stranko "+p_fullName); GetClientsTable(); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
             });
         }
 

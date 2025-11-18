@@ -121,7 +121,7 @@ namespace KdajBi.Web.Controllers
         [Route("/narocanje/auth/mobile")]
         [Route("/book/auth/mobile")]
         [HttpPost]
-        public IActionResult mobile(string token, string inputMobile, string inputClientFirstName, string inputClientLastName, string inputClientAddress, string inputPIN, string pbid, long wpid, long sid, string date, string timeslot, string clientnotes, long clientwpid)
+        public IActionResult mobile(string token, string inputMobile, string inputClientFirstName, string inputClientLastName, string inputClientAddress, string inputClientEmail, string inputPIN, string pbid, long wpid, long sid, string date, string timeslot, string clientnotes, long clientwpid)
         {
             var bookinglocation = _context.Locations.Include(l=>l.Workplaces).Where(l => l.PublicBookingToken == token).FirstOrDefault();
             
@@ -262,6 +262,7 @@ namespace KdajBi.Web.Controllers
                                 myClient.LastName = (string.IsNullOrEmpty(inputClientLastName) ? "" : inputClientLastName);
                                 myClient.FirstName = (string.IsNullOrEmpty(inputClientFirstName) ? "" : inputClientFirstName);
                                 myClient.Address = (string.IsNullOrEmpty(inputClientAddress) ? "" : inputClientAddress);
+                                myClient.Email = (string.IsNullOrEmpty(inputClientEmail) ? "" : inputClientEmail);
                                 myClient.Mobile = inputMobile;
                                 myClient.CompanyId = bookinglocation.CompanyId;
                                 myClient.LocationId = bookinglocation.Id;

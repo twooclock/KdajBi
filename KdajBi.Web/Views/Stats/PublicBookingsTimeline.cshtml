@@ -734,13 +734,17 @@
                                 return;
                             }
                             result.forEach(function (eventItem) {
+                                let appointmentInfo='<div>'+eventItem.serviceName+' '+eventItem.clientWorkplaceName+'</div><div>'+eventItem.appointmentDateTime+'</div><div>'+eventItem.clientNotes+'</div>';
+
                                         $( "#pbTimeline" ).append( `
                                                       <div class="cd-timeline-block">
                                                         <div class="cd-timeline-img cd-`+ eventItem.type + `">
                                                 </div>
                                                 <div class="cd-timeline-content">
                                                         <a data-toggle="collapse" href="#pbid`+ eventItem.pbid + `" aria-expanded="false" aria-controls="pbid` + eventItem.pbid + `">
-                                                                <h2>`+ eventItem.client + `</h2>
+                                                                <h2>`+ eventItem.client + `</h2>`+ appointmentInfo + `
+
+
                                                     </a>
                                                             <div id="pbid`+eventItem.pbid+`" class="collapse hide">
                                                     </div>

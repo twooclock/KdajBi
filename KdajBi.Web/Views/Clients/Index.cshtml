@@ -303,7 +303,7 @@
     <script type="text/javascript">
         var SelectedClientID=0;
         var fp;
-        var dsAppointments = [];
+        var dsClientAppointments = [];
         var loadedSmsTab=false;
 
         @await Html.PartialAsync("_ApiAccess")
@@ -410,8 +410,8 @@
                 Cookies.set('DefaultLocation', $(this).val());
                 showClientDetail(0);
                 GetClients();
-                dsAppointments = [];
-                var t = $("#dtAppointments").DataTable(); t.clear(); t.rows.add(dsAppointments); t.draw();
+                dsClientAppointments = [];
+                var t = $("#dtAppointments").DataTable(); t.clear(); t.rows.add(dsClientAppointments); t.draw();
             });
 
             //init toastr
@@ -470,7 +470,7 @@
 
             $('#dtAppointments').DataTable({
                 dom: '<"row"lr><"row"<"col-12"t>><"row"<"col-sm-6"i><"col-sm-6"p>>',
-                data: dsAppointments,
+                data: dsClientAppointments,
                 columns: [
                     { title: 'Naročen',orderable: true },
                     {
@@ -557,11 +557,11 @@
         async function loadAppointmentsTab() {
 
             refreshGAPIToken().then(async () => {
-                dsAppointments = [];
+                dsClientAppointments = [];
                 gooCals.forEach(async function (gcal) {
                     //for each goo calendar for location
                     console.log(gcal.Item1, gcal.Item2);
-                    await findEventsForCalendar(gcal.Item1,gcal.Item2, SelectedClientID, "").then(() => { console.log("refresh table"); var t = $("#dtAppointments").DataTable(); t.clear(); t.rows.add(dsAppointments); t.draw(); }).catch(e => { console.log(e); });
+                    await findClientEventsForCalendar(gcal.Item1,gcal.Item2, SelectedClientID, "").then(() => { console.log("refresh table"); var t = $("#dtAppointments").DataTable(); t.clear(); t.rows.add(dsClientAppointments); t.draw(); }).catch(e => { console.log(e); });
                 });
                 
 
@@ -570,7 +570,7 @@
 
         }
 
-        async function findEventsForCalendar(p_gcalId,p_gcalName, p_clientId,pageToken) {
+        async function findClientEventsForCalendar(p_gcalId, p_gcalName, p_clientId, pageToken) {
             return new Promise(function (resolve, reject) {
                 if (typeof pageToken === "undefined") { console.log('no next page'); reject(); return; }
 
@@ -586,23 +586,12 @@
                         reject(response.error); return;
                     }
                     else {
-                        findEventsForCalendar(p_gcalId,p_gcalName,p_clientId,response.nextPageToken).catch(e => { console.log(e); });
+                        findClientEventsForCalendar(p_gcalId,p_gcalName,p_clientId,response.nextPageToken).catch(e => { console.log(e); });
                             response.items.forEach(function (item) {
                                 console.log(item.start.dateTime, item.summary);
                                 var row = [];
                                 row.push(p_gcalName, item.start.dateTime , item.summary);
-                                dsAppointments.push(row);
-                                //calendar.addEvent({
-                                //    id: item.id,
-                                //    title: item.summary,
-                                //    start: item.start.dateTime,
-                                //    end: item.end.dateTime,
-                                //    display: null,
-                                //    eventColor:aResource.eventBackgroundColor,
-                                //    resourceId: calId,
-                                //    extendedProps: ((typeof item.extendedProperties === "undefined") ? {} : item.extendedProperties.shared)
-                                //});
-
+                                dsClientAppointments.push(row);
                             });
                         resolve();
 

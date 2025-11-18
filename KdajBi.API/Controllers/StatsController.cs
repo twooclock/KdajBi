@@ -64,9 +64,10 @@ namespace KdajBi.API.Controllers
             //date = new DateTime(2024, 6, 22);
             
             if (await LocationIsMine(locationid) == false) { return Json(""); }
-            if (date.HasValue == false) { date = new DateTime(); }
+            if (date.HasValue == false) { date = DateTime.Today; }
             DateTime nextDay = date.Value.AddDays(1);
-            var myPB = await _context.PublicBookings.Include(c => c.Client).Where(w => w.LocationId == locationid && (w.CreatedDate.Value >= date && w.CreatedDate.Value < nextDay)).ToListAsync();
+            var myPB = await _context.PublicBookings.Include(c => c.Client).Include(b => b.Service)
+                    .Include(b => b.ClientWorkplace).Where(w => w.LocationId == locationid && (w.CreatedDate.Value >= date && w.CreatedDate.Value < nextDay)).ToListAsync();
             var smsi = await _context.SmsCampaigns.Where(w => w.LocationId == locationid && w.PublicBookingId !=null && (w.Date.Value >= date && w.Date.Value < nextDay)).ToListAsync();
             List<dynamic> retval = new List<dynamic>();
             foreach (var item in myPB)
@@ -75,7 +76,7 @@ namespace KdajBi.API.Controllers
                 //determine PB.type
                 if (item.Authorized.HasValue && item.CreatedDate > DateTime.Now.AddMinutes(-30)) { pbType = "yellow";  }
                 if (item.WorkplaceId.HasValue && item.Status == 1) { pbType = "green";  }
-                var newPB = new { pbid = item.Id, type= pbType, date = item.CreatedDate, client = (item.Client!=null?item.Client.FullName + " (" + item.Client.Mobile + ")" : "Nova stranka? ("+ item.Mobile + ")") , Events = new List<object>() };
+                var newPB = new { pbid = item.Id, type= pbType, appointmentDateTime=(item.Start==null?"": (item.Start.Value.ToString("dd.MM.yyyy") +" "+ item.Start.Value.ToString("H:mm") +"-"+ item.End.Value.ToString("H:mm"))),  date = item.CreatedDate, client = (item.Client!=null?item.Client.FullName + " (" + item.Client.Mobile + ")" : "Nova stranka? ("+ item.Mobile + ")") , ClientWorkplaceName=(item.ClientWorkplace==null?"(vseeno kdo)": item.ClientWorkplace.Name), ServiceName=(item.Service==null?"":item.Service.Name), ClientNotes=(item.ClientNotes==null?"": item.ClientNotes), Events = new List<object>() };
                 var newEvent = new {  date = item.CreatedDate, text = "Vpis številke", cssClass ="" }; newPB.Events.Add(newEvent);
                 if (item.Authorized.HasValue)
                 { newEvent = new { date = item.Authorized, text = "Vpis PINa", cssClass = "" };   newPB.Events.Add(newEvent); }

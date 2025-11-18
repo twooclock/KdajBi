@@ -33,6 +33,10 @@
 
 }
 
+.extra-small-text {
+    font-size: 10px; /* Adjust as needed */
+}
+
         td[data-time$="00:00"] { border-top-color: darkgray; }
     
         .fc-day-today { background: #FFF !important; border-color:darkgray !important; } 
@@ -201,11 +205,11 @@
                             </label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
-                                    <div class="input-group-text" onclick="$('#txtClientsearch').select();$('#txtClientsearch').autocomplete('search')">
+                                    <div class="input-group-text" onclick="$('#divClientAppointments').hide(); $('#txtClientsearch').select();$('#txtClientsearch').autocomplete('search')">
                                         <span class="fas fa-user"></span>
                                     </div>
                                 </div>
-                                <input id="txtClientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#txtClientsearch').select(); $('#txtClientsearch').autocomplete('search')">
+                                <input id="txtClientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#divClientAppointments').hide(); $('#txtClientsearch').select(); $('#txtClientsearch').autocomplete('search')">
                             </div>
                         </div>
 
@@ -218,6 +222,22 @@
                         <div class="form-group mb-0 col-12">
                             <label id="txtClientNotes" class="invalid-feedback d-block"></label>
                         </div>
+
+<div id="divClientAppointments" class="form-group mb-0 col-12" style="display: none;">
+<table class="table table-sm table-striped extra-small-text">
+            <thead class="thead-light">
+                <tr>
+                    <th>Pri</th>
+                    <th>Datum</th>
+                    <th>Opis</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Rows will be added dynamically -->
+            </tbody>
+        </table>
+</div>
+                        
                     </div>
                    
 
@@ -325,6 +345,7 @@
 
 
 @section scripts{
+
     <script src="~/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="~/plugins/bootstrap-select/js/bootstrap-select.min.js"></script>
     <script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
@@ -425,6 +446,8 @@
         var SelectedClientID = 0;
         var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
         var myServices;
+        var dsClientAppointments = [];
+        @Html.Raw("var gooCals=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.GoogleCalendars));
         @{ string val = "";
             if (Model.Settings.TryGetValue("AppointmentsServiceClient", out val) == true) 
             {@Html.Raw("const EventServiceCient ="+ (bool.Parse(val) == true).ToString().ToLower()+";"); }
@@ -471,6 +494,26 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
         return (((r * 0.299) + (g * 0.587) + (b * 0.114)) > 186) ? 'black' : 'white';
         } catch (error) { return 'white';}
 }
+
+    async function HasOverlappingEvents(p_calendarId, p_timemin, p_timemax){
+    return new Promise(function (resolve, reject) {
+        gapi.client.calendar.events.list({
+                    "calendarId": p_calendarId,
+                    "timeMin": p_timemin.toISOString(),
+                    "timeMax": p_timemax.toISOString(),
+                    "showDeleted": false,
+                    "singleEvents": true,
+                    "pageToken": ""
+                }).execute(function (response) {
+                if (response.error || response == false) {
+                        toastr.error("Napaka pri komunikaciji z Googlom!");
+                        reject(response.error); return false;
+                    }
+                    else { return (resolve(response.items.length>0)); }
+                });
+        });
+    }
+
 
         async function getEventsForResource(aResource,firstDayOfMonth,lastDayOfMonth,pageToken) {
             return new Promise(function (resolve, reject) {
@@ -840,6 +883,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                         if (searchParams.has('date')) { idate = searchParams.get('date'); }
                         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                             locale: navigator.language.slice(0, 2),
+                            //timeZone: 'Europe/Ljubljana', lahko premakne naročila, ne vem kaj se zgodi z poletni/zimski čas
                             firstDay: 1,
 @{
     if (Model.Settings.TryGetValue("AppointmentsMinColWidth", out val) == true)
@@ -1268,6 +1312,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                         $("#txtClientMobile").val(ui.item.mobile);
                         $("#txtClientNotes").text(ui.item.notes);
                         SelectedClientID = ui.item.value;
+                        showClientAppointments(SelectedClientID);
                         $("#txtClientsearch").blur();
                         event.preventDefault();
                         document.getElementById("txtNotes").click();
@@ -1312,6 +1357,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                 });
                 $('#myModal').on('hidden.bs.modal', function (e) {
                     CancelModal();
+                    $('#divClientAppointments').hide();
                 });
 
                 initServicesTags();
@@ -1349,7 +1395,8 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                 });
 
                 $('.main-sidebar').off();
-                  
+                
+                
 
             });
 
@@ -1423,6 +1470,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                 $("#txtClientsearch").val(client.label);
                 SelectedClientID = client.value;
                 $("#txtClientMobile").val(client.mobile);
+                showClientAppointments(SelectedClientID);
             }
             if (typeof info.event?.extendedProps?.notes === "undefined") {
                 if (info.event?.title.length > 0) {
@@ -1617,10 +1665,10 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
             return eventSummary;
         }
 
-        function SaveNewEvent() {
+        async function SaveNewEvent() {
             if ($('#formEvent').valid()) {
                 //save client
-                getClientID().catch((result) => { toastr.info(result); }).then((resultClientID) => {
+                getClientID().catch((result) => { toastr.info(result); }).then(async (resultClientID) => {
                     //create new event
                     var calid = $('#cboGooCal').val();
                     var cas = $("#txtEndTime").val().split(":");
@@ -1628,6 +1676,84 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                     if (cas[0] != undefined) { endDate.setHours(cas[0]); }
                     if (cas[1] != undefined) { endDate.setMinutes(cas[1]); }
 
+                    @{
+                        val = "";
+                        bool CheckEventOverlap = false;
+                        if (Model.Settings.TryGetValue("AppointmentsCheckEventOverlap", out val) == true)
+                        {
+                            CheckEventOverlap = (bool.Parse(val) == true);
+                            if (CheckEventOverlap == true)
+                            { <text>
+                                const hasOverlap = await HasOverlappingEvents(calid, new Date(fp.selectedDates[0]), endDate, "")
+                                    .catch(e => {
+                                        console.log(e);
+                                        return true; 
+                                    });
+                                </text>
+                            }
+                            else
+                            {
+                                <text>
+                                const hasOverlap = false;
+                                </text>
+                            }
+
+                        }
+
+                    }
+                    if (hasOverlap) { 
+                        Swal.fire({
+                                title: 'Izbrani termin že vsebuje naročila! Vseeno vpišem?', showDenyButton: true, confirmButtonText: 'Da', denyButtonText: 'Ne',
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        var newEvent = {
+                                            start: { 'dateTime': new Date(fp.selectedDates[0]) },
+                                            end: { 'dateTime': endDate },
+                                            summary: getEventSummary(),
+                                            "extendedProperties": {
+                                                "shared": {
+                                                    clientid:resultClientID,
+                                                    client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
+                                                    notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
+                                                }
+                                            }
+                                        };
+
+                                        refreshGAPIToken().then(() => {
+                                            var eventToUpdate = gapi.client.calendar.events.insert({
+                                                "calendarId": calid,
+                                                "resource": newEvent
+                                            }).execute(function (response) {
+                                                if (response.error || response == false) {
+                                                    toastr.error("Napaka:gapi.client.calendar.events.insert");
+                                                    return false;
+                                                }
+                                                else {
+                                                    console.log("Created event: %s", response.id);
+                                                    //put on full calendar
+                                                    var newevt=calendar.addEvent({
+                                                        id: response.id,
+                                                        title: newEvent.summary,
+                                                        start: newEvent.start.dateTime,
+                                                        end: newEvent.end.dateTime,
+                                                        resourceId: getResourceIdByGid(calid),
+                                                        extendedProps: {
+                                                            clientid:resultClientID,
+                                                            client: JSON.stringify({ label: $("#txtClientsearch").val(), value: resultClientID, mobile: $("#txtClientMobile").val() }),
+                                                            notes: JSON.stringify($('#txtNotes').tokenfield('getTokens'))
+                                                        }
+                                                    });
+                                                    if ($('#txtNotes').tokenfield('getTokens').length > 0) { if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); } }
+                                                    //notify client
+                                                    notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID);
+                                                }
+                                            });
+                                        });
+                                    } 
+                                });
+                    }
+                    else
+                    {
                     var newEvent = {
                         start: { 'dateTime': new Date(fp.selectedDates[0]) },
                         end: { 'dateTime': endDate },
@@ -1671,6 +1797,8 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                             }
                         });
                     });
+
+                    }
                 });
 
 
@@ -2093,8 +2221,8 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                     msgTemplate = msgTemplate.replace("<DANESJUTRI>", wd[p_Start.getDay()]);
                 }
             }
-            msgTemplate = msgTemplate.replace("<URA>", dayjs(p_Start).format("LT"));
-            msgTemplate = msgTemplate.replace("<DATUM>", dayjs(p_Start).format("l"));
+            msgTemplate = msgTemplate.replace("<URA>", dayjs(p_Start).format("HH:mm"));
+            msgTemplate = msgTemplate.replace("<DATUM>", dayjs(p_Start).format("D.M.YYYY"));
             return msgTemplate;
         }
 
@@ -2171,6 +2299,70 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
 	        return  dayjs(new Date(year, month-1, day+1)).format("YYYY-MM-DD");
         }
 
+        async function showClientAppointments(p_ClientID){
+            refreshGAPIToken().then(async () => {
+                dsClientAppointments = [];
+                gooCals.forEach(async function (gcal) {
+                    //for each goo calendar for location
+                    await findClientEventsForCalendar(gcal.Item1,gcal.Item2, SelectedClientID, "").then(() => { console.log("refresh client appointments table"); redrawClientAppointments(); }).catch(e => { console.log(e); });
+                });
+                
+
+                
+            });
+        }
+
+        function redrawClientAppointments(){
+            $("#tableBody").empty();
+            dsClientAppointments.slice(0, 3).forEach(function(item) { // Only first 3 items are added
+                var opis=item[2];
+                opis=opis.replace($("#txtClientsearch").val(),'');
+                opis=opis.replace($('#txtClientMobile').val(),'');
+                opis=opis.replace('()','').trim();
+                var row = `<tr>
+                    <td>${item[0]}</td>
+                    <td>`+dayjs(item[1]).format("D.MMM.YYYY H:mm")+`</td>
+                    <td>`+opis+`</td>
+                </tr>`;
+                $("#tableBody").append(row);
+            });
+            if (dsClientAppointments.length>0){ $('#divClientAppointments').show(); }
+
+        } 
+
+        async function findClientEventsForCalendar(p_gcalId, p_gcalName, p_clientId, pageToken) {
+            return new Promise(function (resolve, reject) {
+                if (typeof pageToken === "undefined") { console.log('no next page'); reject(); return; }
+                if (p_clientId == 0) {  resolve(); return; }
+
+
+                gapi.client.calendar.events.list({
+                    "calendarId": p_gcalId,
+                    "sharedExtendedProperty":"clientid="+p_clientId,
+                    "showDeleted": false,
+                    "singleEvents": true,
+                    "pageToken": pageToken,
+                    "orderBy": "startTime"
+                }).execute(function (response) {
+                    if (response.error || response == false) {
+                        toastr.error("Napaka pri komunikaciji z Googlom!");
+                        reject(response.error); return;
+                    }
+                    else {
+                        findClientEventsForCalendar(p_gcalId,p_gcalName,p_clientId,response.nextPageToken).catch(e => { console.log(e); });
+                        response.items.reverse();    
+                        response.items.forEach(function (item) {
+                                console.log(item.start.dateTime, item.summary);
+                                var row = [];
+                                row.push(p_gcalName, item.start.dateTime , item.summary);
+                                dsClientAppointments.push(row);
+                            });
+                        resolve();
+
+                    }
+                });
+            });
+        }
     </script>
 
     
