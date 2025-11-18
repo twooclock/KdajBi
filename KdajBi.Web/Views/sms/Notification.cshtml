@@ -413,16 +413,19 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     getAPIToken().then((result) => {
+                         var mysmsc=getSmscObject();
                     $.ajax({
                         type: "post",
-                        data: JSON.stringify(getSmscObject()),
+                         data: JSON.stringify(mysmsc),
                         url: apiURL + "/api/Sms/QueueSmsCampaign",
                         contentType: "application/json; charset=utf-8",
                         headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                         dataType: "json",
                         success: function (result) {
                             if (result == "OK") {
-                                Swal.fire('Sporočila so v pošiljanju. \nPrejeli boste el. pošto, kjer morate dokončno potrditi pošiljanje!').then((result) => {
+                                 var mymsg="Sporočila so v pošiljanju.";
+                                 if (mysmsc.CampaignType!=1 || mysmsc.Recipients.length!=1) { mymsg="\nPrejeli boste el. pošto, kjer morate dokončno potrditi pošiljanje!"; }
+                                 Swal.fire(mymsg).then((result) => {
                                     window.location.href = '@Url.Action("Index", "Home")';
                                     return true;
                                 });

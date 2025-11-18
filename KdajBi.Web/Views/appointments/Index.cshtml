@@ -2221,8 +2221,8 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                     msgTemplate = msgTemplate.replace("<DANESJUTRI>", wd[p_Start.getDay()]);
                 }
             }
-            msgTemplate = msgTemplate.replace("<URA>", dayjs(p_Start).format("LT"));
-            msgTemplate = msgTemplate.replace("<DATUM>", dayjs(p_Start).format("l"));
+            msgTemplate = msgTemplate.replace("<URA>", dayjs(p_Start).format("HH:mm"));
+            msgTemplate = msgTemplate.replace("<DATUM>", dayjs(p_Start).format("D.M.YYYY"));
             return msgTemplate;
         }
 
