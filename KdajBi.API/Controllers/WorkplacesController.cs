@@ -233,7 +233,6 @@ namespace KdajBi.API.Controllers
             }
             catch (Exception ex)
             {
-
                 throw;
             }
             return Json("OK");

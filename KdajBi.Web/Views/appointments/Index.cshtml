@@ -446,6 +446,8 @@
         var SelectedClientID = 0;
         var myClients = JSON.parse('@Html.Raw(Model.ClientsJson)');
         var myServices;
+        const servicesCache = new Map();
+
         var dsClientAppointments = [];
         @Html.Raw("var gooCals=" + Newtonsoft.Json.JsonConvert.SerializeObject(Model.GoogleCalendars));
         @{ string val = "";
@@ -1396,7 +1398,43 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
 
                 $('.main-sidebar').off();
                 
-                
+                $('#cboGooCal').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                    //get workplace service exclusions and filter services
+                    //exclude services
+                    getAPIToken().then((result) => {
+                        const workplaceId = $('#cboGooCal').find('option:selected').attr('data-workplaceid');
+                        if (!workplaceId) return;
+                        const tf = $('#txtNotes').data('bs.tokenfield');
+                        //Use cache if available
+                        if (servicesCache.has(workplaceId)) {
+                            tf.$input.autocomplete( 'option', 'source', servicesCache.get(workplaceId) );
+                            return;
+                        }
+                        // Not cached → fetch
+                        $.ajax({
+                            type: "get",
+                            url: apiURL + "/api/workplaceexcludedservices/" + workplaceId + "/",
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                            dataType: "json",
+                            success: function (apiresult) {
+                                const excludedSet = new Set(apiresult.map(v => v.serviceId));
+                                const newSource = myServices.filter(
+                                    item => !excludedSet.has(item.value)
+                                );
+                                servicesCache.set(workplaceId, newSource);
+                                tf.$input.autocomplete('option', 'source', newSource);
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka: " + error.toString());
+                            }
+                        });
+                    });
+
+                    
+
+                });
+
 
             });
 

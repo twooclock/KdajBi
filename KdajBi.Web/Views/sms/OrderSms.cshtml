@@ -89,12 +89,12 @@
 
                         </div>
                         <div id="notifyQtySelect" class="row">
-                            <button data-qty="100" type="button" class="btn btn-primary col-12 my-2 py-4" >Naročam 100 sms</button>
-                            <button data-qty="200" type="button" class="btn btn-primary col-12 py-4" >Naročam 200 sms</button>
-                            <button data-qty="500" type="button" class="btn btn-primary col-12 my-2 py-4" >Naročam 500 sms</button>
-                            <button data-qty="1000" type="button" class="btn btn-primary col-12 py-4" >Naročam 1000 sms</button>
-                            <button data-qty="2000" type="button" class="btn btn-primary col-12  my-2 py-4" >Naročam 2000 sms</button>
-                            <button data-qty="5000" type="button" class="btn btn-primary col-12 py-4" >Naročam 5000 sms</button>
+                            <button data-qty="100" type="button" class="btn btn-primary col-12 my-2 py-4">Naročam 100 sms</button>
+                            <button data-qty="200" type="button" class="btn btn-primary col-12 py-4">Naročam 200 sms</button>
+                            <button data-qty="500" type="button" class="btn btn-primary col-12 my-2 py-4">Naročam 500 sms</button>
+                            <button data-qty="1000" type="button" class="btn btn-primary col-12 py-4">Naročam 1000 sms</button>
+                            <button data-qty="2000" type="button" class="btn btn-primary col-12 my-2 py-4">Naročam 2000 sms</button>
+                            <button data-qty="5000" type="button" class="btn btn-primary col-12 py-4">Naročam 5000 sms</button>
                         </div>
 
                     </div>
@@ -373,6 +373,35 @@
                     }
                 });
 
+                //check min order quantity
+                var settings = new Object();
+            settings["SMS_MinOrderQty"] = '100';
+
+            getAPIToken().then((result) => {
+            $.ajax({
+                type: "post",
+                data: JSON.stringify(settings),
+                url: apiURL+"/api/Settings/Load/",
+                contentType: "application/json; charset=utf-8",
+                headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                dataType: "json",
+                success: function (result) {
+                    if (result && result["SMS_MinOrderQty"] !== undefined) {
+                        var minQty = parseInt(result["SMS_MinOrderQty"], 10); 
+                        $('#notifyQtySelect').children('button').each(function () {
+                            var qty = parseInt($(this).attr('data-qty'), 10); 
+                            if (qty < minQty) {
+                                $(this).prop('disabled', true).addClass('disabled');
+                            }
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("Napaka:" + error.toString());
+                    return false;
+                }
+            });
+            });
 
                 $.ajax({
                     type: "post",
