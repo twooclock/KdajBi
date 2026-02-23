@@ -24,7 +24,9 @@ namespace KdajBi.API.Controllers
     {
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-        public AppUsersController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender)
+        public AppUsersController(ApplicationDbContext context, UserManager<AppUser> userManager, 
+            SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, 
+            ISMSSender smsSender)
             : base(context, userManager, signInManager, logger, emailSender)
         {
            

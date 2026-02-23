@@ -29,11 +29,11 @@ namespace KdajBi.Web.Controllers
     [AllowAnonymous]
     public class AccountController : _BaseController
     {
-
-        public AccountController(ApplicationDbContext context, UserManager<AppUser> _userManager, SignInManager<AppUser> _signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider)
+        protected readonly ISMSSender _smsSender;
+        public AccountController(ApplicationDbContext context, UserManager<AppUser> _userManager, SignInManager<AppUser> _signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider, ISMSSender smsSender)
             : base(context, _userManager, _signInManager, logger, emailSender, apiTokenProvider)
         {
-
+            _smsSender = smsSender;
         }
 
         [HttpPost("Account/Sendmail/{locationid}")]
@@ -297,6 +297,7 @@ namespace KdajBi.Web.Controllers
                 //create company
                 _context.Companies.Add(company);
                 _context.SaveChanges();
+                 _smsSender.EnqueueSystemSMS("Novo podjetje "+company.Name+", " +user.FullName+", "+user.Email+", "+company.Mobile+" v KdajBi!");
                 user.CompanyId = company.Id;
             }
             catch (Exception ex)

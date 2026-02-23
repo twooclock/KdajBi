@@ -28,7 +28,7 @@ namespace KdajBi.Core.Models
         public string Color { get; set; }
         public int SortPosition { get; set; }
         public bool UsedInClientBooking { get; set; }
-		
+
         [ForeignKey("ServiceGroup")]
 		public long? ServiceGroupId { get; set; }
 		public virtual ServiceGroup ServiceGroup { get; set; }

@@ -1,4 +1,13 @@
 ﻿@using Newtonsoft.Json;
+@using Microsoft.AspNetCore.Identity
+@using KdajBi.Core.Models;
+
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+@{
+    bool isNadzornik = User.HasClaim("Nadzornik", bool.TrueString);
+}
 @{
     ViewData["Title"] = "Stranke";
 }
@@ -68,6 +77,12 @@
                         <button type="button" id="cmdClientAdd" onclick="cmdClientAdd_Click();" class="btn btn-primary btn-lg">
                             Nova stranka
                         </button>
+                        	@if ( isNadzornik == true)
+                        {
+                            <button type="button" id="cmdExportClients" onclick="cmdExportClients_Click();" class="btn btn-primary btn-lg">
+                                Shrani naslove
+                            </button>
+                        }
                     </div>
                 </div>
 
@@ -527,8 +542,99 @@
                 });
             } else { return false; }
         }
+        @if (isNadzornik == true)
+        {<text>
+        function cmdExportClients_Click() {
+            // Show loading indicator
+            $('body').css('cursor', 'wait');
 
+            // Optional: Show a loading overlay or spinner
+            // $('#loadingOverlay').show();
 
+            // Get anti-forgery token
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                type: "POST",
+                url: "/Clients/ExportClientsToGoogleContacts",
+                data: {
+                    __RequestVerificationToken: token
+                },
+                xhrFields: {
+                    responseType: 'blob' // Important for file download
+                },
+                cache: false,
+                timeout: 60000, // 60 second timeout
+                success: function (data, status, xhr) {
+                    // Create a blob from the response
+                    var blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+
+                    // Get filename from Content-Disposition header if available
+                    var filename = 'Stranke.csv';
+                    var disposition = xhr.getResponseHeader('Content-Disposition');
+                    if (disposition && disposition.indexOf('filename=') !== -1) {
+                        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                        var matches = filenameRegex.exec(disposition);
+                        if (matches != null && matches[1]) {
+                            filename = matches[1].replace(/['"]/g, '');
+                        }
+                    }
+
+                    // Create download link
+                    var link = document.createElement('a');
+                    var url = window.URL.createObjectURL(blob);
+                    link.href = url;
+                    link.download = filename;
+
+                    // Trigger download
+                    document.body.appendChild(link);
+                    link.click();
+
+                    // Cleanup
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+
+                    // Hide loading and show success message
+                    $('body').css('cursor', 'default');
+                    // $('#loadingOverlay').hide();
+
+                    toastr.success('Končal! Datoteka je v obliki Google Kontakti. Stolpci so ločeni s tabulatorji (primerni za Excel)!');
+                },
+                error: function (xhr, status, error) {
+                    $('body').css('cursor', 'default');
+                    // $('#loadingOverlay').hide();
+
+                    // Handle different error types
+                    if (xhr.status === 403) {
+                        toastr.error('Nimate dovoljenja za izvoz strank.');
+                    } else if (xhr.status === 404) {
+                        toastr.error('Funkcija izvoza ni bila najdena.');
+                    } else if (xhr.status === 500) {
+                        toastr.error('Napaka na strežniku pri izvozu strank.');
+                    } else if (status === 'timeout') {
+                        toastr.error('Izvoz traja predolgo. Poskusite ponovno.');
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        toastr.error('Napaka: ' + xhr.responseJSON.message);
+                    } else {
+                        toastr.error('Napaka pri izvozu strank: ' + error);
+                    }
+
+                    // Log error to console for debugging
+                    console.error('Export error:', {
+                        status: xhr.status,
+                        statusText: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                },
+                complete: function() {
+                    // This runs regardless of success or failure
+                    $('body').css('cursor', 'default');
+                }
+            });
+        }
+            </text>
+        }
     </script>
 }
 

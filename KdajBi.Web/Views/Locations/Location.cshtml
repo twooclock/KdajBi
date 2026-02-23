@@ -373,6 +373,9 @@
                                                                         Google koledar
                                                                     </th>
                                                                     <th>
+                                                                        Samostojno naročanje
+                                                                    </th>
+                                                                    <th>
                                                                         Zaporedno naročanje
                                                                     </th>
                                                                     <th>
@@ -674,6 +677,13 @@
                                 <option value="@item.Key">@Html.Raw(item.Value)</option>
                             }
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="cbWPClientBooking" value="true" checked="">
+                            <span class="custom-control-label">Samostojno naročanje</span>
+                            <a href="#!" data-toggle="popover" data-content="Delovno mesto bo na voljo pri samostojnem naročanju."><i class="fa fa-info-circle"></i></a>
+                        </label>
                     </div>
                     <div class="form-group">
                         <label class="custom-control custom-checkbox">
@@ -1823,6 +1833,15 @@
                     { 'data': 'name' },
                     { 'data': 'googleCalendarSummary' },
                     {
+                        'data': 'useInClientBooking', className: 'text-center',
+                        render: function (data, type, row, meta) {
+                            if (row.useInClientBooking == true)
+                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" checked="checked"><label class="custom-control-label"></label></div>'; }
+                            else
+                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" ><label class="custom-control-label"></label></div>'; }
+                        }
+                    },
+                    {
                         'data': 'sequentialBooking', className: 'text-center',
                         render: function (data, type, row, meta) {
                             if (row.sequentialBooking == true)
@@ -1883,6 +1902,7 @@
                 $("#txtName").val('');
                 $("#cboGooCal").selectpicker('val', '');
                 $("#cbWPSequentialBooking").prop('checked', false);
+                $("#cbWPClientBooking").prop('checked', false);
                 $("#cbWPActive").prop('checked', true);
                       
             }
@@ -1902,7 +1922,8 @@
                         $("#cboGooCal").selectpicker('val',result.googleCalendarID);
                         $("#cbWPActive").prop('checked', result.active);
                         $("#cbWPSequentialBooking").prop('checked', result.sequentialBooking);
-                          },
+                        $("#cbWPClientBooking").prop('checked', result.useInClientBooking);
+                                },
                     error: function (xhr, status, error) {
                         toastr.error("Napaka:" + error.toString());
                     }
@@ -1965,6 +1986,7 @@
                 workplace.googleCalendarId = $('#cboGooCal').val();
                 workplace.active = $("#cbWPActive").prop('checked');
                 workplace.sequentialBooking = $("#cbWPSequentialBooking").prop('checked');
+                workplace.useInClientBooking = $("#cbWPClientBooking").prop('checked');
                 getAPIToken().then((result) => {
                 $.ajax({
                     type: "post",

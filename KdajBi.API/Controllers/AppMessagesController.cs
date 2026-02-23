@@ -17,7 +17,8 @@ namespace KdajBi.API.Controllers
     [ApiController]
     public class AppMessagesController : _BaseController
     {
-        public AppMessagesController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender)
+        public AppMessagesController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, 
+            ILogger<AppUsersController> logger, IEmailSender emailSender,ISMSSender smsSender )
             : base(context, userManager, signInManager, logger, emailSender)
         {
 

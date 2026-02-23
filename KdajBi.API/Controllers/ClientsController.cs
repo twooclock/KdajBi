@@ -24,7 +24,8 @@ namespace KdajBi.API.Controllers
     public class ClientsController : _BaseController
     {
         private IMapper _mapper;
-        public ClientsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<ClientsController> logger, IEmailSender emailSender, IMapper mapper)
+        public ClientsController(ApplicationDbContext context, UserManager<AppUser> userManager, 
+            SignInManager<AppUser> signInManager, ILogger<ClientsController> logger, IEmailSender emailSender, IMapper mapper)
             : base(context, userManager, signInManager, logger, emailSender)
         {
             _mapper = mapper;

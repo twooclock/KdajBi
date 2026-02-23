@@ -28,12 +28,17 @@ namespace KdajBi.API.Controllers
         private readonly ILogger<SmsController> _logger;
         private IMapper _mapper;
         private ISmsInfo _smsInfo;
-        public SmsController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<SmsController> logger, IEmailSender emailSender, IMapper mapper, ISmsInfo smsInfo)
+        protected readonly ISMSSender _smsSender;
+
+        public SmsController(ApplicationDbContext context, UserManager<AppUser> userManager, 
+            SignInManager<AppUser> signInManager, ILogger<SmsController> logger, IEmailSender emailSender, 
+            IMapper mapper, ISmsInfo smsInfo, ISMSSender smsSender)
             : base(context, userManager, signInManager, logger, emailSender)
         {
             _logger = logger;
             _mapper = mapper;
             _smsInfo = smsInfo;
+            _smsSender= smsSender;
         }
 
 
