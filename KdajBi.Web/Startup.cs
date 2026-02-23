@@ -110,6 +110,10 @@ namespace KdajBi
 
             services.Configure<CalendarV3ProviderSettings>(Configuration.GetSection("CalendarV3ProviderSettings"));
             services.AddSingleton<ICalendarV3Provider, CalendarV3Provider>();
+
+            services.Configure<SystemSMSSettings>(Configuration.GetSection("SystemSMSSettings"));
+            services.AddScoped<ISMSSender, SMSSender>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

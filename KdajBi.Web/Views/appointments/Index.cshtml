@@ -286,10 +286,30 @@
                         </select>
                     </div>
 
+                    <div id="rowSMS" class="form-row" style="display:none;">
+                        <div class="form-group pr-2 col-9 ">
+                            <label for="txtSMSText">
+                                Sporočilo:
+                            </label>
+                            <textarea id="txtSMSText" name="txtSMSText" class="form-control" rows="3"></textarea>
+                                
+                        </div>
+                        <div class="form-group col-3 d-flex flex-column justify-content-end">
+                            <label for="">
+                                
+                            </label>
+                            <button type="button" class="btn btn-primary" id="cmdSendSMS"> 
+                            Pošlji SMS 
+                            </button>
+                        </div>
+                    </div>
 
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer d-flex">
+                <button type="button" class="btn btn-default mr-auto" id="cmdShowSendSMS"> 
+                Pokaži SMS 
+                </button>       
                 <button type="button" class="btn btn-default" id="cmdMove">
                     Premakni
                 </button>
@@ -1063,7 +1083,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                                             .then(() => {
                                                 if (typeof info.event?.extendedProps?.client != "undefined") {
                                                     var client = JSON.parse(info.event.extendedProps.client);
-                                                    notifyClient(info.event.start, client.mobile, client.value);
+                                                    notifyClient(info.event.start, client.mobile, client.value,"");
                                                 }
                                             });
                                     } else { info.revert(); }
@@ -1076,7 +1096,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                                     .then(() => {
                                         if (typeof event?.event?.extendedProps?.client != "undefined") {
                                             var client = JSON.parse(event.event.extendedProps.client);
-                                            notifyClient(event?.event.start, client.mobile, client.value);
+                                            notifyClient(event?.event.start, client.mobile, client.value,"");
                                         }
                                     });
                             },
@@ -1434,6 +1454,22 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                     
 
                 });
+                $("#cmdSendSMS").click(function (evt) {
+                   const smsText = $("#txtSMSText").val().trim(); if (smsText === "") {  return; } 
+                   getClientID().catch((result) => { toastr.info(result); }).then(async (resultClientID) => {
+                        notifyClient(new Date(fp.selectedDates[0]), $("#txtClientMobile").val(), resultClientID, smsText);
+                    });
+                });
+
+                $("#cmdShowSendSMS").click(function () {
+                    $("#rowSMS").toggle();
+
+                    if ($("#rowSMS").is(":visible")) {
+                        $(this).text("Skrij SMS");
+                    } else {
+                        $(this).text("Pokaži SMS");
+                    }
+                });
 
 
             });
@@ -1627,7 +1663,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                                     headers: { 'Authorization': 'Bearer ' + result.AccessToken },
                                     dataType: "json",
                                     success: function (retval) {
-                                        if (retval.result == "OK") { toastr.info("Shranil novo stranko (" + retval.id.toString() + ")"); myClients.push( {id:retval.id, label:name+String.fromCharCode(160)+client.Mobile,mobile:client.Mobile}); resolve(retval.id); }
+                                        if (retval.result == "OK") { toastr.info("Shranil novo stranko (" + retval.id.toString() + ")"); myClients.push( {id:retval.id, label:name+String.fromCharCode(160)+client.Mobile,mobile:client.Mobile}); SelectedClientID=retval.id; resolve(retval.id); }
                                         else { reject(retval.result); return false; }
                                     },
                                     error: function (xhr, status, error) {
@@ -1783,7 +1819,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                                                     });
                                                     if ($('#txtNotes').tokenfield('getTokens').length > 0) { if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); } }
                                                     //notify client
-                                                    notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID);
+                                                    notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID,"");
                                                 }
                                             });
                                         });
@@ -1831,7 +1867,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                                 });
                                 if ($('#txtNotes').tokenfield('getTokens').length > 0) { if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); } }
                                 //notify client
-                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID);
+                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID,"");
                             }
                         });
                     });
@@ -1894,7 +1930,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                                 });
                                 if ($('#txtNotes').tokenfield('getTokens').length > 0) { if ($('#txtNotes').tokenfield('getTokens')[0].color != null) { newevt.setProp('color', '#' + $('#txtNotes').tokenfield('getTokens')[0].color); } }
                                 //notify client
-                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID);
+                                notifyClient(newEvent.start.dateTime, $("#txtClientMobile").val(),resultClientID,"");
                             }
                             //delete previous event
                             gapi.client.calendar.events.delete({
@@ -2001,7 +2037,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                         }
                     }
                 });
-                if (client !== null) { notifyClient(newStart, client.mobile, client.value); }
+                if (client !== null) { notifyClient(newStart, client.mobile, client.value,""); }
             } else { return false; }
         }
 
@@ -2264,12 +2300,15 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
             return msgTemplate;
         }
 
-        function QueueSMS(p_Start, p_Mobile, p_ClientId) {
+        function QueueSMS(p_Start, p_Mobile, p_ClientId, p_text) {
 
             var smsc = {};
             smsc.CampaignType = 3; //direct without approval
             smsc.LocationId = $("#cboLocations").val();
-            smsc.MsgTxt = getSMSMessage(p_Start);
+            if (p_text.trim() !== "") 
+            { smsc.MsgTxt = p_text; }
+            else
+            {smsc.MsgTxt = getSMSMessage(p_Start);}
             smsc.SendAfter = dayjs.utc().local();
             smsc.Recipients = [p_Mobile + '|' + p_ClientId];
 
@@ -2295,14 +2334,15 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
             });
         }
 
-        function notifyClient(p_Start, p_Mobile, p_ClientId) {
-
-            @{ val = "";
-                if (Model.Settings.TryGetValue("SMS_AppointmentSMS", out val) == true)
-                {
-                    if (val.ToLower() != "true") {@Html.Raw("return;"); }
+        function notifyClient(p_Start, p_Mobile, p_ClientId, p_Text) {
+            
+                @{ val = "";
+                    if (Model.Settings.TryGetValue("SMS_AppointmentSMS", out val) == true)
+                    {
+                        if (val.ToLower() != "true") {@Html.Raw("if (p_Text==''){return;}"); }
+                    }
                 }
-            }
+                
             if (typeof p_Start === "undefined") { console.log('Notify client start is undefined');  return; }
             if (p_Mobile != "") {
                     let cancelsms = false;
@@ -2311,7 +2351,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                         timeOut: 7000, extendedTimeOut: 7000,
                         progressBar: true,
                         closeButton: true,
-                        onHidden: function () { if (cancelsms == false) { QueueSMS(p_Start, p_Mobile, p_ClientId); } },
+                        onHidden: function () { if (cancelsms == false) { QueueSMS(p_Start, p_Mobile, p_ClientId, p_Text); } },
                         onclick: function () { cancelsms = true; }
                     });
                 }

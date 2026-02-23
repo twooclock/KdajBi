@@ -25,7 +25,6 @@ namespace KdajBi.API.Controllers
             _logger = logger;
             _emailSender = emailSender;
 
-
         }
         protected int _CurrentUserID()
         {

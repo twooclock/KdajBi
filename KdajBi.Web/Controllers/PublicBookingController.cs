@@ -24,10 +24,12 @@ namespace KdajBi.Web.Controllers
     {
         protected readonly ApplicationDbContext _context;
         protected readonly ILogger<_BaseController> _logger;
-        public PublicBookingController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider)
+        protected readonly ISMSSender _smsSender;
+        public PublicBookingController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<AppUsersController> logger, IEmailSender emailSender, IApiTokenProvider apiTokenProvider, ISMSSender smsSender)
         {
             _context = context;
             _logger = logger;
+            _smsSender= smsSender;
         }
 
         [AllowAnonymous]
@@ -65,7 +67,7 @@ namespace KdajBi.Web.Controllers
                 for (int i = vm.Location.Workplaces.Count - 1; i >= 0; i--)
                 {
                     var wp = vm.Location.Workplaces.ElementAt(i);
-                    if (wp.Active==true)
+                    if (wp.Active==true && wp.UseInClientBooking==true)
                     { 
                         var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wp.Id).ToList();
                         if (wpExServices.Count > 0)
@@ -189,38 +191,14 @@ namespace KdajBi.Web.Controllers
                             _context.PublicBookings.Add(newbooking);
                             _context.SaveChanges();
 
-                            // obvesti stranko prek sms (TODO: naredi prek service)
-                            SmsCampaign newSmsCampaign = new SmsCampaign();
-                            newSmsCampaign.Company.Id = bookinglocation.CompanyId;
-                            newSmsCampaign.LocationId = bookinglocation.Id;
-                            newSmsCampaign.PublicBookingId = newbooking.Id;
-                            newSmsCampaign.AppUser.Id = _context.Users.AsNoTracking().Where(u => u.CompanyId == bookinglocation.CompanyId).First().Id;
-
-                            newSmsCampaign.MsgTxt = @"PIN za prijavo je " + myPIN.ToString() + ". Lep pozdrav! "+ bookinglocation.Name;
+                            // obvesti stranko prek sms 
+;                            string MsgTxt = @"PIN za prijavo je " + myPIN.ToString() + ". Lep pozdrav! " + bookinglocation.Name;
                             if (string.IsNullOrEmpty(bookinglocation.Tel) == false)
-                            { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookinglocation.Tel; }
-                            var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+                            { MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookinglocation.Tel; }
 
-                            newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-                            newSmsCampaign.Name = "PublicBookingAuthorization";
-                            newSmsCampaign.Recipients.Add(new SmsMsg(inputMobile, (newbooking.ClientId.HasValue ? newbooking.ClientId.Value : 0)));
-
-                            newSmsCampaign.SendAfter = DateTime.Now;
-                            newSmsCampaign.ApprovedAt = DateTime.Now;
-
-
-                            _context.Attach(newSmsCampaign.Company);
-                            _context.Attach(newSmsCampaign.AppUser);
-                            _context.SmsCampaigns.Add(newSmsCampaign);
-                            try
-                            {
-                                _context.SaveChanges();
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "/api/publicbooking-confirmation");
-                                throw;
-                            }
+                             _smsSender.EnqueueSMS(bookinglocation.CompanyId, bookinglocation.Id, newbooking.Id, _context.Users.AsNoTracking().Where(u => u.CompanyId == bookinglocation.CompanyId).First().Id,
+                                MsgTxt, "PublicBookingAuthorization", inputMobile, (newbooking.ClientId.HasValue ? newbooking.ClientId.Value : 0));
+                            
                         }
                         else
                         {
@@ -288,13 +266,18 @@ namespace KdajBi.Web.Controllers
                             for (int i = vm.Location.Workplaces.Count - 1; i >= 0; i--)
                             {
                                 var wp = vm.Location.Workplaces.ElementAt(i);
-                                var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wp.Id).ToList();
-                                if (wpExServices.Count > 0)
-                                {
-                                    var wpServices = locationservices.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
-                                    if (wpServices.Count == 0)
-                                    { vm.Location.Workplaces.Remove(wp); }
-                                }
+                                if (wp.UseInClientBooking==true)
+                                { 
+                                    var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wp.Id).ToList();
+                                    if (wpExServices.Count > 0)
+                                    {
+                                        var wpServices = locationservices.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
+                                        if (wpServices.Count == 0)
+                                        { vm.Location.Workplaces.Remove(wp); }
+                                    }
+                                } 
+                                else
+                                { vm.Location.Workplaces.Remove(wp); }
                             }
                             return View("~/Views/Book/index.cshtml", vm);
                         }

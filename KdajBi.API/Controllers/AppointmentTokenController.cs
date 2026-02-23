@@ -24,16 +24,18 @@ namespace KdajBi.API.Controllers
     [ApiController]
     public class AppointmentTokenController : _BaseController
     {
+        protected readonly ISMSSender _smsSender;
         public AppointmentTokenController(
             ApplicationDbContext context, 
             UserManager<AppUser> userManager, 
             SignInManager<AppUser> signInManager, 
-            ILogger<AppointmentTokenController> logger, 
-            IEmailSender emailSender
+            ILogger<AppointmentTokenController> logger,
+            IEmailSender emailSender,
+            ISMSSender smsSender
             )
             : base(context, userManager, signInManager, logger, emailSender)
         {
-            
+            _smsSender = smsSender;
         }
 
         [HttpGet("/api/appointment-tokens")]
@@ -88,40 +90,17 @@ namespace KdajBi.API.Controllers
                 }
 
                 if (appointmentTokenRequest.SendSMS==true)
-                { 
-                    // obvesti stranko prek sms (appointmentToken.ClientId)
-                    SmsCampaign newSmsCampaign = new SmsCampaign();
-                    newSmsCampaign.Company.Id = _CurrentUserCompanyID();
-                    newSmsCampaign.LocationId = appointmentTokenRequest.LocationId;
-                    newSmsCampaign.AppointmentTokenId = appointmentToken.Id;
-                    newSmsCampaign.AppUser.Id = _CurrentUserID();
-
-                    newSmsCampaign.MsgTxt = @"Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/" + appointmentToken.Token;
+                {
+                    string MsgTxt = @"Pozdravljeni! Naročite se lahko preko naslednje povezave: https://kdajbi.si/booking/" + appointmentToken.Token;
                     Location myLocation = _context.Locations.Find(appointmentTokenRequest.LocationId);
-                    newSmsCampaign.MsgTxt += Environment.NewLine + @"Lep pozdrav! " + myLocation.Name;
+                    MsgTxt += Environment.NewLine + @"Lep pozdrav! " + myLocation.Name;
                     if (string.IsNullOrEmpty(myLocation.Tel) == false)
-                    { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myLocation.Tel; }
-                    var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
-                    newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-                    newSmsCampaign.Name = "AppointmentLink";
-                    newSmsCampaign.Recipients.Add(new SmsMsg(client.Mobile, appointmentToken.ClientId));
+                    { MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myLocation.Tel; }
 
-                    newSmsCampaign.SendAfter = DateTime.Now;
-                    newSmsCampaign.ApprovedAt = DateTime.Now;
+                    // obvesti stranko prek sms (appointmentToken.ClientId)
+                    _smsSender.EnqueueSMS(_CurrentUserCompanyID(), appointmentTokenRequest.LocationId, null, appointmentToken.Id, 
+                        _CurrentUserID(), MsgTxt, "AppointmentLink", client.Mobile, appointmentToken.ClientId);
                     
-
-                    _context.Attach(newSmsCampaign.Company);
-                    _context.Attach(newSmsCampaign.AppUser);
-                    _context.SmsCampaigns.Add(newSmsCampaign);
-                    try
-                    {
-                        await _context.SaveChangesAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "/api/appointment-tokens Error");
-                        throw;
-                    }
                 }
                 return Ok(appointmentToken);
             }

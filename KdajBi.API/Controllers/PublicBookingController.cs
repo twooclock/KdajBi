@@ -30,18 +30,18 @@ namespace KdajBi.API.Controllers
     public class PublicBookingController : _BaseController
     {
         protected readonly ICalendarV3Provider _calendarV3Provider;
-
+        protected readonly ISMSSender _smsSender;
         public PublicBookingController(
             ApplicationDbContext context,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             ILogger<AppointmentTokenController> logger,
             IEmailSender emailSender,
-            ICalendarV3Provider calendarV3Provider
-            )
+            ICalendarV3Provider calendarV3Provider, ISMSSender smsSender)
             : base(context, userManager, signInManager, logger, emailSender)
         {
             _calendarV3Provider = calendarV3Provider;
+            _smsSender = smsSender;
         }
 
         private async Task<List<TimeSlot>> GetFreeTimeSlots(long lid, long wpid, long sid, DateTime date, int move)
@@ -63,7 +63,7 @@ namespace KdajBi.API.Controllers
                     .Include(s => s.WorkplaceSchedules)
                     .ThenInclude(x => x.Schedule)
                     .Include(e => e.WorkplaceScheduleExceptions)
-                    .FirstOrDefaultAsync(x => x.Id == wpid && x.Active==true && x.LocationId == lid));
+                    .FirstOrDefaultAsync(x => x.Id == wpid && x.Active==true && x.UseInClientBooking == true && x.LocationId == lid));
                 }
                 else
                 {
@@ -72,7 +72,7 @@ namespace KdajBi.API.Controllers
                    .Include(s => s.WorkplaceSchedules)
                    .ThenInclude(x => x.Schedule)
                    .Include(e => e.WorkplaceScheduleExceptions)
-                   .Where(x => x.Active == true && x.LocationId == lid));
+                   .Where(x => x.Active == true && x.UseInClientBooking == true && x.LocationId == lid));
                 }
                 //remove workplaces that do not provide service specified
                 for (int i = myWP.Count - 1; i >= 0; i--)
@@ -331,10 +331,22 @@ namespace KdajBi.API.Controllers
                 foreach (var exSch in jsonArray.Children())
                 {
                     data = JObject.Parse(exSch.ToString());
-                    data.workplaceid = p_workplace.Id;
-                    if (data.resourceId == (int)dayOfTheWeek)
+
+                    // JSON: "07:00" → DateTime z istim datumom kot parameter 'date'
+                    var start = date.Date + DateTime.ParseExact((string)data["startTime"], "HH:mm", CultureInfo.InvariantCulture).TimeOfDay;
+                    var end = date.Date + DateTime.ParseExact((string)data["endTime"], "HH:mm", CultureInfo.InvariantCulture).TimeOfDay;
+
+                    var ts = new TimeSlot
                     {
-                        schedule.Add(data);
+                        wpid = p_workplace.Id,
+                        start = start,
+                        end = end
+                    };
+
+                    // resourceId je string → pretvori v int
+                    if ((int)data["resourceId"] == (int)dayOfTheWeek)
+                    {
+                        schedule.Add(ts);
                     }
                 }
                 return schedule;
@@ -449,86 +461,30 @@ namespace KdajBi.API.Controllers
             int myUserId=0;
             if (appointmentAutoApprove == true)
             {
-                // obvesti stranko prek sms (TODO: naredi prek service)
-                newSmsCampaign = new SmsCampaign();
-                newSmsCampaign.Company.Id = myPB.Location.CompanyId;
-                newSmsCampaign.LocationId = myPB.LocationId;
-                newSmsCampaign.PublicBookingId = myPB.Id;
-                var myUser = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
-                myUserId= myUser.Id;
-                newSmsCampaign.AppUser.Id = myUserId;
-
-                newSmsCampaign.MsgTxt = @"Vaš termin je bil sprejet! Naročeni ste " + myPB.Start.Value.ToString("dd.MM.yyyy") + " ob " + myPB.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + myPB.Location.Name;
+                // obvesti stranko prek sms 
+                string MsgTxt = @"Vaš termin je bil sprejet! Naročeni ste " + myPB.Start.Value.ToString("dd.MM.yyyy") + " ob " + myPB.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + myPB.Location.Name;
                 if (string.IsNullOrEmpty(myPB.Location.Tel) == false)
-                { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myPB.Location.Tel; }
-                var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+                { MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myPB.Location.Tel; }
+                var myUser = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
 
-                newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-                newSmsCampaign.Name = "PublicBookingConfimation";
-                newSmsCampaign.Recipients.Add(new SmsMsg(myPB.Mobile, (myPB.Client != null ? myPB.Client.Id : 0)));
+                _smsSender.EnqueueSMS(myPB.Location.CompanyId, myPB.LocationId, myPB.Id, null,
+                        myUser.Id, MsgTxt, "PublicBookingConfimation", myPB.Mobile, (myPB.Client != null ? myPB.Client.Id : 0));
 
-                newSmsCampaign.SendAfter = DateTime.Now;
-                newSmsCampaign.ApprovedAt = DateTime.Now;
-
-
-                _context.Attach(newSmsCampaign.Company);
-                _context.Attach(newSmsCampaign.AppUser);
-                _context.SmsCampaigns.Add(newSmsCampaign);
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "/api/publicbooking/ create PublicBookingAutoApprove SmsCampaign");
-                    throw;
-                }
+                
             }
             if (bool.Parse(SettingsHelper.getSetting(_context, myPB.Location.CompanyId, myPB.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
             {
                 string newAppointmentSmsText = myPB.Start.Value.ToString("dd.MM.yyyy") + " " + myPB.Start.Value.ToString("HH:mm")+" "+appointmentTitle;
 
                 //alert about new appointment
-                //(TODO: naredi prek service)
-                try
-                {
-                    newSmsCampaign = new SmsCampaign();
-                    newSmsCampaign.Company.Id = myPB.Location.CompanyId;
-                    newSmsCampaign.LocationId = myPB.LocationId;
-                    newSmsCampaign.PublicBookingId = myPB.Id;
-                    if (appointmentAutoApprove == false)
-                    { myUserId = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First().Id; }
-                    newSmsCampaign.AppUser.Id = myUserId;
-                    newSmsCampaign.MsgTxt = @"Novo narocilo prek spleta! "+ newAppointmentSmsText + "\nPoglej v https://KdajBi.si/appointments/index?date="+ myPB.Start.Value.ToString("yyyy-MM-dd");
-                    var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+                string MsgTxt = @"Novo narocilo prek spleta! " + newAppointmentSmsText + "\nPoglej v https://KdajBi.si/appointments/index?date=" + myPB.Start.Value.ToString("yyyy-MM-dd");
+                if (appointmentAutoApprove == false)
+                { myUserId = _context.Users.Where(c => c.CompanyId == myPB.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First().Id; }
 
-                    newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-                    newSmsCampaign.Name = "PublicBookingAlert";
-                    newSmsCampaign.Recipients.Add(new SmsMsg(myPB.Location.Tel.Replace(" ",""), 0));
+                _smsSender.EnqueueSMS(myPB.Location.CompanyId, myPB.LocationId, myPB.Id, null,
+                        myUserId, MsgTxt, "PublicBookingAlert", myPB.Location.Tel.Replace(" ", ""), 0);
 
-                    newSmsCampaign.SendAfter = DateTime.Now;
-                    newSmsCampaign.ApprovedAt = DateTime.Now;
-
-                    if (appointmentAutoApprove == false)
-                    {
-                        _context.Attach(newSmsCampaign.Company);
-                        _context.Attach(newSmsCampaign.AppUser);
-                    }
-                    else
-                    { _context.Entry(newSmsCampaign.AppUser).State = EntityState.Detached;
-                        _context.Entry(_context.Users.Find(myUserId)).State = EntityState.Detached;
-                        _context.Entry(_context.Companies.Find(myPB.Location.CompanyId)).State = EntityState.Detached;
-                        _context.Attach(newSmsCampaign.Company);
-                        _context.Attach(newSmsCampaign.AppUser);
-                    }
-
-                    _context.SmsCampaigns.Add(newSmsCampaign);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "/api/publicbooking/ create PublicBookingAlert SmsCampaign");
-                    throw;
-                }
+                
             }
             try
             {
@@ -572,7 +528,7 @@ namespace KdajBi.API.Controllers
             else
             {
                 //remove all services not done by any workplace 
-                var allWPIds = await _context.Workplaces.Where(wp => wp.Active==true && wp.LocationId == lid).Select(wp=>wp.Id).ToListAsync();
+                var allWPIds = await _context.Workplaces.Where(wp => wp.Active==true && wp.UseInClientBooking == true && wp.LocationId == lid).Select(wp=>wp.Id).ToListAsync();
                 var wpExServices = await _context.WorkplaceExcludedServices.Where(w => allWPIds.Contains(w.WorkplaceId)).ToListAsync();
                 if (wpExServices.Count > 0)
                 {
@@ -623,38 +579,13 @@ namespace KdajBi.API.Controllers
                 );
             }
 
-            // obvesti stranko prek sms (TODO: naredi prek service)
-            SmsCampaign newSmsCampaign = new SmsCampaign();
-            newSmsCampaign.Company.Id = _CurrentUserCompanyID();
-            newSmsCampaign.LocationId = myPB.LocationId;
-            newSmsCampaign.PublicBookingId = myPB.Id;
-            newSmsCampaign.AppUser.Id = _CurrentUserID();
-
-            newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + myPB.Start.Value.ToString("dd.MM.yyyy") + " ob " + myPB.Start.Value.ToString("HH:mm") + ". Lep pozdrav! "+myPB.Location.Name;
+            // obvesti stranko prek sms
+            string MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + myPB.Start.Value.ToString("dd.MM.yyyy") + " ob " + myPB.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + myPB.Location.Name;
             if (string.IsNullOrEmpty(myPB.Location.Tel) == false)
-            { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myPB.Location.Tel; }
-            var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+            { MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + myPB.Location.Tel; }
 
-            newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-            newSmsCampaign.Name = "PublicBookingConfimation";
-            newSmsCampaign.Recipients.Add(new SmsMsg(myPB.Mobile, (myPB.Client != null ? myPB.Client.Id : 0)));
-
-            newSmsCampaign.SendAfter = DateTime.Now;
-            newSmsCampaign.ApprovedAt = DateTime.Now;
-
-
-            _context.Attach(newSmsCampaign.Company);
-            _context.Attach(newSmsCampaign.AppUser);
-            _context.SmsCampaigns.Add(newSmsCampaign);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "/api/publicbooking-confirmation");
-                throw;
-            }
+            _smsSender.EnqueueSMS(_CurrentUserCompanyID(), myPB.LocationId, myPB.Id, null,
+                         _CurrentUserID(), MsgTxt, "PublicBookingConfimation", myPB.Mobile, (myPB.Client != null ? myPB.Client.Id : 0));
 
             return Ok();
         }

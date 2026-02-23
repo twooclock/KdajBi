@@ -27,18 +27,18 @@ namespace KdajBi.API.Controllers
     public class BookingController : _BaseController
     {
         protected readonly ICalendarV3Provider _calendarV3Provider;
-
+        protected readonly ISMSSender _smsSender;
         public BookingController(
             ApplicationDbContext context,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             ILogger<AppointmentTokenController> logger,
             IEmailSender emailSender,
-            ICalendarV3Provider calendarV3Provider
-            )
+            ICalendarV3Provider calendarV3Provider, ISMSSender smsSender)
             : base(context, userManager, signInManager, logger, emailSender)
         {
             _calendarV3Provider = calendarV3Provider;
+            _smsSender = smsSender;
         }
         /// <summary>
         /// returns a list of available timeslots for a specified token
@@ -178,10 +178,22 @@ namespace KdajBi.API.Controllers
                 foreach (var exSch in jsonArray.Children())
                 {
                     data = JObject.Parse(exSch.ToString());
-                    data.workplaceid = p_workplace.Id;
-                    if (data.resourceId == (int)dayOfTheWeek)
+
+                    // JSON: "07:00" → DateTime z istim datumom kot parameter 'date'
+                    var start = date.Date + DateTime.ParseExact((string)data["startTime"], "HH:mm", CultureInfo.InvariantCulture).TimeOfDay;
+                    var end = date.Date + DateTime.ParseExact((string)data["endTime"], "HH:mm", CultureInfo.InvariantCulture).TimeOfDay;
+
+                    var ts = new TimeSlot
                     {
-                        schedule.Add(data);
+                        wpid = p_workplace.Id,
+                        start = start,
+                        end = end
+                    };
+
+                    // resourceId je string → pretvori v int
+                    if ((int)data["resourceId"] == (int)dayOfTheWeek)
+                    {
+                        schedule.Add(ts);
                     }
                 }
                 return schedule;
@@ -270,27 +282,12 @@ namespace KdajBi.API.Controllers
                 string newAppointmentSmsText = bookingRequest.TimeSlot.start.ToString("dd.MM.yyyy") + " " + bookingRequest.TimeSlot.start.ToString("HH:mm")+" Čaka na potrditev: " + appointmentToken.Client.FullName + " (" + appointmentToken.Client.Mobile + ") - " + appointmentToken.Service;
 
                 //alert about new appointment
-                //(TODO: naredi prek service)
-                SmsCampaign newSmsCampaign = new SmsCampaign();
-                newSmsCampaign.Company.Id = appointmentToken.Location.CompanyId;
-                newSmsCampaign.LocationId = appointmentToken.Location.Id;
-                newSmsCampaign.AppointmentTokenId = appointmentToken.Id;
+                string MsgTxt = @"Novo narocilo prek spleta! " + newAppointmentSmsText + "\nPoglej v https://KdajBi.siappointments/index?date=" + bookingRequest.TimeSlot.start.ToString("yyyy-MM-dd");
                 var myUser = _context.Users.Where(c => c.CompanyId == appointmentToken.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
-                newSmsCampaign.AppUser.Id = myUser.Id;
 
-                newSmsCampaign.MsgTxt = @"Novo narocilo prek spleta! "+ newAppointmentSmsText + "\nPoglej v https://KdajBi.siappointments/index?date=" + bookingRequest.TimeSlot.start.ToString("yyyy-MM-dd");
-                var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
-
-                newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-                newSmsCampaign.Name = "PublicBookingAlert";
-                newSmsCampaign.Recipients.Add(new SmsMsg(appointmentToken.Location.Tel.Replace(" ", ""), 0));
-
-                newSmsCampaign.SendAfter = DateTime.Now;
-                newSmsCampaign.ApprovedAt = DateTime.Now;
-
-                _context.Attach(newSmsCampaign.Company);
-                _context.Attach(newSmsCampaign.AppUser);
-                _context.SmsCampaigns.Add(newSmsCampaign);
+                _smsSender.EnqueueSMS(appointmentToken.Location.CompanyId, appointmentToken.Location.Id, null, appointmentToken.Id,
+                        myUser.Id, MsgTxt, "PublicBookingAlert", appointmentToken.Location.Tel.Replace(" ", ""), 0);
+                
             }
             _context.SaveChanges();
 

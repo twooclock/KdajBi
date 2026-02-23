@@ -26,18 +26,20 @@ namespace KdajBi.API.Controllers
     public class BookingConfirmationController : _BaseController
     {
         protected readonly ICalendarV3Provider _calendarV3Provider;
-
+        protected readonly ISMSSender _smsSender;
         public BookingConfirmationController(
             ApplicationDbContext context,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             ILogger<AppointmentTokenController> logger,
             IEmailSender emailSender,
-            ICalendarV3Provider calendarV3Provider
+            ICalendarV3Provider calendarV3Provider,
+            ISMSSender smsSender
             )
             : base(context, userManager, signInManager, logger, emailSender)
         {
             _calendarV3Provider = calendarV3Provider;
+            _smsSender = smsSender;
         }
 
         [HttpGet("/api/booking-confirmation")]
@@ -76,32 +78,15 @@ namespace KdajBi.API.Controllers
 
             if (bool.Parse(SettingsHelper.getSetting(_context, bookingConfirmation.Location.CompanyId, bookingConfirmation.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
             {
-                // obvesti stranko prek sms (TODO: naredi prek service)
-                SmsCampaign newSmsCampaign = new SmsCampaign();
-                newSmsCampaign.Company.Id = bookingConfirmation.Location.CompanyId;
-                newSmsCampaign.LocationId = bookingConfirmation.LocationId;
-                newSmsCampaign.AppointmentTokenId = bookingConfirmation.Id;
-                var myUser = await _context.Users.Where(c => c.CompanyId == bookingConfirmation.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().FirstAsync();
-                newSmsCampaign.AppUser.Id = myUser.Id;
-
-                newSmsCampaign.MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + bookingConfirmation.Start.Value.ToString("dd.MM.yyyy") + " ob " + bookingConfirmation.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + bookingConfirmation.Location.Name;
+                // obvesti stranko prek sms
+                string MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + bookingConfirmation.Start.Value.ToString("dd.MM.yyyy") + " ob " + bookingConfirmation.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + bookingConfirmation.Location.Name;
                 if (string.IsNullOrEmpty(bookingConfirmation.Location.Tel) == false)
-                { newSmsCampaign.MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookingConfirmation.Location.Tel; }
-                var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
+                { MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookingConfirmation.Location.Tel; }
+                var myUser = await _context.Users.Where(c => c.CompanyId == bookingConfirmation.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().FirstAsync();
 
-                newSmsCampaign.MsgSegments = mySmsInfo.Messages;
-
-                newSmsCampaign.Name = "AppointmentConfimation";
-
-                newSmsCampaign.Recipients.Add(new SmsMsg(bookingConfirmation.Client.Mobile, bookingConfirmation.Client.Id));
-
-                newSmsCampaign.SendAfter = DateTime.Now;
-                newSmsCampaign.ApprovedAt = DateTime.Now;
-
-
-                _context.Attach(newSmsCampaign.Company);
-                _context.Attach(newSmsCampaign.AppUser);
-                _context.SmsCampaigns.Add(newSmsCampaign);
+                _smsSender.EnqueueSMS(bookingConfirmation.Location.CompanyId, bookingConfirmation.LocationId, null, bookingConfirmation.Id,
+                        myUser.Id, MsgTxt, "AppointmentConfimation", bookingConfirmation.Client.Mobile, bookingConfirmation.Client.Id);
+                
             }
             try
             {
