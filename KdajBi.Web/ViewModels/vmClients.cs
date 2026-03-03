@@ -10,7 +10,7 @@ namespace KdajBi.Web.ViewModels
     {
         public string ClientsJson;
         public List<Tuple<string, string, long>> GoogleCalendars = new List<Tuple<string, string, long>>(); //new Dictionary<string, string>();
-
+        public int ClientId;
     }
 
 

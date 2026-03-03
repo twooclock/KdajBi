@@ -1,6 +1,7 @@
 ﻿@using Newtonsoft.Json;
 @using KdajBi.Web;
 @using KdajBi.Web.ViewModels;
+@model vmClient
 
 @{
     ViewData["Title"] = "Stranke";
@@ -490,6 +491,12 @@
                 ],
             });
 
+            @if (Model.ClientId > 0)
+            {
+                @:SelectedClientID = @Model.ClientId;
+                @:showClientDetail(SelectedClientID);
+            }
+
         });
 
         function truncate( str, n, useWordBoundary ){
@@ -555,19 +562,25 @@
         }
 
         async function loadAppointmentsTab() {
+            await refreshGAPIToken();
+            dsClientAppointments = [];
 
-            refreshGAPIToken().then(async () => {
-                dsClientAppointments = [];
-                gooCals.forEach(async function (gcal) {
-                    //for each goo calendar for location
-                    console.log(gcal.Item1, gcal.Item2);
-                    await findClientEventsForCalendar(gcal.Item1,gcal.Item2, SelectedClientID, "").then(() => { console.log("refresh table"); var t = $("#dtAppointments").DataTable(); t.clear(); t.rows.add(dsClientAppointments); t.draw(); }).catch(e => { console.log(e); });
-                });
-                
+            for (const gcal of gooCals) {
+                console.log(gcal.Item1, gcal.Item2);
+                try {
+                    await findClientEventsForCalendar(gcal.Item1, gcal.Item2, SelectedClientID, "");
+                } catch (e) {
+                    console.log(e);
+                }
+            }
 
-                
-            });
+            // Sort by dateTime (index 1) ascending
+            //dsClientAppointments.sort((a, b) => new Date(a[1]) - new Date(b[1]));
 
+            const t = $("#dtAppointments").DataTable();
+            t.clear();
+            t.rows.add(dsClientAppointments);
+            t.order([1, 'desc']).draw();
         }
 
         async function findClientEventsForCalendar(p_gcalId, p_gcalName, p_clientId, pageToken) {

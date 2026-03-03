@@ -45,15 +45,26 @@ namespace KdajBi.Web.Controllers
             return NotFound();
         }
 
-
-        [Route("/Clients")]
-        public async Task<IActionResult> Index()
+        [Route("/Clients/{id?}")]
+        public async Task<IActionResult> Index(int id=0)
         {
             long defLocId = await DefaultLocationId();
             if (await LocationIsMine(defLocId))
             {
                 vmClient myVM = new vmClient();
-                myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == defLocId).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + " " + p.Mobile) }).ToList()).Replace(@"\", @"\\");
+                
+                //myVM.ClientsJson = JsonSerializer.Serialize(_context.Clients.Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == defLocId).OrderBy(o => o.FirstName).ThenBy(o => o.LastName).Select(p => new { value = p.Id, label = (p.FullName + " " + p.Mobile) }).ToList()).Replace(@"\", @"\\");
+                var clients = _context.Clients
+                    .Where(c => c.CompanyId == _CurrentUserCompanyID() && c.LocationId == defLocId)
+                    .OrderBy(o => o.FirstName)
+                    .ThenBy(o => o.LastName)
+                    .Select(p => new { value = p.Id, label = (p.FullName + " " + p.Mobile) })
+                    .ToList();
+
+                if (clients.Any(c => c.value == id)) { myVM.ClientId = id; } else { myVM.ClientId = 0; }
+
+                myVM.ClientsJson = JsonSerializer.Serialize(clients).Replace(@"\", @"\\");
+
                 var myLocation = _context.Locations.Include(s => s.Schedule).Include(w => w.Workplaces).FirstOrDefault(x => x.Id == defLocId);
                 if (myLocation != null)
                 {

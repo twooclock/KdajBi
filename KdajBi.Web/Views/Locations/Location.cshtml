@@ -2662,7 +2662,7 @@
             { document.getElementById(p_IdlblInfo).innerHTML="To sporočilo bo poslano v enem delu."; }
         }
         function saveSMS() {
-                        if ($("#formSMS").validate().element('#SMS_GOO_Time') == false) {return; }
+            if ($("#formSMS").validate().element('#SMS_GOO_Time') == false) {return; }
             var settings = new Object();
 
             settings["SMS_SenderName"] = $("#SMS_SenderName").val();

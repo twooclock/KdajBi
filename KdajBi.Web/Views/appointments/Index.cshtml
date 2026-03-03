@@ -210,6 +210,11 @@
                                     </div>
                                 </div>
                                 <input id="txtClientsearch" type="text" class="form-control" placeholder="Stranka..." onclick="$('#divClientAppointments').hide(); $('#txtClientsearch').select(); $('#txtClientsearch').autocomplete('search')">
+                                <div class="input-group-append">
+                                    <a id="btnOpenPage" href="javascript:void(0);" rel="noopener noreferrer" class="input-group-text" onclick="showClient();">
+                                        <span class="fas fa-address-card"></span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
@@ -1214,6 +1219,12 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                     });
         }
 
+        function showClient() {
+                    getClientID().catch((result) => { toastr.info(result); }).then(async (resultClientID) => {
+                        window.open('/clients/' + resultClientID, '_blank');
+                    });
+
+                }
 
             document.addEventListener('DOMContentLoaded', function() {
                 // load locale and Get flatpicker localized instance
@@ -1320,7 +1331,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                     });
 
 
-
+                
 
 
                 //fill client search
@@ -1350,6 +1361,7 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
                     focus: function (event, ui) { event.preventDefault(); return false; }
                 });
 
+                
 
 
                 $('#formEvent').validate({
