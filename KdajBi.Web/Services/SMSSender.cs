@@ -56,6 +56,9 @@ namespace KdajBi.Web.Services
         public bool EnqueueSMS(long p_CompanyId, long p_LocationId, long p_PublicBookingId, int p_AppUserId, string p_MsgTxt, 
             string p_CampaignName, string p_RecipientMobileNumber, long p_RecipientClientId)
         {
+            if (bool.Parse(SettingsHelper.getSetting(_context, p_CompanyId, p_LocationId, "SMS_removeNonGSM7", "false")) == true)
+            { p_MsgTxt = Core.Utils.ReplaceNonGSM7Chars(p_MsgTxt); }
+
             var newSmsCampaign = new SmsCampaign
             {
                 CompanyId = p_CompanyId,
@@ -74,8 +77,8 @@ namespace KdajBi.Web.Services
             );
 
             // Attach navigation properties if they were auto-initialized
-    // Check if already tracked before attaching
-    if (newSmsCampaign.Company != null)
+            // Check if already tracked before attaching
+            if (newSmsCampaign.Company != null)
             {
                 var trackedCompany = _context.Companies.Local
                     .FirstOrDefault(c => c.Id == p_CompanyId);

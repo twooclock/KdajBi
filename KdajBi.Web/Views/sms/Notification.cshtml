@@ -520,10 +520,12 @@
                     success: function (result) {
                         var smsInfo = "";
                         var cssClass = "text-success";
-                        if (result.limit > 0)
-                            { smsInfo = "Pošljete lahko " + result.limit + " "+SporocilZBesedo(result.limit)+"."; }
-                        else
-                        { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
+                         if (result.deviceid==""){
+                            if (result.limit > 0)
+                                { smsInfo = "Pošljete lahko " + result.limit + " "+SporocilZBesedo(result.limit)+"."; }
+                            else
+                            { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
+                         }
                         if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
 
                         $('#limitinfo').removeClass("text-success");
@@ -562,13 +564,15 @@
                                 var eachSMSSegments = SmsCounter.count($('#txtMessage').val()).messages;
                                 var limitForExactSMS = Math.floor(result.limit / eachSMSSegments);
                                 var totalSMSSpent = result.recipients * eachSMSSegments;
-                                if (result.limit >= totalSMSSpent) { smsInfo = "Pošljete lahko " + limitForExactSMS + " " + SporocilZBesedo(result.limit) + "." }
-                                else {
-                                    smsInfo = "Pošljete lahko " + limitForExactSMS + " "+SporocilZBesedo(limitForExactSMS)+"."
-                                    smsInfo = (result.recipients - limitForExactSMS) + " "+SporocilZBesedo(result.recipients - limitForExactSMS)+" ne bo poslanih! Naročite dodatne sms-e! (Potrebnih je "+(result.recipients - limitForExactSMS)*eachSMSSegments+".)";
-                                    cssClass = "text-warning";
+                                if (result.deviceid==""){
+                                    if (result.limit >= totalSMSSpent) { smsInfo = "Pošljete lahko " + limitForExactSMS + " " + SporocilZBesedo(result.limit) + "." }
+                                    else {
+                                        smsInfo = "Pošljete lahko " + limitForExactSMS + " "+SporocilZBesedo(limitForExactSMS)+"."
+                                        smsInfo = (result.recipients - limitForExactSMS) + " "+SporocilZBesedo(result.recipients - limitForExactSMS)+" ne bo poslanih! Naročite dodatne sms-e! (Potrebnih je "+(result.recipients - limitForExactSMS)*eachSMSSegments+".)";
+                                        cssClass = "text-warning";
+                                    }
+                                    if (result.limit == 0) { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
                                 }
-                                if (result.limit == 0) { smsInfo = "Ni limita! Naročite dodatne sms-e!"; cssClass = "text-danger"; }
                                 if (result.limit == -1) { smsInfo = "Prišlo je do napake. Pošiljanje trenutno ni mogoče!"; cssClass = "text-danger"; }
 
                                 $('#lblSending').text("Prejemnikov: " + result.recipients);

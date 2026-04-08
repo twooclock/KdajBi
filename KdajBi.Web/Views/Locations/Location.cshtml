@@ -616,7 +616,16 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>                                            
+                                            </div>
+                                                <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
+                                                    <div class="form-check">
+                                                        <input type="checkbox" class="form-check-input" id="SMS_removeNonGSM7" >
+                                                        <label class="form-check-label" for="SMS_removeNonGSM7">
+                                                            Pred pošiljanjem zamenjaj šumnike 
+                                                            <a href="#!" data-toggle="popover" data-content="Pred pošiljanjem bodo šumniki zamenjani (č,š,ž -> c,s,z)."><i class="fa fa-info-circle"></i></a>
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             <div class="form-group">
                                                 <div class="col-sm-offset-2 col-sm-10">
                                                     <button type="button" class="btn btn-danger" onclick="saveSMS()">Shrani</button>
@@ -2684,6 +2693,7 @@
             settings["SMS_GOO_Msg"] = $("#SMS_GOO_Msg").val();
             settings["SMS_GOO_AutoApprove"] = !$("#SMS_GOO_AutoApprove").prop("checked");
             settings["SMS_AppointmentSMS"] = $("#SMS_AppointmentSMS").prop("checked");
+            settings["SMS_removeNonGSM7"] = $("#SMS_removeNonGSM7").prop("checked");
 
             getAPIToken().then((result) => {
                 $.ajax({
@@ -2716,6 +2726,8 @@
             settings["SMS_GOO_Cals"] = '';
             settings["SMS_GOO_AutoApprove"] = 'false';
             settings["SMS_AppointmentSMS"] = 'true';
+            settings["SMS_removeNonGSM7"] = 'false';
+                        
             getAPIToken().then((result) => {
             $.ajax({
                 type: "post",
@@ -2762,6 +2774,9 @@
                      if (result["SMS_AppointmentSMS"] != undefined) {
                          if (result["SMS_AppointmentSMS"] == "true") { $('#SMS_AppointmentSMS').prop('checked', true);}
                      }
+                    if (result["SMS_removeNonGSM7"] != undefined) {
+                        if (result["SMS_removeNonGSM7"] == "true") { $('#SMS_removeNonGSM7').prop('checked', true);}
+                    }
                 },
                 error: function (xhr, status, error) {
                     toastr.error("Napaka:" + error.toString());

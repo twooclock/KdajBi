@@ -248,17 +248,18 @@ namespace KdajBi.API.Controllers
         public async Task<ActionResult<dtoSmsCampaigin>> PostSmsInfo(dtoSmsCampaigin p_SmsCampaigin)
         {
             int ClientSmsLimit = 0;
+            string DeviceId = "";
             long recipientsCount = 0;
             if (ModelState.IsValid)
             {
                 SmsCampaign newSmsCampaign = GetSmsCampaignFromSmsc(p_SmsCampaigin);
                 //get sms limit info
-                ClientSmsLimit = _smsInfo.SmsLimitInfo("KB" + _CurrentUserCompanyID().ToString(), _CurrentUserCompanyTaxID());
+                (ClientSmsLimit,DeviceId) = _smsInfo.SmsLimitInfo("KB" + _CurrentUserCompanyID().ToString(), _CurrentUserCompanyTaxID());
                 recipientsCount = newSmsCampaign.RecipientsCount;
 
             }
 
-            return Json(new { limit = ClientSmsLimit, recipients = recipientsCount });
+            return Json(new { limit = ClientSmsLimit, recipients = recipientsCount, deviceid=DeviceId });
 
         }
 
@@ -376,7 +377,10 @@ namespace KdajBi.API.Controllers
             newSmsCampaign.LocationId = p_SmsCampaigin.LocationId;
             newSmsCampaign.AppUser.Id = _CurrentUserID();
             newSmsCampaign.MsgTxt = p_SmsCampaigin.MsgTxt;
-            
+
+            if (bool.Parse(SettingsHelper.getSetting(_context, newSmsCampaign.Company.Id, newSmsCampaign.LocationId, "SMS_removeNonGSM7", "false")) == true)
+            { newSmsCampaign.MsgTxt = Utils.ReplaceNonGSM7Chars(newSmsCampaign.MsgTxt); }
+
             var mySmsInfo = new SmsCounter(newSmsCampaign.MsgTxt);
             newSmsCampaign.MsgSegments = mySmsInfo.Messages;
 
