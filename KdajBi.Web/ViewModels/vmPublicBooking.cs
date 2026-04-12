@@ -22,6 +22,7 @@ namespace KdajBi.Web.ViewModels
         public bool PublicBooking_ShowAnyone;
         public bool PublicBooking_AlertMeWithSMS;
         public bool PublicBooking_AuthorizeAfterSlotSelection;
+        public bool PublicBooking_DontAuthorizeClients;
         public bool PublicBooking_ClientDataIsMandatory;
         public string PublicBooking_TOS;
         public string PublicBooking_CSS;

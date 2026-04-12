@@ -305,6 +305,7 @@
         var maxDate = new Date().fp_incr(pb_maxdays)
 
         var pb_AuthorizeAfterSlotSelection = @Html.Raw(@Model.PublicBooking_AuthorizeAfterSlotSelection.ToString().ToLower());
+        var pb_DontAuthorizeClients = @Html.Raw(@Model.PublicBooking_DontAuthorizeClients.ToString().ToLower());
 
         function loadScript(src) {
             return new Promise(function (resolve, reject) {

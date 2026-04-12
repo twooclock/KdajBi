@@ -55,6 +55,7 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_ShowAnyone = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ShowAnyone", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
+            vm.PublicBooking_DontAuthorizeClients = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_DontAuthorizeClients", false);
             vm.PublicBooking_TOS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_TOS", "");
             vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
             vm.PublicBooking_AllowClientNotes = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowClientNotes", true);
@@ -109,6 +110,7 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_ShowAnyone = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ShowAnyone", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
+            vm.PublicBooking_DontAuthorizeClients= SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_DontAuthorizeClients", false);
             vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
             vm.PublicBooking_AllowClientNotes = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowClientNotes", true);
             vm.PublicBooking_AutoApprove = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AutoApprove", false);
@@ -118,6 +120,99 @@ namespace KdajBi.Web.Controllers
             return View("~/Views/Book/Auth.cshtml", vm);
         }
 
+        private IActionResult BypassPIN(string token, string inputMobile, string inputPIN, string pbid, long wpid, long sid, string date, string timeslot, string clientnotes, long clientwpid, Location bookinglocation, vmPublicBooking vm)
+        {
+            if (inputMobile != null && inputPIN == null)
+            {
+                var newbooking = new PublicBooking();
+
+                if (bookinglocation != null)
+                {
+                    //allow only 3 bookings from one mobile number a day
+                    if (_context.PublicBookings.Where(pb => pb.Token == token && pb.Mobile == inputMobile && pb.CreatedDate.Value.Date == DateTime.Now.Date).Count() < 3)
+                    {
+                        //allow only slovenian, austrian and italian mobile numbers
+                        if (Utils.siMobilePrefixes.Any(x => inputMobile.StartsWith(x)) || Utils.allowedMobilePrefixes.Any(x => inputMobile.StartsWith(x)))
+                        {
+                            //create public booking 
+                            newbooking.Token = token;
+                            newbooking.Mobile = inputMobile;
+                            
+                            newbooking.PIN = 0000;
+                            newbooking.LocationId = bookinglocation.Id;
+                            newbooking.ClientNotes = vm.PublicBooking_ClientNotes;
+                            newbooking.ClientWorkplaceId = (vm.PublicBooking_ClientWPID == 0 ? null : vm.PublicBooking_ClientWPID);
+
+                            string mobileroot = ((inputMobile.Length - 8) >= 0 ? inputMobile.Substring(inputMobile.Length - 8) : inputMobile);
+                            var myClient = _context.Clients.Where(c => c.CompanyId == bookinglocation.CompanyId && c.Mobile.EndsWith(mobileroot)).FirstOrDefault();
+                            if (myClient != null)
+                            {
+                                newbooking.ClientId = myClient.Id;
+                                newbooking.Authorized = DateTime.Now;
+                                _context.PublicBookings.Add(newbooking);
+                                _context.SaveChanges();
+                                vm.PublicBookingId = newbooking.Id;
+
+                                if (vm.sid == 0)
+                                {
+                                    //remove any workplaces that have no services
+                                    var locationservices = _context.Services.Where(s => s.LocationId == bookinglocation.Id && s.Active == true).ToList();
+                                    for (int i = vm.Location.Workplaces.Count - 1; i >= 0; i--)
+                                    {
+                                        var wp = vm.Location.Workplaces.ElementAt(i);
+                                        if (wp.UseInClientBooking == true)
+                                        {
+                                            var wpExServices = _context.WorkplaceExcludedServices.Where(w => w.WorkplaceId == wp.Id).ToList();
+                                            if (wpExServices.Count > 0)
+                                            {
+                                                var wpServices = locationservices.Where(p => wpExServices.All(p2 => p2.ServiceId != p.Id)).ToList();
+                                                if (wpServices.Count == 0)
+                                                { vm.Location.Workplaces.Remove(wp); }
+                                            }
+                                        }
+                                        else
+                                        { vm.Location.Workplaces.Remove(wp); }
+                                    }
+                                    return View("~/Views/Book/index.cshtml", vm);
+                                }
+                                else
+                                {
+                                    return View("~/Views/Book/BookSlot.cshtml", vm);
+                                }
+                            }
+                            else
+                            {
+                                vm.ErrorMsg = "Neveljavna mobilna številka? Pokličite nas.";
+                                return View("~/Views/Book/Error.cshtml", vm);
+                            }
+
+                            
+                        }
+                        else
+                        {
+                            vm.ErrorMsg = "Neveljavna mobilna številka? Pokličite nas.";
+                            return View("~/Views/Book/Error.cshtml", vm);
+                        }
+                    }
+                    else
+                    {
+                        vm.ErrorMsg = "Iz varnostnih razlogov so dovoljene le tri prijave na dan. Hvala za razumevanje, pokličite nas ali poskusite spet jutri!";
+                        return View("~/Views/Book/Error.cshtml", vm);
+                    }
+                }
+
+                vm.PublicBookingId = newbooking.Id;
+
+                return View("~/Views/Book/Auth.cshtml", vm);
+            }
+            else
+            {
+                //not found
+                vm.ErrorMsg = "Nekaj je šlo narobe...!";
+                return View("~/Views/Book/Error.cshtml", vm);
+            }
+
+        }
 
         [AllowAnonymous]
         [Route("/narocanje/auth/mobile")]
@@ -150,12 +245,19 @@ namespace KdajBi.Web.Controllers
             vm.PublicBooking_ShowAnyone = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ShowAnyone", true);
             vm.PublicBooking_AlertMeWithSMS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AlertMeWithSMS", true);
             vm.PublicBooking_AuthorizeAfterSlotSelection = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AuthorizeAfterSlotSelection", false);
+            vm.PublicBooking_DontAuthorizeClients = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_DontAuthorizeClients", false);
             vm.PublicBooking_ClientDataIsMandatory = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_ClientDataIsMandatory", false);
             vm.PublicBooking_TOS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_TOS", "");
             vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_CSS", "");
             vm.PublicBooking_AllowClientNotes = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AllowClientNotes", true);
             vm.PublicBooking_AutoApprove = SettingsHelper.getSetting(_context, bookinglocation.CompanyId, bookinglocation.Id, "PublicBooking_AutoApprove", false);
 
+            if (vm.PublicBooking_DontAuthorizeClients == true)
+            {
+                string mobileroot = ((inputMobile.Length - 8) >= 0 ? inputMobile.Substring(inputMobile.Length - 8) : inputMobile);
+                var knownClient = _context.Clients.Where(c => c.CompanyId == bookinglocation.CompanyId && c.Mobile.EndsWith(mobileroot)).FirstOrDefault();
+                if (knownClient != null) { return BypassPIN(token, inputMobile, inputPIN, pbid, wpid, sid, date, timeslot, clientnotes, clientwpid, bookinglocation, vm); }
+            }
 
             if (inputMobile != null && inputPIN == null)
             {

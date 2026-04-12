@@ -273,6 +273,18 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="row">
+                                                    <div class="form-group col-sm d-flex flex-column justify-content-end">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingDontAuthorizeClients">
+                                                            <label class="form-check-label" for="chkPublicBookingDontAuthorizeClients">
+                                                                Ne zahtevaj prijave za znane stranke
+                                                                <a href="#!" data-toggle="popover" data-content="Privzeto se mora stranka prijavit (s pinom prejetim prek sms). Če obkljukate to možnost se znanim strankam ne bo treba prijavljati. Znane stranke so tiste, ki jih imate vpisane v evidenci strank."><i class="fa fa-info-circle"></i></a>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                                  <div class="form-group">
                                                     <label for="txtPublicBookingTOS" class="control-label">Splošni pogoji naročanja:
                                                     <a href="#!" data-toggle="popover" data-content="Vpišite svoje splošne pogoje za samostojno naročanje (Če pustite prazno, pogoji ne bodo prikazani!)"><i class="fa fa-info-circle"></i></a>
@@ -1573,6 +1585,8 @@
                 settings["PublicBooking_ShowAnyone"] = $("#chkPublicBookingShowAnyone").prop("checked");
                 settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
                 settings["PublicBooking_AuthorizeAfterSlotSelection"] = $("#chkPublicBookingAuthorizeAfterSlotSelection").prop("checked");
+                settings["PublicBooking_DontAuthorizeClients"] = $("#chkPublicBookingDontAuthorizeClients").prop("checked");
+                                  
                 settings["PublicBooking_ClientDataIsMandatory"] = $("#chkPublicBookingClientDataIsMandatory").prop("checked");
                 settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
                 settings["PublicBooking_AllowClientNotes"] = $("#chkPublicBookingAllowClientNotes").prop("checked");
@@ -1613,6 +1627,7 @@
             settings["PublicBooking_ShowAnyone"] = 'true';
             settings["PublicBooking_AlertMeWithSMS"] = 'true';
             settings["PublicBooking_AuthorizeAfterSlotSelection"] = 'false';
+            settings["PublicBooking_DontAuthorizeClients"] = 'false';
             settings["PublicBooking_ClientDataIsMandatory"] = 'false';
             settings["PublicBooking_TOS"] = $('#txtPublicBookingTOS').summernote('code');
             settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
@@ -1641,6 +1656,9 @@
                     }
                     if (result["PublicBooking_AuthorizeAfterSlotSelection"] != undefined) {
                         if (result["PublicBooking_AuthorizeAfterSlotSelection"] == "true") { $('#chkPublicBookingAuthorizeAfterSlotSelection').prop('checked', true); }
+                    }
+                    if (result["PublicBooking_DontAuthorizeClients"] != undefined) {
+                        if (result["PublicBooking_DontAuthorizeClients"] == "true") { $('#chkPublicBookingDontAuthorizeClients').prop('checked', true); }
                     }
                     if (result["PublicBooking_ClientDataIsMandatory"] != undefined) {
                         if (result["PublicBooking_ClientDataIsMandatory"] == "true") { $('#chkPublicBookingClientDataIsMandatory').prop('checked', true); }
