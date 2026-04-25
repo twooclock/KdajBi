@@ -2392,18 +2392,21 @@ function pickTextColorBasedOnBgColorSimple(bgColor) {
         async function showClientAppointments(p_ClientID){
             refreshGAPIToken().then(async () => {
                 dsClientAppointments = [];
-                gooCals.forEach(async function (gcal) {
-                    //for each goo calendar for location
-                    await findClientEventsForCalendar(gcal.Item1,gcal.Item2, SelectedClientID, "").then(() => { console.log("refresh client appointments table"); redrawClientAppointments(); }).catch(e => { console.log(e); });
-                });
-                
+                // gooCals.forEach(async function (gcal) {
+                //     //for each goo calendar for location
+                //     await findClientEventsForCalendar(gcal.Item1,gcal.Item2, SelectedClientID, "").then(() => { console.log("refresh client appointments table"); redrawClientAppointments(); }).catch(e => { console.log(e); });
+                // });
+                await Promise.all(gooCals.map(async function (gcal) {
+                      await findClientEventsForCalendar(gcal.Item1, gcal.Item2, SelectedClientID, "").catch(e => { console.log(e); });
+                 }));
+                 redrawClientAppointments();
 
-                
             });
         }
 
         function redrawClientAppointments(){
             $("#tableBody").empty();
+            dsClientAppointments.sort((a, b) => new Date(b[1]) - new Date(a[1]));
             dsClientAppointments.slice(0, 3).forEach(function(item) { // Only first 3 items are added
                 var opis=item[2];
                 opis=opis.replace($("#txtClientsearch").val(),'');
