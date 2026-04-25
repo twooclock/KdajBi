@@ -273,6 +273,18 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="row">
+                                                    <div class="form-group col-sm d-flex flex-column justify-content-end">
+                                                        <div class="form-check">
+                                                            <input type="checkbox" class="form-check-input" id="chkPublicBookingDontAuthorizeClients">
+                                                            <label class="form-check-label" for="chkPublicBookingDontAuthorizeClients">
+                                                                Ne zahtevaj prijave za znane stranke
+                                                                <a href="#!" data-toggle="popover" data-content="Privzeto se mora stranka prijavit (s pinom prejetim prek sms). Če obkljukate to možnost se znanim strankam ne bo treba prijavljati. Znane stranke so tiste, ki jih imate vpisane v evidenci strank."><i class="fa fa-info-circle"></i></a>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                                  <div class="form-group">
                                                     <label for="txtPublicBookingTOS" class="control-label">Splošni pogoji naročanja:
                                                     <a href="#!" data-toggle="popover" data-content="Vpišite svoje splošne pogoje za samostojno naročanje (Če pustite prazno, pogoji ne bodo prikazani!)"><i class="fa fa-info-circle"></i></a>
@@ -616,7 +628,16 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>                                            
+                                            </div>
+                                                <div class="form-group col-sm-6 d-flex flex-column justify-content-end">
+                                                    <div class="form-check">
+                                                        <input type="checkbox" class="form-check-input" id="SMS_removeNonGSM7" >
+                                                        <label class="form-check-label" for="SMS_removeNonGSM7">
+                                                            Pred pošiljanjem zamenjaj šumnike 
+                                                            <a href="#!" data-toggle="popover" data-content="Pred pošiljanjem bodo šumniki zamenjani (č,š,ž -> c,s,z)."><i class="fa fa-info-circle"></i></a>
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             <div class="form-group">
                                                 <div class="col-sm-offset-2 col-sm-10">
                                                     <button type="button" class="btn btn-danger" onclick="saveSMS()">Shrani</button>
@@ -1564,6 +1585,8 @@
                 settings["PublicBooking_ShowAnyone"] = $("#chkPublicBookingShowAnyone").prop("checked");
                 settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
                 settings["PublicBooking_AuthorizeAfterSlotSelection"] = $("#chkPublicBookingAuthorizeAfterSlotSelection").prop("checked");
+                settings["PublicBooking_DontAuthorizeClients"] = $("#chkPublicBookingDontAuthorizeClients").prop("checked");
+                                  
                 settings["PublicBooking_ClientDataIsMandatory"] = $("#chkPublicBookingClientDataIsMandatory").prop("checked");
                 settings["PublicBooking_AlertMeWithSMS"] = $("#chkPublicBookingAlertMeWithSMS").prop("checked");
                 settings["PublicBooking_AllowClientNotes"] = $("#chkPublicBookingAllowClientNotes").prop("checked");
@@ -1604,6 +1627,7 @@
             settings["PublicBooking_ShowAnyone"] = 'true';
             settings["PublicBooking_AlertMeWithSMS"] = 'true';
             settings["PublicBooking_AuthorizeAfterSlotSelection"] = 'false';
+            settings["PublicBooking_DontAuthorizeClients"] = 'false';
             settings["PublicBooking_ClientDataIsMandatory"] = 'false';
             settings["PublicBooking_TOS"] = $('#txtPublicBookingTOS').summernote('code');
             settings["PublicBooking_CSS"] = $("#txtPublicBookingCSS").val();
@@ -1632,6 +1656,9 @@
                     }
                     if (result["PublicBooking_AuthorizeAfterSlotSelection"] != undefined) {
                         if (result["PublicBooking_AuthorizeAfterSlotSelection"] == "true") { $('#chkPublicBookingAuthorizeAfterSlotSelection').prop('checked', true); }
+                    }
+                    if (result["PublicBooking_DontAuthorizeClients"] != undefined) {
+                        if (result["PublicBooking_DontAuthorizeClients"] == "true") { $('#chkPublicBookingDontAuthorizeClients').prop('checked', true); }
                     }
                     if (result["PublicBooking_ClientDataIsMandatory"] != undefined) {
                         if (result["PublicBooking_ClientDataIsMandatory"] == "true") { $('#chkPublicBookingClientDataIsMandatory').prop('checked', true); }
@@ -2662,7 +2689,7 @@
             { document.getElementById(p_IdlblInfo).innerHTML="To sporočilo bo poslano v enem delu."; }
         }
         function saveSMS() {
-                        if ($("#formSMS").validate().element('#SMS_GOO_Time') == false) {return; }
+            if ($("#formSMS").validate().element('#SMS_GOO_Time') == false) {return; }
             var settings = new Object();
 
             settings["SMS_SenderName"] = $("#SMS_SenderName").val();
@@ -2684,6 +2711,7 @@
             settings["SMS_GOO_Msg"] = $("#SMS_GOO_Msg").val();
             settings["SMS_GOO_AutoApprove"] = !$("#SMS_GOO_AutoApprove").prop("checked");
             settings["SMS_AppointmentSMS"] = $("#SMS_AppointmentSMS").prop("checked");
+            settings["SMS_removeNonGSM7"] = $("#SMS_removeNonGSM7").prop("checked");
 
             getAPIToken().then((result) => {
                 $.ajax({
@@ -2716,6 +2744,8 @@
             settings["SMS_GOO_Cals"] = '';
             settings["SMS_GOO_AutoApprove"] = 'false';
             settings["SMS_AppointmentSMS"] = 'true';
+            settings["SMS_removeNonGSM7"] = 'false';
+                        
             getAPIToken().then((result) => {
             $.ajax({
                 type: "post",
@@ -2762,6 +2792,9 @@
                      if (result["SMS_AppointmentSMS"] != undefined) {
                          if (result["SMS_AppointmentSMS"] == "true") { $('#SMS_AppointmentSMS').prop('checked', true);}
                      }
+                    if (result["SMS_removeNonGSM7"] != undefined) {
+                        if (result["SMS_removeNonGSM7"] == "true") { $('#SMS_removeNonGSM7').prop('checked', true);}
+                    }
                 },
                 error: function (xhr, status, error) {
                     toastr.error("Napaka:" + error.toString());

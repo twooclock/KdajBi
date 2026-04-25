@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +18,7 @@ using System.Linq.Dynamic.Core;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace KdajBi.API.Controllers
 {
@@ -23,12 +26,12 @@ namespace KdajBi.API.Controllers
     [ApiController]
     public class WorkplacesController : _BaseController
     {
-        //public IList<AuthenticationScheme> ExternalLogins { get; set; }
+        private IConfiguration _config;
 
-        public WorkplacesController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<WorkplacesController> logger, IEmailSender emailSender)
+        public WorkplacesController(ApplicationDbContext context, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ILogger<WorkplacesController> logger, IEmailSender emailSender, IConfiguration config)
             : base(context, userManager, signInManager, logger, emailSender)
         {
-            
+            _config = config;
         }
 
         [Authorize(Roles = "Super, Admin")]
@@ -178,6 +181,18 @@ namespace KdajBi.API.Controllers
                 }
 
             }
+            //
+            var gt =  _CurrentUserGooToken();
+            var gCalIds = new List<string>();
+            gCalIds.Add(workplace.GoogleCalendarID);
+            using (GoogleService service = new GoogleService(User.Identity.Name, gt))
+            {
+                if (service.EnsureReadPermissionsForService(JsonConvert.SerializeObject(gCalIds), _config.GetSection("GoogleSettings")["GooServiceAccount"]) == false)
+                {
+                    _logger.LogError("Not all calendar access permissions for user " + User.Identity.Name + " are set!");
+                }
+            }
+            
             return Json("OK");
 
         }

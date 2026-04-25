@@ -56,6 +56,9 @@ namespace KdajBi
         public bool EnqueueSMS(long p_CompanyId, long p_LocationId, long? p_PublicBookingId, long? p_AppointmentTokenId, int p_AppUserId, string p_MsgTxt, 
             string p_CampaignName, string p_RecipientMobileNumber, long p_RecipientClientId)
         {
+            if (bool.Parse(SettingsHelper.getSetting(_context, p_CompanyId, p_LocationId, "SMS_removeNonGSM7", "false")) == true)
+            { p_MsgTxt = Utils.ReplaceNonGSM7Chars(p_MsgTxt); }
+
             var newSmsCampaign = new SmsCampaign
             {
                 CompanyId = p_CompanyId,
@@ -69,6 +72,7 @@ namespace KdajBi
                 SendAfter = DateTime.Now,
                 ApprovedAt = DateTime.Now
             };
+            
 
             newSmsCampaign.Recipients.Add(
                 new SmsMsg(p_RecipientMobileNumber, p_RecipientClientId)

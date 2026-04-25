@@ -282,7 +282,7 @@ namespace KdajBi.API.Controllers
                 string newAppointmentSmsText = bookingRequest.TimeSlot.start.ToString("dd.MM.yyyy") + " " + bookingRequest.TimeSlot.start.ToString("HH:mm")+" Čaka na potrditev: " + appointmentToken.Client.FullName + " (" + appointmentToken.Client.Mobile + ") - " + appointmentToken.Service;
 
                 //alert about new appointment
-                string MsgTxt = @"Novo narocilo prek spleta! " + newAppointmentSmsText + "\nPoglej v https://KdajBi.siappointments/index?date=" + bookingRequest.TimeSlot.start.ToString("yyyy-MM-dd");
+                string MsgTxt = @"Novo narocilo prek spleta! " + newAppointmentSmsText + "\nPoglej v https://KdajBi.si/appointments/index?date=" + bookingRequest.TimeSlot.start.ToString("yyyy-MM-dd");
                 var myUser = _context.Users.Where(c => c.CompanyId == appointmentToken.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().First();
 
                 _smsSender.EnqueueSMS(appointmentToken.Location.CompanyId, appointmentToken.Location.Id, null, appointmentToken.Id,

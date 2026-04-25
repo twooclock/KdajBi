@@ -106,7 +106,7 @@ namespace KdajBi.API.Controllers
                                                 availableAppointments.Add(
                                                     new TimeSlot(wp.Id,
                                                         evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(-myService.Minutes),
-                                                        evt.End.DateTimeDateTimeOffset.Value.LocalDateTime.AddMinutes(-myService.Minutes)
+                                                        evt.Start.DateTimeDateTimeOffset.Value.LocalDateTime
                                                     )
                                                 );
                                             }

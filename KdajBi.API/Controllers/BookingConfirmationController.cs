@@ -76,18 +76,17 @@ namespace KdajBi.API.Controllers
                 );
             }
 
-            if (bool.Parse(SettingsHelper.getSetting(_context, bookingConfirmation.Location.CompanyId, bookingConfirmation.Location.Id, "PublicBooking_AlertMeWithSMS", "true")) == true)
-            {
-                // obvesti stranko prek sms
-                string MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + bookingConfirmation.Start.Value.ToString("dd.MM.yyyy") + " ob " + bookingConfirmation.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + bookingConfirmation.Location.Name;
-                if (string.IsNullOrEmpty(bookingConfirmation.Location.Tel) == false)
-                { MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookingConfirmation.Location.Tel; }
-                var myUser = await _context.Users.Where(c => c.CompanyId == bookingConfirmation.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().FirstAsync();
+            
+            // obvesti stranko prek sms
+            string MsgTxt = @"Vaš termin je bil potrjen! Naročeni ste " + bookingConfirmation.Start.Value.ToString("dd.MM.yyyy") + " ob " + bookingConfirmation.Start.Value.ToString("HH:mm") + ". Lep pozdrav! " + bookingConfirmation.Location.Name;
+            if (string.IsNullOrEmpty(bookingConfirmation.Location.Tel) == false)
+            { MsgTxt += Environment.NewLine + "Za več informacij nas pokličite na " + bookingConfirmation.Location.Tel; }
+            var myUser = await _context.Users.Where(c => c.CompanyId == bookingConfirmation.Location.CompanyId).OrderBy(o => o.Id).AsNoTracking().FirstAsync();
 
-                _smsSender.EnqueueSMS(bookingConfirmation.Location.CompanyId, bookingConfirmation.LocationId, null, bookingConfirmation.Id,
-                        myUser.Id, MsgTxt, "AppointmentConfimation", bookingConfirmation.Client.Mobile, bookingConfirmation.Client.Id);
+            _smsSender.EnqueueSMS(bookingConfirmation.Location.CompanyId, bookingConfirmation.LocationId, null, bookingConfirmation.Id,
+                    myUser.Id, MsgTxt, "AppointmentConfimation", bookingConfirmation.Client.Mobile, bookingConfirmation.Client.Id);
                 
-            }
+            
             try
             {
                   await _context.SaveChangesAsync();

@@ -158,6 +158,16 @@ namespace KdajBi.Core
             }
         }
 
+        public static string ReplaceNonGSM7Chars(string input)
+        {
+            if (string.IsNullOrEmpty(input)) { return input; }
+            string retval = input;
+            retval = retval.Replace('č', 'c').Replace('Č', 'C');
+            retval = retval.Replace('š', 's').Replace('Š', 'S');
+            retval = retval.Replace('ž', 'z').Replace('Ž', 'Z');
+            return retval;
+        }
+
         public static string PickTextColorBasedOnBgColorSimple(string bgColor)
         {
             if (bgColor == null) { 

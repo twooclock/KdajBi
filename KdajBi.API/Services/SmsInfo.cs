@@ -12,7 +12,7 @@ namespace KdajBi
 {
     public interface ISmsInfo
     {
-        int SmsLimitInfo(string p_CustomerCode, string p_TaxID);
+        (int limit, string DeviceId) SmsLimitInfo(string p_CustomerCode, string p_TaxID);
         double SmsPriceInfo(string p_CustomerCode, string p_TaxID);
         string SmsMakeOrder(string p_CustomerCode, string p_TaxID, string p_KontaktGSM, int p_Kolicina, string p_Sporocilo);
     }
@@ -26,7 +26,7 @@ namespace KdajBi
             smsInfoWS = p_SmsInfoWS;
         }
 
-        public int SmsLimitInfo(string p_CustomerCode, string p_TaxID)
+        public (int limit, string DeviceId) SmsLimitInfo(string p_CustomerCode, string p_TaxID)
         {
             int limit = 0;
             int kupljenih = 0;
@@ -52,16 +52,17 @@ namespace KdajBi
                     limit = int.Parse(myNode.InnerText);
                     myNode = retval.SelectSingleNode("stanjesms/KUPLJENIH_SMS");
                     kupljenih = int.Parse(myNode.InnerText);
-                    return limit + kupljenih;
+                    myNode = retval.SelectSingleNode("stanjesms/DEVICEID");
+                    return (limit + kupljenih, myNode.InnerText);
                 }
 
                 
             }
             catch (Exception ex)
             {
-                return -1;
+                return (-1,ex.Message);
             }
-            return 0;
+            return (0,"");
         }
 
         public double SmsPriceInfo(string p_CustomerCode, string p_TaxID)

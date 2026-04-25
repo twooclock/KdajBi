@@ -9,12 +9,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace KdajBi
 {
@@ -136,7 +138,14 @@ namespace KdajBi
                 DefaultFileNames = new List<string> { "/LandingPage/index.html" },
                 RequestPath = new PathString("/LandingPage")
             });
-            app.UseStaticFiles();
+            //configure static files and enable .apk
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".apk"] = "application/vnd.android.package-archive";
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                ContentTypeProvider = provider
+            });
 
             //app.UseCookiePolicy();
 

@@ -118,7 +118,7 @@
                     </div>
                     }
                 <div class="form-group">
-                                <label for="inputPIN" class="control-label pl-2">PIN </label><label id="pinCountdown">&nbsp(počakajte, prejeli boste sms sporočilo)</label>
+                    <label for="inputPIN" class="control-label pl-2">PIN </label><label id="pinCountdown">&nbsp(počakajte, prejeli boste sms sporočilo)</label>
                     <div class="col-sm-10">
                         <input type="number" class="form-control" id="inputPIN" name="inputPIN" placeholder="" value="" min="1000" max="9999"
                                required autocorrect="off" spellcheck="false" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
@@ -184,31 +184,34 @@
 
         $('inputPIN').attr('autocomplete', 'off');
 
+        @if (Model.PublicBooking_ClientDataIsMandatory == true)
+        {
+            <text>
+            $.validator.addMethod("noAllSpaces", function(value) { return value.trim().length > 0; }, "Field cannot be only spaces.");
+            </text>
+        }
+
         $('#formMobile').validate({
             rules: { inputMobile: { minlength: 9, required: true }
 
             @if (Model.PublicBooking_ClientDataIsMandatory == true)
             {
-                @Html.Raw(", inputClientFirstName: { maxlength: 150, required: true }");
-                @Html.Raw(", inputClientLastName: { maxlength: 150, required: true }");
-                @Html.Raw(", inputClientAddress: { maxlength: 150, required: true }");
-                @Html.Raw(", inputClientEmail: { maxlength: 150, required: true }")
-            ;
-        }
+                
+                @Html.Raw(", inputClientFirstName: { maxlength: 150, required: true, noAllSpaces: true }");
+                @Html.Raw(", inputClientLastName: { maxlength: 150, required: true, noAllSpaces: true }");
+                @Html.Raw(", inputClientAddress: { maxlength: 150, required: true, noAllSpaces: true }");
+                @Html.Raw(", inputClientEmail: { maxlength: 150, required: true, noAllSpaces: true }");
+            }
 
             },
             messages: { inputMobile: "Neveljavna številka!"
 
             @if (Model.PublicBooking_ClientDataIsMandatory == true)
             {
-                @Html.Raw(", inputClientFirstName: 'Neveljavno ime'")
-                ;
-                @Html.Raw(", inputClientLastName: 'Neveljaven priimek'")
-                ;
-                @Html.Raw(", inputClientAddress: 'Neveljaven naslov'")
-                ;
-                @Html.Raw(", inputClientEmail: 'Neveljaven naslov'")
-                ;
+                @Html.Raw(", inputClientFirstName: 'Neveljavno ime'");
+                @Html.Raw(", inputClientLastName: 'Neveljaven priimek'");
+                @Html.Raw(", inputClientAddress: 'Neveljaven naslov'");
+                @Html.Raw(", inputClientEmail: 'Neveljaven naslov'");
             }
 
             },

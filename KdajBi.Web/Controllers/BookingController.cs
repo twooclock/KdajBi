@@ -46,7 +46,12 @@ namespace KdajBi.Web.Controllers
             AppointmentToken appointmentToken = _context.AppointmentTokens.FirstOrDefault(x => x.Token == token);
             vmBooking vm = new vmBooking();
             vm.PublicBooking_CSS = SettingsHelper.getSetting(_context, appointmentToken.CompanyId, appointmentToken.LocationId, "PublicBooking_CSS", "");
-
+            vm.token = appointmentToken;
+            if (vm.token.Location == null)
+            {
+                var myLocation = _context.Locations.Where(l => l.Id == vm.token.LocationId).FirstOrDefault();
+                vm.token.Location = myLocation;
+            }
             return View(vm);
         }
     }
