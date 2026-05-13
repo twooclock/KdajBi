@@ -15,7 +15,8 @@ namespace KdajBi.Core
         }
 
         public DbSet<Company> Companies { get; set; }
-		public DbSet<Service> Services { get; set; }
+        public DbSet<Service> Services { get; set; }
+        public DbSet<ServiceAddon> ServiceAddons { get; set; }
         public DbSet<ServiceGroup> ServiceGroups { get; set; }
 		public DbSet<Location> Locations { get; set; }
         public DbSet<Workplace> Workplaces { get; set; }
