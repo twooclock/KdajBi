@@ -79,6 +79,19 @@ namespace KdajBi.API.Controllers
             return Service;
         }
 
+        [HttpGet("/api/Service/ClientBookingOptions/{id}")]
+        public async Task<ActionResult<Service>> GetServiceClientBookingOptions(long id)
+        {
+            var Service = await _context.Services.FindAsync(id);
+
+            if (Service == null)
+            {
+                return NotFound();
+            }
+
+            return Service;
+        }
+
         [HttpPut("/api/Service/{id}")]
         public async Task<IActionResult> PutService(long id, Service Service)
         {
@@ -166,6 +179,42 @@ namespace KdajBi.API.Controllers
             return Json("OK");
         }
 
+        [HttpPost("/api/Service/ClientBookingOptions/")]
+        public async Task<ActionResult<Service>> PostServiceClientBookingOptions(Service Service)
+        {
+            if (Service.ServiceGroupId == 0) { Service.ServiceGroupId = null; }
+            if (Service.Id == 0)
+            {
+                return BadRequest();
+            }
+            else
+            {
+
+                var Serviceindb = _context.Services.Single(c => c.Id == Service.Id);
+
+                Serviceindb.UpdatedUserID = _CurrentUserID();
+                Serviceindb.UpdatedDate = DateTime.Now;
+                
+                Serviceindb.PriceDescription = Service.PriceDescription;
+                Serviceindb.Notes = Service.Notes;
+
+                _context.Entry(Serviceindb).State = EntityState.Modified;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ServiceExists(Service.Id))
+                    { return NotFound(); }
+                    else
+                    { throw; }
+                }
+
+            }
+            return Json("OK");
+        }
         [HttpDelete("/api/Service/{id}")]
         public async Task<ActionResult<Service>> DeleteService(long id)
         {

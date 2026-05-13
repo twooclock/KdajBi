@@ -474,7 +474,7 @@
                                                                         Barva
                                                                     </th>
                                                                     <th>
-                                                                        Samostojno naročanje
+                                                                        Samostojno<br/>naročanje
                                                                         <a href="#!" data-toggle="popover" data-content="Storitev je na voljo pri samostojnem naročanju strank."><i class="fa fa-info-circle"></i></a>
                                                                     </th>
                                                                     <th>
@@ -821,20 +821,6 @@
                     </div>
                     </div>
                     <div class="form-group">
-                        <label for="txtPriceDescription">
-                            Cena ali opis:
-                            <a href="#!" data-toggle="popover" data-content="Ta cena/opis bo prikazan pri storitvi pri samostojnem naročanju stranke."><i class="fa fa-info-circle"></i></a>
-                        </label>
-                        <input type="text" id="txtPriceDescription" name="txtPriceDescription" class="form-control" maxlength="50" />
-                    </div>
-                    <div class="form-group">
-                        <label for="txtNotes">
-                            Opombe:
-                            <a href="#!" data-toggle="popover" data-content="Te opombe bodo prikazane pri storitvi pri samostojnem naročanju stranke."><i class="fa fa-info-circle"></i></a>
-                        </label>
-                        <input type="text" id="txtNotes" name="txtNotes" class="form-control" maxlength="250" />
-                    </div>
-                    <div class="form-group">
                         <label>Barva:
                         <a href="#!" data-toggle="popover" data-content="Tako se bodo obarvala naročila s to storitvijo. Če barva ni določena se naročila obarvajo z barvo skupine (če je določena)."><i class="fa fa-info-circle"></i></a>
                         </label>
@@ -860,6 +846,7 @@
                             <a href="#!" data-toggle="popover" data-content="Storitev bo na voljo pri samostojnem naročanju strank."><i class="fa fa-info-circle"></i></a>
                         </label>
                     </div>
+                    
                     <div class="form-group">
                         <label class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="cbActive" value="true" checked="">
@@ -879,6 +866,88 @@
         </div>
     </div>
 </div>
+<!-- modal new service content-->
+<div id="ServiceClientBookingOptionsModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="ServiceModalLabel">Storitev</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="formServiceClientBookingOptions" class="formService" name="formServiceClientBookingOptions">
+                    <div id="panelServiceOptions">
+                    <div class="form-group">
+                        <label for="lblServiceName">
+                            Naziv:
+                        </label>
+                        <input type="text" id="lblServiceName" name="lblServiceName" class="form-control" readonly/>
+                    </div>
+                    <div class="form-group">
+                        <label for="txtPriceDescription">
+                            Cena ali opis:
+                            <a href="#!" data-toggle="popover" data-content="Ta cena/opis bo prikazan pri storitvi pri samostojnem naročanju stranke."><i class="fa fa-info-circle"></i></a>
+                        </label>
+                        <input type="text" id="txtPriceDescription" name="txtPriceDescription" class="form-control" maxlength="50" />
+                    </div>
+                    <div class="form-group">
+                        <label for="txtNotes">
+                            Opombe:
+                            <a href="#!" data-toggle="popover" data-content="Te opombe bodo prikazane pri storitvi pri samostojnem naročanju stranke."><i class="fa fa-info-circle"></i></a>
+                        </label>
+                        <input type="text" id="txtNotes" name="txtNotes" class="form-control" maxlength="250" />
+                    </div>
+                    </div>
+                    <div id="panelAddons" style="background-color: #f2f2f2;" class="form-group p-1 ">
+                        <label>
+                            <span id="addonpanelTitle"> Dodatki k storitvi:</span>
+                            <a href="#!" data-toggle="popover" data-content="Te dodatke lahko stranka izbere pri samostojnem naročanju."><i class="fa fa-info-circle"></i></a>
+                        </label>
+                        <div id="serviceAddonForm" style="display:none">
+                            <input type="hidden" id="hidAddonId" value="0">
+                            <div class="form-group">
+                                <input type="text" id="txtAddonName" placeholder="Naziv" class="form-control" maxlength="100">
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <input type="number" id="txtAddonMinutes" placeholder="Minute" class="form-control" min="0">
+                                </div>
+                                <div class="col">
+                                    <input type="text" id="txtAddonPriceDescription" placeholder="Cena ali opis" class="form-control" maxlength="50">
+                                </div>
+                            </div>
+                            <div class="form-group mt-2">
+                                <input type="text" id="txtAddonNotes" placeholder="Opombe" class="form-control" maxlength="250">
+                            </div>
+                            <div class="d-flex justify-content-end mt-1 mb-2">
+                                <button type="button" class="btn btn-sm btn-default mr-2" id="cmdAddonCancel">Prekliči</button>
+                                <button type="button" class="btn btn-sm btn-primary" id="cmdAddonSave">Shrani</button>
+                            </div>
+                        </div>
+                        <table class="table table-sm table-hover" id="tblServiceAddons">
+                            <thead>
+                                <tr>
+                                    <th>Dodatek</th>
+                                    <th>Minut</th>
+                                    <th>Cena/opis</th>
+                                    <th style="text-align: right;"><button type="button" class="btn btn-xs btn-success" id="cmdAddonAdd"><i class="fa fa-plus"></i></button></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblServiceAddonsBody"></tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="cmdServiceClientBookingOptionsSave">
+                    Shrani
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /modal content-->
 <!-- /modal content-->
 
 <!-- modal WorkplaceServices content-->
@@ -1248,6 +1317,7 @@
             $('#ServiceModal').on('hidden.bs.modal', function (e) {
                 CancelServiceModal();
             });
+            
 
             //sms
             loadSMS();
@@ -2450,9 +2520,9 @@
                                 if ( row.serviceGroup !=null  )
                                     {
                                         if ( row.serviceGroup.color !=null && row.serviceGroup.color.length > 0 )
-                                        { return '<span class="badge " style=\"font-size: unset;background-color:#' + row.serviceGroup.color + '; color:' + pickTextColorBasedOnBgColorSimple(row.serviceGroup.color) + ';line-height: 3;padding-left: 2em;padding-right: 2em;\">'+row.serviceGroup.name+'</span> '; }
+                                        { return '<span class="badge " style=\"display: block;width: 100%;box-sizing: border-box;font-size: unset;background-color:#' + row.serviceGroup.color + '; color:' + pickTextColorBasedOnBgColorSimple(row.serviceGroup.color) + ';line-height: 3;padding-left: 2em;padding-right: 2em;\">'+row.serviceGroup.name+'</span> '; }
                                         else
-                                              { return '<span class="badge " style=\"font-size: unset;border: solid 1px;line-height: 3;padding-left: 2em;padding-right: 2em;\">'+row.serviceGroup.name+'</span> '; }
+                                        { return '<span class="badge " style=\"display: block;width: 100%;box-sizing: border-box;font-size: unset;border: solid 1px;line-height: 3;padding-left: 2em;padding-right: 2em;\">'+row.serviceGroup.name+'</span> '; }
                                     }
                                   else
                                   { return ''; }
@@ -2474,11 +2544,11 @@
                                 return retval;
                               }
                     },
-                          { 'data': 'minutes', className: 'text-center', 
+                          { 'data': 'minutes', className: 'align-middle text-center', 
                           render:  function (data, type, row, meta) { return row.minutes+' min'}
                           },
                     {
-                        'data': 'color', className: 'text-center',
+                        'data': 'color', className: 'align-middle text-center',
                         render: function (data, type, row, meta) {
                             if ( row.color !=null && row.color.length > 0 )
                              { return '<i class="fas fa-square" style=\"color:#' + row.color + '\"></i>'; }
@@ -2487,16 +2557,16 @@
                         }
                     },
                     {
-                        'data': 'usedInClientBooking', className: 'text-center',
+                        'data': 'usedInClientBooking', className: 'align-middle text-center',
                         render: function (data, type, row, meta) {
                             if (row.usedInClientBooking == true)
-                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" checked="checked"><label class="custom-control-label"></label></div>'; }
+                                  { return '<a class="btn btn-default" onclick="showServiceClientBookingOptions(' + row.id + ');"><div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" checked="checked"><label class="custom-control-label"></label></div> Možnosti</a>'; }
                             else
-                            { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" ><label class="custom-control-label"></label></div>'; }
+                                  { return ''; }
                         }
                     },
                     {
-                        'data': 'active', className: 'text-center',
+                        'data': 'active', className: 'align-middle text-center',
                         render: function (data, type, row, meta) {
                             if (row.active == true)
                             { return '<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" checked="checked"><label class="custom-control-label"></label></div>'; }
@@ -2505,7 +2575,7 @@
                         }
                     },
                     {
-                        data: null, 'orderable': false,
+                        data: null, 'orderable': false, className: 'align-middle text-center',
                         render: function (data, type, row, meta) {
                             return '<a class="btn btn-default" onclick="showServiceDetail(' + row.id + ');">Urejanje</a>';
                         }
@@ -2588,6 +2658,261 @@
 
         }
 
+        function SaveService(p_ID) {
+            if ($('#formService').valid()) {
+                var service={};
+                service.id = p_ID;
+                service.LocationId = parseInt($("#cboLocations").val());
+                service.Name = $('#txtServiceName').val();
+                service.Minutes = parseInt($("#txtServiceMinutes").val());
+                service.Offset = parseInt($("#txtServiceOffset").val());
+                if (isNaN(service.Offset)) { service.Offset = 0; }
+                
+                if (isNaN(service.Minutes)) { service.Minutes = 0; }
+                service.serviceGroupId = Number($('#cboServiceGroup').val());
+                service.color = $('#cpServiceColor .form-control').val();
+                if (service.color.length != 6) { service.color = null; }
+                service.Active = $("#cbActive").prop('checked');
+                service.UsedInClientBooking = $("#cbUsedInClientBooking").prop('checked');
+                getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(service),
+                    url: apiURL+"/api/service/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                         if (result == "OK") { toastr.success("Shranjeno"); GetServicesTable(); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+                });
+            } else { return false; }
+        }
+
+        function setClientBookingOptionsForm(p_ID) {
+            $('#serviceAddonForm').hide();
+            $('#panelServiceOptions').show();
+            $('#cmdServiceClientBookingOptionsSave').show();
+            $('#tblServiceAddonsBody').html('');
+            if (p_ID == 0) {
+                $("#txtPriceDescription").val('');
+                $("#txtNotes").val('');
+            }
+            else {
+                getAPIToken().then((result) => {
+                $.ajax({
+                    type: "get",
+                    url: apiURL+"/api/service/ClientBookingOptions/"+p_ID,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    async: true,
+                    success: function (result) {
+                        $("#lblServiceName").val(result.name);
+                        $("#txtPriceDescription").val(result.priceDescription);
+                        $("#txtNotes").val(result.notes);
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                    }
+                });
+                });
+                LoadServiceAddons(p_ID);
+            }
+        }
+
+        function showServiceClientBookingOptions(p_ID) {
+            setClientBookingOptionsForm(p_ID);
+            $('#tblServiceAddons').show();
+            $("#ServiceClientBookingOptionsModal").modal("show");
+            $("#cmdServiceClientBookingOptionsSave").off('click').click(function (evt) {
+                if (SaveServiceClientBookingOptions(p_ID) != false) { $("#ServiceClientBookingOptionsModal").modal("hide"); }
+            });
+            $('#cmdAddonAdd').off('click').click(function () {
+                clearAddonForm();
+                setAddonMode(true);
+            });
+            $('#cmdAddonCancel').off('click').click(function () {
+                setAddonMode(false);
+            });
+            $('#cmdAddonSave').off('click').click(function () {
+                SaveAddon(p_ID);
+            });
+        }
+
+        function SaveServiceClientBookingOptions(p_ID) {
+            //if ($('#formServiceClientBookingOptions').valid()) {
+                var service={};
+                service.id = p_ID;
+                service.Name = "mandatory";
+                service.PriceDescription = $("#txtPriceDescription").val();
+                service.Notes = $("#txtNotes").val();
+                
+                getAPIToken().then((result) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(service),
+                    url: apiURL+"/api/service/ClientBookingOptions/",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                         if (result == "OK") { toastr.success("Shranjeno"); GetServicesTable(); return true; }
+                        else { toastr.error("Napaka:" + result); return false; }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                        return false;
+                    }
+                });
+                });
+            //} else { return false; }
+        }
+
+        function setAddonMode(on) {
+            if (on) {
+                $("#addonpanelTitle").text("Dodatek k storitvi");
+                $('#panelServiceOptions').hide();
+                $('#cmdServiceClientBookingOptionsSave').hide();
+                $('#tblServiceAddons').hide();
+                $('#serviceAddonForm').slideDown(300);
+            } else {
+                $('#serviceAddonForm').slideUp(300, function () {
+                    $("#addonpanelTitle").text("Dodatki k storitvi");
+                    $('#panelServiceOptions').show();
+                    $('#cmdServiceClientBookingOptionsSave').show();
+                    $('#tblServiceAddons').show();
+                });
+            }
+        }
+
+        function clearAddonForm() {
+            $('#hidAddonId').val(0);
+            $('#txtAddonName').val('');
+            $('#txtAddonMinutes').val('');
+            $('#txtAddonPriceDescription').val('');
+            $('#txtAddonNotes').val('');
+        }
+
+        function LoadServiceAddons(serviceId) {
+            getAPIToken().then((token) => {
+                $.ajax({
+                    type: "get",
+                    url: apiURL + "/api/ServiceAddons/" + serviceId,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + token.AccessToken },
+                    dataType: "json",
+                    success: function (addons) {
+                        var html = '';
+                        $.each(addons, function (i, a) {
+                            html += '<tr>';
+                            html += '<td>' + (a.name || '') + '</td>';
+                            html += '<td>' + (a.minutes || 0) + '</td>';
+                            html += '<td>' + (a.priceDescription || '') + '</td>';
+                            html += '<td class="text-right">';
+                            html += '<button type="button" class="btn btn-xs btn-default mr-1" onclick="editAddon(' + a.id + ',' + serviceId + ')"><i class="fas fa-pencil-alt"></i></button>';
+                            html += '<button type="button" class="btn btn-xs btn-danger" onclick="deleteAddon(' + a.id + ',' + serviceId + ')"><i class="fa fa-trash"></i></button>';
+                            html += '</td></tr>';
+                        });
+                        $('#tblServiceAddonsBody').html(html);
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                    }
+                });
+            });
+        }
+
+        function editAddon(id, serviceId) {
+            getAPIToken().then((token) => {
+                $.ajax({
+                    type: "get",
+                    url: apiURL + "/api/ServiceAddon/" + id,
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + token.AccessToken },
+                    dataType: "json",
+                    success: function (a) {
+                        $('#hidAddonId').val(a.id);
+                        $('#txtAddonName').val(a.name);
+                        $('#txtAddonMinutes').val(a.minutes);
+                        $('#txtAddonPriceDescription').val(a.priceDescription);
+                        $('#txtAddonNotes').val(a.notes);
+                        setAddonMode(true);
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                    }
+                });
+            });
+        }
+
+        function SaveAddon(serviceId) {
+            var addon = {};
+            addon.id = parseInt($('#hidAddonId').val());
+            addon.serviceId = serviceId;
+            addon.name = $('#txtAddonName').val();
+            addon.minutes = parseInt($('#txtAddonMinutes').val()) || 0;
+            addon.priceDescription = $('#txtAddonPriceDescription').val();
+            addon.notes = $('#txtAddonNotes').val();
+            addon.active = true;
+
+            getAPIToken().then((token) => {
+                $.ajax({
+                    type: "post",
+                    data: JSON.stringify(addon),
+                    url: apiURL + "/api/ServiceAddon",
+                    contentType: "application/json; charset=utf-8",
+                    headers: { 'Authorization': 'Bearer ' + token.AccessToken },
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == "OK") {
+                            setAddonMode(false);
+                            LoadServiceAddons(serviceId);
+                        } else {
+                            toastr.error("Napaka:" + result);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        toastr.error("Napaka:" + error.toString());
+                    }
+                });
+            });
+        }
+
+        function deleteAddon(id, serviceId) {
+            Swal.fire({
+                title: 'Zbrišem dodatek?',
+                showDenyButton: true,
+                confirmButtonText: 'Da',
+                denyButtonText: 'Ne',
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    getAPIToken().then((token) => {
+                        $.ajax({
+                            type: "DELETE",
+                            url: apiURL + "/api/ServiceAddon/" + id,
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': 'Bearer ' + token.AccessToken },
+                            dataType: "json",
+                            success: function (result) {
+                                if (result == "OK") { LoadServiceAddons(serviceId); }
+                                else { toastr.error("Napaka:" + result); }
+                            },
+                            error: function (xhr, status, error) {
+                                toastr.error("Napaka:" + error.toString());
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
         function DeleteService(p_ID) {
             Swal.fire({
                 title: 'Zbrišem storitev?',
@@ -2619,43 +2944,7 @@
 
         }
 
-        function SaveService(p_ID) {
-            if ($('#formService').valid()) {
-                var service={};
-                service.id = p_ID;
-                service.LocationId = parseInt($("#cboLocations").val());
-                service.Name = $('#txtServiceName').val();
-                service.Minutes = parseInt($("#txtServiceMinutes").val());
-                service.Offset = parseInt($("#txtServiceOffset").val());
-                if (isNaN(service.Offset)) { service.Offset = 0; }
-                service.PriceDescription = $("#txtPriceDescription").val();
-                service.Notes = $("#txtNotes").val();
-                if (isNaN(service.Minutes)) { service.Minutes = 0; }
-                service.serviceGroupId = Number($('#cboServiceGroup').val());
-                service.color = $('#cpServiceColor .form-control').val();
-                if (service.color.length != 6) { service.color = null; }
-                service.Active = $("#cbActive").prop('checked');
-                service.UsedInClientBooking = $("#cbUsedInClientBooking").prop('checked');
-                getAPIToken().then((result) => {
-                $.ajax({
-                    type: "post",
-                    data: JSON.stringify(service),
-                    url: apiURL+"/api/service/",
-                    contentType: "application/json; charset=utf-8",
-                    headers: { 'Authorization': 'Bearer ' + result.AccessToken },
-                    dataType: "json",
-                    success: function (result) {
-                         if (result == "OK") { toastr.success("Shranjeno"); GetServicesTable(); return true; }
-                        else { toastr.error("Napaka:" + result); return false; }
-                    },
-                    error: function (xhr, status, error) {
-                        toastr.error("Napaka:" + error.toString());
-                        return false;
-                    }
-                });
-                });
-            } else { return false; }
-        }
+        
 
         //#endregion
 

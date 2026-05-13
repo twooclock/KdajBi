@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Projekti\\\\KdajBi\\\\KdajBi\\\\KdajBi.API\\\\Controllers\" -Filter \"*.cs\")",
+      "Bash(Select-Object Name)",
+      "Bash(dotnet build *)"
+    ]
+  }
+}

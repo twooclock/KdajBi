@@ -44,6 +44,9 @@ namespace KdajBi.Web.Controllers
             _logger.LogInformation(string.Format("New contact code:'{0}', name:'{1}', phone:'{2}', email:'{3}', subject:'{4}', message:'{5}' ", cForm.code, cForm.name, cForm.phone, cForm.email, cForm.subject, cForm.message));
             switch (cForm.code)
             {
+                case "KARLA":
+                    await _emailSender.SendEmailAsync(cForm.email, "info@karla.si", "novo povpraševanje", string.Format("Ime:'{0}', Telefon:'{1}', ePošta:'{2}', sporočilo:'{3}' ", cForm.name, cForm.phone, cForm.email, cForm.message));
+                    break;
                 case "ZATE":
                     await _emailSender.SendEmailAsync(cForm.email, "salon.zate.info@gmail.com", "novo povpraševanje", string.Format("Ime:'{0}', Telefon:'{1}', ePošta:'{2}', sporočilo:'{3}' ", cForm.name, cForm.phone, cForm.email,  cForm.message));
                     break;
